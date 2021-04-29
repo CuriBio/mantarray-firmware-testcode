@@ -11,8 +11,13 @@ import java.util.zip.CRC32;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import com.google.common.primitives.Bytes;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 Serial serialPort;
+Calendar c;
+PrintWriter dataLog;
+PrintWriter logLog;
 
 int MAGIC_WORD_LENGTH = 8;
 int CRC_LENGTH = 4;
@@ -44,15 +49,25 @@ int stop;
 
 public ControlP5 cp5;
 Button loadFirmwareButton;
+Button saveAndQuitButton;
 
 public void setup() {
   size(400, 400);  
   frameRate(1000);
   cp5 = new ControlP5(this);
   loadFirmwareButton = cp5.addButton("loadFirmwareButton")
-    .setPosition(100, 100)
+    .setPosition(100, 50)
     .setSize(200, 200);
   loadFirmwareButton.getCaptionLabel().setText("Load Firmware").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  saveAndQuitButton = cp5.addButton("saveAndQuitButton")
+    .setPosition(75, 300)
+    .setSize(250, 50);
+  saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+  dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+  logLog = createWriter(String.format("./log/%d-%d-%d_%d-%d-%d_log.txt", c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
   
   String serialPortName = Serial.list() [0] ; //"/dev/tty.usbmodem1411";
   serialPort = new Serial(this, serialPortName, 5000000);
@@ -119,6 +134,13 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isAssignableFrom(Button.class)){
     if (controllerName.equals("loadFirmwareButton")){
       selectInput("Select a file to load as channel microcontroller firmware:", "LoadFirmware");
+    }
+    if (controllerName.equals("saveAndQuitButton")){
+      dataLog.flush();
+      dataLog.close();
+      logLog.flush();
+      logLog.close();
+      exit();
     }
   }
 }

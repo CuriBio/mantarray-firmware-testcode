@@ -62,10 +62,6 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   newPacket.packetType = byte2uint(thisAggregate.get(thisScanner));
   //print( " ", byte2long(aggregate.get(index)));
   thisScanner++;
-  if (thisScanner > 226)
-  {
-    print(thisAggregate);
-  }
   newPacket.data = new ArrayList<Byte>(thisAggregate.subList(thisScanner, thisScanner + thisPacketLength - BASE_PACKET_LENGTH_PLUS_CRC));
   thisScanner += thisPacketLength - BASE_PACKET_LENGTH_PLUS_CRC;
   newPacket.CRC = 0;
@@ -78,8 +74,20 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   if (newPacket.packetLength==26){
     numMessagesIn++;
   }
-  println(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
-  if (newPacket.packetType==4){
+  if (newPacket.packetType==1)
+  {
+    dataLog.print(String.format("%d ", newPacket.timeStamp));
+    dataLog.print(newPacket.data);
+    dataLog.println();
+  }
+  else
+  {
+    logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
+    logLog.print(newPacket.data);
+    logLog.println();
+  }
+  
+  /*if (newPacket.packetType==4){
     long returnTimestamp = 0;
     for (int j = 0; j < TIMESTAMP_LENGTH; j++){
       returnTimestamp+=(long)Math.pow(256,j)*byte2long(newPacket.data.get(j));
@@ -90,7 +98,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     }
   } else {
     //println(newPacket.data);
-  }
+  }*/
   thisAggregate.subList(0,thisScanner).clear();
 }
     
