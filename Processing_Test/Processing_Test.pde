@@ -47,7 +47,7 @@ Button loadFirmwareButton;
 
 public void setup() {
   size(400, 400);  
-  frameRate(60);
+  frameRate(1000);
   cp5 = new ControlP5(this);
   loadFirmwareButton = cp5.addButton("loadFirmwareButton")
     .setPosition(100, 100)
@@ -55,7 +55,7 @@ public void setup() {
   loadFirmwareButton.getCaptionLabel().setText("Load Firmware").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   String serialPortName = Serial.list() [0] ; //"/dev/tty.usbmodem1411";
-  serialPort = new Serial(this, serialPortName, 4000000);
+  serialPort = new Serial(this, serialPortName, 5000000);
   thread("readPackets");
   start = millis();
   nanoStart = System.nanoTime();
