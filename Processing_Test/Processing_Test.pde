@@ -82,7 +82,7 @@ public void setup() {
 
 public void draw() {
   long temp = ((System.nanoTime() - nanoStart)/1000);
-  if (temp - IAmHerePacket.timeStamp > 5000000)
+  if (temp - IAmHerePacket.timeStamp > 500000)
   {
     IAmHerePacket.IAmHere();
     IAmHereConverted = IAmHerePacket.toByte();
