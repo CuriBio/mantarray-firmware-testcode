@@ -60,7 +60,39 @@ class Packet{
     for (int i = 0; i < 4; i++){
       this.data.add(uint2byte((int)(firmwareCRC>>(8*i) & 0x000000ff)));
     }
-    
+  }
+  
+  byte[] MagnetometerConfiguration(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 3;
+    this.packetLength = 89;
+    this.CRC = 123123123;
+    this.data = magConfigurationByteArray;
+    this.data.add(0, (byte)1);
+    return this.toByte();
+  }
+  
+  byte[] MagnetometerDataCaptureBegin(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 3;
+    this.packetLength = 15;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>(1);
+    this.data.add((byte)2);
+    return this.toByte();
+  }
+  
+  byte[] MagnetometerDataCaptureEnd(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 3;
+    this.packetLength = 15;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>(1);
+    this.data.add((byte)3);
+    return this.toByte();
   }
   
   byte[] toByte(){

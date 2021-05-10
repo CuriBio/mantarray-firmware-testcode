@@ -79,12 +79,18 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     dataLog.print(String.format("%d ", newPacket.timeStamp));
     dataLog.print(newPacket.data);
     dataLog.println();
+    print(String.format("%d ", newPacket.timeStamp));
+    print(newPacket.data);
+    println();
   }
   else
   {
     logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
+    print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     logLog.print(newPacket.data);
+    print(newPacket.data);
     logLog.println();
+    println();
   }
   
   /*if (newPacket.packetType==4){
