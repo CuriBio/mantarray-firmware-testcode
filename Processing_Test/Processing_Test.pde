@@ -19,6 +19,7 @@ Calendar c;
 PrintWriter dataLog;
 PrintWriter logLog;
 
+int MAG_TIMESTAMP_LENGTH;
 int MAGIC_WORD_LENGTH = 8;
 int CRC_LENGTH = 4;
 int TIMESTAMP_LENGTH = 8;
@@ -64,6 +65,12 @@ Button startButton;
 Button stopButton;
 Button setConfigButton;
 Button saveAndQuitButton;
+
+Button testButton1;
+Button testButton2;
+Button testButton3;
+Button testButton4;
+
 ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
 List<List<List<Toggle>>> magSensorSelector = new ArrayList<List<List<Toggle>>>();
@@ -107,6 +114,29 @@ public void setup() {
     .setPosition(75, 410)
     .setSize(250, 50);
   saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  //******************************************************************************************************************
+  testButton1 = cp5.addButton("testButton1")
+    .setPosition(350, 200)
+    .setSize(200, 50);
+  testButton1.getCaptionLabel().setText("Set Boot Low").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton2 = cp5.addButton("testButton2")
+    .setPosition(350, 270)
+    .setSize(200, 50);
+  testButton2.getCaptionLabel().setText("Set Boot High").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton3 = cp5.addButton("testButton3")
+    .setPosition(350, 340)
+    .setSize(200, 50);
+  testButton3.getCaptionLabel().setText("Set Reset Low").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton4 = cp5.addButton("testButton4")
+    .setPosition(350, 410)
+    .setSize(200, 50);
+  testButton4.getCaptionLabel().setText("Set Reset High").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  //******************************************************************************************************************
+
   
   int magConfigPageWidth = (int)(.9 * width);
   int magConfigPageHeight = (int)(.75 * height);
@@ -226,6 +256,7 @@ public void setup() {
 
 
 public void draw() {
+  rect(0,0,1920, 1000);
   long temp = ((System.nanoTime() - nanoStart)/1000);
   if (temp - IAmHerePacket.timeStamp > 5000000)
   {
@@ -264,6 +295,13 @@ int byte2uint(byte thisByte){
     byteAsInt+=256;
   }
   return byteAsInt;
+}
+
+int uint16_2_int16(int thisInt){
+  if (thisInt > 32767){
+    thisInt -= 65536;
+  }
+  return thisInt;
 }
 
 long byte2long(byte thisByte){
@@ -370,6 +408,28 @@ public void controlEvent(ControlEvent theEvent) {
       byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
       serialPort.write(magConfigConverted);
     }
+    
+    if (controllerName.equals("testButton1")){
+      Packet testPacket1 = new Packet();
+      byte[] testPacket1Converted = testPacket1.testPacket(1);
+      serialPort.write(testPacket1Converted);
+    }
+    if (controllerName.equals("testButton2")){
+      Packet testPacket2 = new Packet();
+      byte[] testPacket2Converted = testPacket2.testPacket(2);
+      serialPort.write(testPacket2Converted);
+    }
+    if (controllerName.equals("testButton3")){
+      Packet testPacket3 = new Packet();
+      byte[] testPacket3Converted = testPacket3.testPacket(3);
+      serialPort.write(testPacket3Converted);
+    }
+    if (controllerName.equals("testButton4")){
+      Packet testPacket4 = new Packet();
+      byte[] testPacket4Converted = testPacket4.testPacket(4);
+      serialPort.write(testPacket4Converted);
+    }
+    
   }
 }
 

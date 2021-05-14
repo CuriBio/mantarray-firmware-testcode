@@ -76,11 +76,17 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   }
   if (newPacket.packetType==1)
   {
-    dataLog.print(String.format("%d ", newPacket.timeStamp));
-    dataLog.print(newPacket.data);
+    long magTimeStamp = newPacket.timeStamp - (byte2uint(newPacket.data.get(0)) + (byte2uint(newPacket.data.get(1))<<8));
+    List<Integer> dataList = new ArrayList<Integer>();
+    for (int byteShifter = 2; byteShifter < newPacket.data.size(); byteShifter+=2)
+    {
+      dataList.add(uint16_2_int16(byte2uint(newPacket.data.get(byteShifter)) + (byte2uint(newPacket.data.get(byteShifter+1))<<8)));
+    }
+    dataLog.print(String.format("%d ", magTimeStamp));
+    dataLog.print(dataList);
     dataLog.println();
-    print(String.format("%d ", newPacket.timeStamp));
-    print(newPacket.data);
+    print(String.format("%d ", magTimeStamp));
+    print(dataList);
     println();
   }
   else
