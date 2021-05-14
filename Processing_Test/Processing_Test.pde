@@ -411,22 +411,22 @@ public void controlEvent(ControlEvent theEvent) {
     
     if (controllerName.equals("testButton1")){
       Packet testPacket1 = new Packet();
-      byte[] testPacket1Converted = testPacket1.testPacket(1);
+      byte[] testPacket1Converted = testPacket1.testPacket(10);
       serialPort.write(testPacket1Converted);
     }
     if (controllerName.equals("testButton2")){
       Packet testPacket2 = new Packet();
-      byte[] testPacket2Converted = testPacket2.testPacket(2);
+      byte[] testPacket2Converted = testPacket2.testPacket(11);
       serialPort.write(testPacket2Converted);
     }
     if (controllerName.equals("testButton3")){
       Packet testPacket3 = new Packet();
-      byte[] testPacket3Converted = testPacket3.testPacket(3);
+      byte[] testPacket3Converted = testPacket3.testPacket(12);
       serialPort.write(testPacket3Converted);
     }
     if (controllerName.equals("testButton4")){
       Packet testPacket4 = new Packet();
-      byte[] testPacket4Converted = testPacket4.testPacket(4);
+      byte[] testPacket4Converted = testPacket4.testPacket(13);
       serialPort.write(testPacket4Converted);
     }
     
