@@ -91,6 +91,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   }
   else
   {
+    //if (newPacket.packetType==4 && magConfigTimestamp)
     logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     logLog.print(newPacket.data);

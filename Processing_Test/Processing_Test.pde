@@ -66,6 +66,10 @@ Button stopButton;
 Button setConfigButton;
 Button saveAndQuitButton;
 Button testButton1;
+Button testButton2;
+Button testButton3;
+Button testButton4;
+Button testButton5;
 
 ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
@@ -115,6 +119,26 @@ public void setup() {
     .setPosition(350, 200)
     .setSize(200, 50);
   testButton1.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton2 = cp5.addButton("testButton2")
+    .setPosition(350, 270)
+    .setSize(200, 50);
+  testButton2.getCaptionLabel().setText("Green LED on (100)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton3 = cp5.addButton("testButton3")
+    .setPosition(350, 340)
+    .setSize(200, 50);
+  testButton3.getCaptionLabel().setText("Green LED off (100)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton4 = cp5.addButton("testButton4")
+    .setPosition(570, 270)
+    .setSize(200, 50);
+  testButton4.getCaptionLabel().setText("Green LED on (1)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton5 = cp5.addButton("testButton5")
+    .setPosition(570, 340)
+    .setSize(200, 50);
+  testButton5.getCaptionLabel().setText("Green LED off (1)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
   
   int magConfigPageWidth = (int)(.9 * width);
   int magConfigPageHeight = (int)(.75 * height);
@@ -390,6 +414,26 @@ public void controlEvent(ControlEvent theEvent) {
         Packet testPacket1 = new Packet();
         byte[] testPacket1Converted = testPacket1.testPacket(10);
         serialPort.write(testPacket1Converted);
+    }
+    if (controllerName.equals("testButton2")){
+        Packet testPacket2 = new Packet();
+        byte[] testPacket2Converted = testPacket2.testPacket(11);
+        serialPort.write(testPacket2Converted);
+    }
+    if (controllerName.equals("testButton3")){
+        Packet testPacket3 = new Packet();
+        byte[] testPacket3Converted = testPacket3.testPacket(12);
+        serialPort.write(testPacket3Converted);
+    }
+    if (controllerName.equals("testButton4")){
+        Packet testPacket4 = new Packet();
+        byte[] testPacket4Converted = testPacket4.testPacket(13);
+        serialPort.write(testPacket4Converted);
+    }
+    if (controllerName.equals("testButton5")){
+        Packet testPacket5 = new Packet();
+        byte[] testPacket5Converted = testPacket5.testPacket(14);
+        serialPort.write(testPacket5Converted);
     }
   }
 }
