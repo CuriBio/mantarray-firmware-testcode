@@ -65,7 +65,14 @@ Button startButton;
 Button stopButton;
 Button setConfigButton;
 Button saveAndQuitButton;
-Button testButton1;
+
+Textfield I2CAddressField;
+Textfield I2CInputField;
+Button I2CSendCommand;
+Textfield I2CSetAddressOld;
+Textfield I2CSetAddressNew;
+Button I2CSetAddress;
+
 Button testButton2;
 Button testButton3;
 Button testButton4;
@@ -75,6 +82,7 @@ ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
 List<List<List<Toggle>>> magSensorSelector = new ArrayList<List<List<Toggle>>>();
 Textfield samplingRate;
+
 List<Button> magnetometerSelectorButtonList = new ArrayList<Button>();
 int NUM_BUTTONS = 18;
 String[] buttonNames = {"selectAllX", "selectAllY", "selectAllZ", "selectAllS1", "selectAllS2", "selectAllS3", 
@@ -115,10 +123,59 @@ public void setup() {
     .setSize(250, 50);
   saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
-  testButton1 = cp5.addButton("testButton1")
-    .setPosition(350, 200)
+  I2CAddressField = cp5.addTextfield("I2CAddressField")
+    .setPosition(370, 120)
+    .setSize(50, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.valueOf(100));
+  I2CAddressField.getCaptionLabel().setText("Address").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+
+  I2CInputField = cp5.addTextfield("I2CInputField")
+    .setPosition(480, 120)
+    .setSize(50, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.valueOf(0));
+  I2CInputField.getCaptionLabel().setText("Command").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  
+  I2CSendCommand = cp5.addButton("I2CSendCommand")
+    .setPosition(570, 120)
     .setSize(200, 50);
-  testButton1.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  
+  I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
+    .setPosition(370, 200)
+    .setSize(50, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.valueOf(1));
+  I2CSetAddressOld.getCaptionLabel().setText("Old Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+
+  I2CSetAddressNew = cp5.addTextfield("I2CSetAddressNew")
+    .setPosition(480, 200)
+    .setSize(50, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.valueOf(1));
+  I2CSetAddressNew.getCaptionLabel().setText("New Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  
+  I2CSetAddress = cp5.addButton("I2CSetAddress")
+    .setPosition(570, 200)
+    .setSize(200, 50);
+  I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   testButton2 = cp5.addButton("testButton2")
     .setPosition(350, 270)
@@ -410,10 +467,15 @@ public void controlEvent(ControlEvent theEvent) {
       byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
       serialPort.write(magConfigConverted);
     }
-    if (controllerName.equals("testButton1")){
-        Packet testPacket1 = new Packet();
-        byte[] testPacket1Converted = testPacket1.testPacket(10);
-        serialPort.write(testPacket1Converted);
+    if (controllerName.equals("I2CSendCommand")){
+        Packet I2CCommandPacket = new Packet();
+        byte[] I2CCommandPacketConverted = I2CCommandPacket.I2CCommand();
+        serialPort.write(I2CCommandPacketConverted);
+    }
+    if (controllerName.equals("I2CSetAddress")){
+        Packet I2CNewAddressPacket = new Packet();
+        byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
+        serialPort.write(I2CNewAddressPacketConverted);
     }
     if (controllerName.equals("testButton2")){
         Packet testPacket2 = new Packet();

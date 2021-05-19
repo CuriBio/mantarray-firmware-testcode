@@ -95,6 +95,30 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] I2CCommand(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 100;
+    this.packetLength = 16;
+    this.CRC = 123123123;
+    this.data = magConfigurationByteArray;
+    this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
+    this.data.add(1, Byte.valueOf(I2CInputField.getText()));
+    return this.toByte();
+  }
+  
+  byte[] I2CAddressNew(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 101;
+    this.packetLength = 16;
+    this.CRC = 123123123;
+    this.data = magConfigurationByteArray;
+    this.data.add(0, Byte.valueOf(I2CSetAddressOld.getText()));
+    this.data.add(1, Byte.valueOf(I2CSetAddressNew.getText()));
+    return this.toByte();
+  }
+  
   byte[] testPacket(int i){
         this.timeStamp = (System.nanoTime() - nanoStart)/1000;
         this.moduleID = 0;
