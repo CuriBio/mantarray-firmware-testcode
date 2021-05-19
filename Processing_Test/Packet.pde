@@ -95,6 +95,17 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] testPacket(int i){
+        this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+        this.moduleID = 0;
+        this.packetType = 3;
+        this.packetLength = 15;
+        this.CRC = 123123123;
+        this.data = magConfigurationByteArray;
+        this.data.add(0, (byte)i);
+        return this.toByte();
+  }
+  
   byte[] toByte(){
     int arrayLength = this.packetLength + 10;
     byte[] thisByteArray = new byte[arrayLength];

@@ -65,6 +65,7 @@ Button startButton;
 Button stopButton;
 Button setConfigButton;
 Button saveAndQuitButton;
+Button testButton1;
 
 ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
@@ -109,6 +110,11 @@ public void setup() {
     .setPosition(75, 410)
     .setSize(250, 50);
   saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  testButton1 = cp5.addButton("testButton1")
+    .setPosition(350, 200)
+    .setSize(200, 50);
+  testButton1.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   int magConfigPageWidth = (int)(.9 * width);
   int magConfigPageHeight = (int)(.75 * height);
@@ -379,6 +385,11 @@ public void controlEvent(ControlEvent theEvent) {
       Packet magConfig = new Packet();
       byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
       serialPort.write(magConfigConverted);
+    }
+    if (controllerName.equals("testButton1")){
+        Packet testPacket1 = new Packet();
+        byte[] testPacket1Converted = testPacket1.testPacket(10);
+        serialPort.write(testPacket1Converted);
     }
   }
 }
