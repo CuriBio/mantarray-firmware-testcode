@@ -103,7 +103,7 @@ class Packet{
     this.CRC = 123123123;
     this.data = magConfigurationByteArray;
     this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
-    this.data.add(1, Byte.valueOf(I2CInputField.getText()));
+    this.data.add(1, uint2byte(Integer.valueOf(I2CInputField.getText())));
     return this.toByte();
   }
   

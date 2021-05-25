@@ -45,6 +45,7 @@ int MIN_PACKET_LENGTH = 16;
 byte[] MAGIC_WORD = new byte[]{67, 85, 82, 73, 32, 66, 73, 79};
 
 List<Packet> packetList = new ArrayList<Packet>();
+List<List<Integer>> magConfigurationArray = new ArrayList<List<Integer>>();
 List<Byte> magConfigurationByteArray = new ArrayList<Byte>();
 boolean magCaptureInProgress = false;
 Checksum crc32 = new CRC32();

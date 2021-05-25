@@ -36,6 +36,10 @@ void readPackets(){
   } //while(true)
 }
 
+void test(){
+  
+}
+
 void Parse (List <Byte> thisAggregate, int thisScanner)
 {
   int thisPacketLength = byte2uint(thisAggregate.get(thisScanner));
@@ -76,7 +80,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   }
   if (newPacket.packetType==1)
   {
-    long magTimeStamp = newPacket.timeStamp - (byte2uint(newPacket.data.get(0)) + (byte2uint(newPacket.data.get(1))<<8));
+    /*long magTimeStamp = newPacket.timeStamp - (byte2uint(newPacket.data.get(0)) + (byte2uint(newPacket.data.get(1))<<8));
     List<Integer> dataList = new ArrayList<Integer>();
     for (int byteShifter = 2; byteShifter < newPacket.data.size(); byteShifter+=2)
     {
@@ -87,6 +91,10 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     dataLog.println();
     print(String.format("%d ", magTimeStamp));
     print(dataList);
+    println();*/
+    dataLog.print(newPacket.data);
+    dataLog.println();
+    print(newPacket.data);
     println();
   }
   else
