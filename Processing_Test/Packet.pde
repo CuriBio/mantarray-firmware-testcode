@@ -25,26 +25,27 @@ class Packet{
     this.CRC = 123123123;
   }
   
-  void ChannelFirmwareUpdateBegin(int howManyFirmwarePackets, int totalNumberOfBytes){
+  void ChannelFirmwareUpdateBegin(int totalNumberOfBytes){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 0;
     this.packetLength = 19;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(9);
-    this.data.add(uint2byte(howManyFirmwarePackets));
+    this.data.add((byte)1);
     for (int i = 0; i < 4; i++){
       this.data.add(uint2byte((int)(totalNumberOfBytes>>(8*i) & 0x000000ff)));
     }
   }
   
-  void ChannelFirmwareUpdate(byte[] firmware){
+  void ChannelFirmwareUpdate(byte[] firmware, int packetNum){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 1;
     this.packetLength = firmware.length + 14;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>(firmware.length + 4);
+    this.data = new ArrayList<Byte>(firmware.length + 5);
+    this.data.add((byte) packetNum);
     for (int i = 0; i < firmware.length; i++){
       this.data.add(firmware[i]);
     }
@@ -154,7 +155,6 @@ class Packet{
     byteArrayIndex++;
     for (int i = 0; i < packetLength - 14; i++){
       thisByteArray[byteArrayIndex] = this.data.get(i);
-      //thisByteArray[byteArrayIndex] = uint2byte(thisByte);
       byteArrayIndex++;
     }
     for (int i = 0; i < 4; i++){
@@ -163,13 +163,6 @@ class Packet{
       byteArrayIndex++;
     }
     
-    //For more verbose output, uncomment these lines
-    /*
-    for (int i = 0; i < arrayLength-1;i++){
-      print(String.format("%d ", thisByteArray[i]));
-    }
-    println(String.format("%d ", thisByteArray[arrayLength-1]));
-    */
     return thisByteArray;
   }
 }

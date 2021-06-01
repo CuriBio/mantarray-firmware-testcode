@@ -75,31 +75,13 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     thisScanner++;
   }
   packetList.add(newPacket);
-  if (newPacket.packetLength==26){
-    numMessagesIn++;
-  }
+
   if (newPacket.packetType==1)
   {
-    /*long magTimeStamp = newPacket.timeStamp - (byte2uint(newPacket.data.get(0)) + (byte2uint(newPacket.data.get(1))<<8));
-    List<Integer> dataList = new ArrayList<Integer>();
-    for (int byteShifter = 2; byteShifter < newPacket.data.size(); byteShifter+=2)
-    {
-      dataList.add(uint16_2_int16(byte2uint(newPacket.data.get(byteShifter)) + (byte2uint(newPacket.data.get(byteShifter+1))<<8)));
-    }
-    dataLog.print(String.format("%d ", magTimeStamp));
-    dataLog.print(dataList);
-    dataLog.println();
-    print(String.format("%d ", magTimeStamp));
-    print(dataList);
-    println();*/
-    dataLog.print(newPacket.data);
-    dataLog.println();
-    print(newPacket.data);
-    println();
+    PrintDataToFile(newPacket.data);
   }
   else
   {
-    //if (newPacket.packetType==4 && magConfigTimestamp)
     logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     logLog.print(newPacket.data);
@@ -108,19 +90,47 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     println();
   }
   
-  /*if (newPacket.packetType==4){
-    long returnTimestamp = 0;
-    for (int j = 0; j < TIMESTAMP_LENGTH; j++){
-      returnTimestamp+=(long)Math.pow(256,j)*byte2long(newPacket.data.get(j));
-    }
-    print(String.format("%d ", returnTimestamp));
-    for (int j = 0; j < newPacket.data.size()-8; j++){
-      print(String.format("%d ", newPacket.data.get(j+8)));
-    }
-  } else {
-    //println(newPacket.data);
-  }*/
   thisAggregate.subList(0,thisScanner).clear();
+}
+
+void PrintDataToFile(List<Byte> thisPacketData){
+  try
+  {
+    int packetScanner = 0;
+    long initialTimestamp = byte2uint(thisPacketData.get(packetScanner)) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 1))<<8) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 2))<<16) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 3))<<24) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 4))<<32);
+    packetScanner+=5;
+    List<Long> dataList = new ArrayList<Long>();
+    for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++){
+      for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
+        if (magnetometerConfigurationArray.get(wellNum).get(sensorNum).contains(1))
+        {
+          dataList.add(initialTimestamp - (byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
+          packetScanner+=2;
+          for (int axisNum = 0; axisNum < NUM_AXES; axisNum++){
+            if (magnetometerConfigurationArray.get(wellNum).get(sensorNum).get(axisNum) == 1)
+            {
+              dataList.add((long)(byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
+              packetScanner+=2;
+            }
+          }
+        }
+      }
+    }
+    dataLog.print(dataList);
+    dataLog.println();
+    print(dataList);
+    println();
+  }
+  catch (Exception E)
+  {
+    println("Error parsing magnetometer data");
+    println(E);
+    logLog.print("Error parsing magnetometer data");
+  }
 }
     
 List <Byte> performReading(List <Byte> aggregate){
@@ -155,13 +165,13 @@ void LoadFirmware(File firmwareFile) {
     fileReader.close();
     
     Packet packetBegin = new Packet();
-    packetBegin.ChannelFirmwareUpdateBegin(numFullPackets + 1, (int)fileSize);
+    packetBegin.ChannelFirmwareUpdateBegin((int)fileSize);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
     
     for (int i = 0; i < firmwareBytes.size(); i++){
       Packet data = new Packet();
-      data.ChannelFirmwareUpdate(firmwareBytes.get(i));
+      data.ChannelFirmwareUpdate(firmwareBytes.get(i), i);
       byte[] thisPacketConverted = data.toByte();
       serialPort.write(thisPacketConverted);
     }

@@ -45,7 +45,7 @@ int MIN_PACKET_LENGTH = 16;
 byte[] MAGIC_WORD = new byte[]{67, 85, 82, 73, 32, 66, 73, 79};
 
 List<Packet> packetList = new ArrayList<Packet>();
-List<List<Integer>> magConfigurationArray = new ArrayList<List<Integer>>();
+List<List<List<Integer>>> magnetometerConfigurationArray = new ArrayList<List<List<Integer>>>();
 List<Byte> magConfigurationByteArray = new ArrayList<Byte>();
 boolean magCaptureInProgress = false;
 Checksum crc32 = new CRC32();
@@ -73,11 +73,6 @@ Button I2CSendCommand;
 Textfield I2CSetAddressOld;
 Textfield I2CSetAddressNew;
 Button I2CSetAddress;
-
-Button testButton2;
-Button testButton3;
-Button testButton4;
-Button testButton5;
 
 ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
@@ -177,26 +172,6 @@ public void setup() {
     .setPosition(570, 200)
     .setSize(200, 50);
   I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
-  
-  testButton2 = cp5.addButton("testButton2")
-    .setPosition(350, 270)
-    .setSize(200, 50);
-  testButton2.getCaptionLabel().setText("Green LED on (100)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
-  
-  testButton3 = cp5.addButton("testButton3")
-    .setPosition(350, 340)
-    .setSize(200, 50);
-  testButton3.getCaptionLabel().setText("Green LED off (100)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
-  
-  testButton4 = cp5.addButton("testButton4")
-    .setPosition(570, 270)
-    .setSize(200, 50);
-  testButton4.getCaptionLabel().setText("Green LED on (1)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
-  
-  testButton5 = cp5.addButton("testButton5")
-    .setPosition(570, 340)
-    .setSize(200, 50);
-  testButton5.getCaptionLabel().setText("Green LED off (1)").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
   
   int magConfigPageWidth = (int)(.9 * width);
   int magConfigPageHeight = (int)(.75 * height);
@@ -301,6 +276,16 @@ public void setup() {
     }
   }
   
+  for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++){
+    magnetometerConfigurationArray.add(new ArrayList<List<Integer>>());
+    for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
+      magnetometerConfigurationArray.get(wellNum).add(new ArrayList<Integer>());
+      for (int axisNum = 0; axisNum < NUM_AXES; axisNum++){
+        magnetometerConfigurationArray.get(wellNum).get(sensorNum).add(1);
+      }
+    }
+  }
+  
   c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
   logLog = createWriter(String.format("./log/%d-%d-%d_%d-%d-%d_log.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
   
@@ -313,8 +298,6 @@ public void setup() {
   IAmHereConverted = IAmHerePacket.toByte();
 }
 
-
-
 public void draw() {
   rect(0,0,1920, 1000);
   long temp = ((System.nanoTime() - nanoStart)/1000);
@@ -325,18 +308,6 @@ public void draw() {
     serialPort.write(IAmHereConverted);
     numMessagesOut++;
     println(String.format("Handshake %d Sent:", numMessagesOut));
-  }
-    
-  if(numMessagesOut == 10000){
-    stop = millis();
-    delay(2000);
-    println(String.format("Elapsed time: %d seconds", (stop - start)/1000));
-    println(String.format("Num packets sent out: %d", numMessagesOut));
-    println(String.format("Num packets received: %d", numMessagesIn));
-    if (numMessagesOut == numMessagesIn){
-      println("Test succeeded!!!");
-    }
-    noLoop();
   }
 }
 
@@ -381,6 +352,7 @@ public void controlEvent(ControlEvent theEvent) {
     if (controllerName.equals("startButton")){
       c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
       dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+      dataLog.println(magnetometerConfigurationArray);
       magCaptureInProgress = true;
       Packet magStart = new Packet();
       byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
@@ -478,26 +450,6 @@ public void controlEvent(ControlEvent theEvent) {
         byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
         serialPort.write(I2CNewAddressPacketConverted);
     }
-    if (controllerName.equals("testButton2")){
-        Packet testPacket2 = new Packet();
-        byte[] testPacket2Converted = testPacket2.testPacket(11);
-        serialPort.write(testPacket2Converted);
-    }
-    if (controllerName.equals("testButton3")){
-        Packet testPacket3 = new Packet();
-        byte[] testPacket3Converted = testPacket3.testPacket(12);
-        serialPort.write(testPacket3Converted);
-    }
-    if (controllerName.equals("testButton4")){
-        Packet testPacket4 = new Packet();
-        byte[] testPacket4Converted = testPacket4.testPacket(13);
-        serialPort.write(testPacket4Converted);
-    }
-    if (controllerName.equals("testButton5")){
-        Packet testPacket5 = new Packet();
-        byte[] testPacket5Converted = testPacket5.testPacket(14);
-        serialPort.write(testPacket5Converted);
-    }
   }
 }
 
@@ -556,7 +508,12 @@ List<Byte> configDataGenerator ()
       { 
         if (magSensorSelector.get(wellNum).get(sensorNum).get(axisNum).getState())
         {
+          magnetometerConfigurationArray.get(wellNum).get(sensorNum).set(axisNum, 1);
           bitMask += 1<<(sensorNum * NUM_SENSORS + axisNum);
+        }
+        else
+        {
+          magnetometerConfigurationArray.get(wellNum).get(sensorNum).set(axisNum, 0);
         }
       }
     }
