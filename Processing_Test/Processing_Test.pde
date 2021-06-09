@@ -91,7 +91,7 @@ String[] labelNames = {"Select All X", "Select All Y", "Select All Z", "Select A
   "Select All", "Submit"};
 
 public void setup() {
-  size(1920, 1000);  
+  size(1000, 600);  
   frameRate(60);
   cp5 = new ControlP5(this);
   loadFirmwareButton = cp5.addButton("loadFirmwareButton")
@@ -352,7 +352,7 @@ public void controlEvent(ControlEvent theEvent) {
     if (controllerName.equals("startButton")){
       c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
       dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
-      dataLog.println(magnetometerConfigurationArray);
+      dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
       magCaptureInProgress = true;
       Packet magStart = new Packet();
       byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();

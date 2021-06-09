@@ -120,9 +120,9 @@ void PrintDataToFile(List<Byte> thisPacketData){
         }
       }
     }
-    dataLog.print(dataList);
+    dataLog.print(Arrays.toString(dataList.toArray()).replace("[", "").replace("]", ""));
     dataLog.println();
-    print(dataList);
+    print(thisPacketData);
     println();
   }
   catch (Exception E)
