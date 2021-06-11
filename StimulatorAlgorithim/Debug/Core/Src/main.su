@@ -1,0 +1,10 @@
+main.c:99:5:main	24	static
+main.c:155:10:GetSize_LUT	16	static
+main.c:161:6:GenerateBiphasicPulse_LUT	48	static
+main.c:185:6:SystemClock_Config	128	static
+main.c:232:13:MX_DAC_Init	16	static
+main.c:272:13:MX_TIM2_Init	32	static
+main.c:317:13:MX_USART2_UART_Init	8	static
+main.c:350:13:MX_DMA_Init	16	static
+main.c:368:13:MX_GPIO_Init	48	static
+main.c:403:6:Error_Handler	8	static,ignoring_inline_asm
