@@ -35,9 +35,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NS  128 // Number of elements in LUT
-
-#define UART_BUF_SIZE 20
+#define NS 128
+#define UART_BUF_SIZE 40
 #define PERIOD_MS           50
 #define AMPLITUDE_MA		50
 #define PULSE_PERIOD_MS     10
@@ -69,7 +68,7 @@ TIM_HandleTypeDef htim2;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-char pStr[UART_BUF_SIZE] = {'\0'};
+char msg[UART_BUF_SIZE] = {'\0'};
 
 typedef enum {
 	ADC_CH0,
@@ -89,9 +88,7 @@ uint32_t Sine_LUT[NS] = {
     1353, 1449, 1546, 1645, 1745, 1845, 1946, 2047
 };
 
-volatile uint16_t ADC3_Buf[ADC_BUF_SIZE];
-volatile uint16_t ADC4_Buf[ADC_BUF_SIZE];
-volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
+uint16_t ADC_Buf[ADC_BUF_SIZE];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -124,16 +121,18 @@ uint32_t GetSize_LUT(void)
 
 uint32_t GetTriggerPeriod_ADC(void)
 {
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 	HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 	uint32_t f_hclk = HAL_RCC_GetSysClockFreq() / (RCC_ClkInitStruct.AHBCLKDivider + 1);
-	uint32_t f_clk = F_Hclk / (RCC_ClkInitStruct.APB2CLKDivider + 1);
-	(float) trig_period_US = (float) (((TIM2->PSC) + 1) * ((TIM2->ARR) + 1)) * 1000000 / f_clk;
+	uint32_t f_clk = f_hclk / (RCC_ClkInitStruct.APB2CLKDivider + 1);
+	uint32_t trig_period_US = (((TIM2->PSC) + 1) * ((TIM2->ARR) + 1)) * 1000000 / f_clk;
 	return trig_period_US;
 }
 
-void CreateTxStr_UART()
+void CreateTxStr_UART(char * msg)
 {
 	uint32_t trig_period_US = GetTriggerPeriod_ADC();
+	sprintf(msg, "%u,%u,%u\r\n", (unsigned int) ADC_Buf[0], (unsigned int) ADC_Buf[1], (unsigned int) trig_period_US);
 }
 
 void GenerateBiphasicPulse_LUT(uint32_t *LUT, float Amplitude_mA, uint16_t Pulse_Period_mS, uint16_t Interpulse_Period_mS, uint16_t Period_mS, uint32_t n_tot)
@@ -222,7 +221,6 @@ int main(void)
   //GenerateConstCurrent(LUT, 10, n_tot);
 
   HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, 128);
-  //HAL_ADC_Start_IT(&hadc);
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)LUT, n_tot, DAC_ALIGN_12B_R);
   HAL_TIM_Base_Start(&htim2);
 
@@ -233,8 +231,8 @@ int main(void)
 
       while (1)
       {
-    	  sprintf(pStr, "%d\r\n", (int) ADC_Buf[0]);
-    	  HAL_UART_Transmit_IT(&huart2, (unsigned char *) pStr, UART_BUF_SIZE);
+    	  //CreateTxStr_UART(msg);
+    	  //HAL_UART_Transmit_IT(&huart2, (unsigned char *) msg, UART_BUF_SIZE);
     	  //HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
       }
 
@@ -314,9 +312,9 @@ static void MX_ADC_Init(void)
   */
   hadc.Instance = ADC1;
   hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_3CYCLES_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ContinuousConvMode = DISABLE;
@@ -349,13 +347,7 @@ static void MX_ADC_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC_Init 2 */
-  ADC1->IER = ADC_IER_EOCIE; /* (5) */
-  ADC1->CR |= ADC_CCR_VREFEN; /* (6) */
-  /* Configure NVIC for ADC */
-  /* (1) Enable Interrupt on ADC */
-  /* (2) Set priority for ADC */
-  NVIC_EnableIRQ(ADC1_COMP_IRQn); /* (1) */
-  NVIC_SetPriority(ADC1_COMP_IRQn,0); /* (2) */
+
 
   /* USER CODE END ADC_Init 2 */
 
@@ -420,7 +412,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 2096;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -441,8 +433,8 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN TIM2_Init 2 */
-   TIM2 -> DIER |= TIM_DIER_UIE;
-
+  //TIM2 -> DIER |= TIM_DIER_UIE;
+  //TIM2 -> SR &= ~TIM_SR_UIF;
   /* USER CODE END TIM2_Init 2 */
 
 }
