@@ -62,7 +62,7 @@ main-build: Channel_Stimulator.elf secondary-outputs
 
 # Tool invocations
 Channel_Stimulator.elf: $(OBJS) $(USER_OBJS) C:\Users\alexv\Documents\GitHub\mantarray-firmware-testcode\StimulatorAlgorithim\STM32L053R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Channel_Stimulator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\alexv\Documents\GitHub\mantarray-firmware-testcode\StimulatorAlgorithim\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Channel_Stimulator.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "Channel_Stimulator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\alexv\Documents\GitHub\mantarray-firmware-testcode\StimulatorAlgorithim\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Channel_Stimulator.map" -Wl,--gc-sections -static -u _printf_float --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

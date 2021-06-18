@@ -36,9 +36,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define NS 128
-#define UART_BUF_SIZE 40
-#define PERIOD_MS           50
-#define AMPLITUDE_MA		50
+#define UART_BUF_SIZE 30
+#define PERIOD_MS           30
+#define AMPLITUDE_MA		100
 #define PULSE_PERIOD_MS     10
 #define INTERPULSE_PERIOD_MS   10
 #define AMPLITUDE           2047
@@ -89,6 +89,8 @@ uint32_t Sine_LUT[NS] = {
 };
 
 uint16_t ADC_Buf[ADC_BUF_SIZE];
+float trig_period_g;
+uint32_t DMA_ADC_transfers = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,8 +104,10 @@ static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
 uint32_t GetSize_LUT(void);
 void GenerateBiphasicPulse_LUT(uint32_t *LUT, float Amplitude_mA, uint16_t Pulse_Period_mS, uint16_t Interpulse_Period_mS, uint16_t Period_mS, uint32_t n_tot);
-void GenerateConstCurrent(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot);
-uint32_t GetTriggerPeriod_ADC(void);
+void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot);
+float GetTriggerPeriod_ADC(void);
+void GenerateTimerPulse(uint32_t *LUT,uint32_t n_tot);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -119,29 +123,89 @@ uint32_t GetSize_LUT(void)
 	return n_tot;
 }
 
-uint32_t GetTriggerPeriod_ADC(void)
+float GetTriggerPeriod_ADC(void)
 {
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 	HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 	uint32_t f_hclk = HAL_RCC_GetSysClockFreq() / (RCC_ClkInitStruct.AHBCLKDivider + 1);
 	uint32_t f_clk = f_hclk / (RCC_ClkInitStruct.APB2CLKDivider + 1);
-	uint32_t trig_period_US = (((TIM2->PSC) + 1) * ((TIM2->ARR) + 1)) * 1000000 / f_clk;
-	return trig_period_US;
+	float trig_period = (float) (((TIM2->PSC) + 1) * ((TIM2->ARR) + 1)) / f_clk;
+	return trig_period;
 }
 
-void CreateTxStr_UART(char * msg)
+void CreateTxStr_UART(char * msg, uint32_t n_tot)
 {
-	uint32_t trig_period_US = GetTriggerPeriod_ADC();
-	sprintf(msg, "%u,%u,%u\r\n", (unsigned int) ADC_Buf[0], (unsigned int) ADC_Buf[1], (unsigned int) trig_period_US);
+	int i = 0;
+	float trig_period = GetTriggerPeriod_ADC();
+	trig_period_g = trig_period;
+	uint32_t time_stamp = i * trig_period;
+	uint16_t num_samples = n_tot/2;
+	uint16_t z = 0;
+	uint16_t j = 0;
+	float v_pos_arr[num_samples];
+	float v_neg_arr[num_samples];
+	float well_current_A[num_samples];
+	for (i = 0; i < n_tot; i++){
+		if (i%2 == 0)
+		{
+			float adc3_V = ((float) ADC_Buf[i] / 4096) * 3.3;
+			v_pos_arr[j] = 5.7 * (adc3_V - 1.65053);
+			j++;
+		} else {
+			float adc4_V = ((float) ADC_Buf[i] / 4096) * 3.3;
+			v_neg_arr[z] = ((adc4_V*2) - V_REF);  // Shunt Voltage
+			well_current_A[z] = v_neg_arr[z] / R_SHUNT_OHMS;
+			z++;
+		}
+	}
+	for (i = 0; i < num_samples; i++)
+	{
+		//float well_impedance_OHMS = well_voltage_V / well_current_A;
+		sprintf(msg, "%f,%f,%f\r\n", v_pos_arr[i], v_neg_arr[i], well_current_A[i]);
+		HAL_UART_Transmit(&huart2, (unsigned char *) msg, UART_BUF_SIZE, 100);
+	}
+
+
+}
+
+void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot)
+{
+	int i = 0;
+	for (i = 0; i < n_tot; i++)
+		{
+			if (i%2 == 0)
+			{
+			*(LUT + i) = 4095;
+			}
+			else
+			{
+				*(LUT + i) = 0;
+
+			}
+		}
 }
 
 void GenerateBiphasicPulse_LUT(uint32_t *LUT, float Amplitude_mA, uint16_t Pulse_Period_mS, uint16_t Interpulse_Period_mS, uint16_t Period_mS, uint32_t n_tot)
 {
+	/*
+	 * Full-Scale Current is +/-100mA. This corresponds to a shunt voltage
+	 * of +/-3.3V and a DAC output of 0 and 3.3V for -100mA and +100mA respectively.
+
+	I_Shunt | V_Shunt |   ADC4
+	________|_________|_________
+	-100mA  | -3.3V   |   0V
+	-50mA	| -1.65V  |   0.825
+      0mA   |  0V     |   1.65
+     50mA   |  1.65V  |   2.475
+     100mA  |  3.3V   |   3.3V
+
+    */
 	uint32_t i = 0;
 	uint32_t n_phase = n_tot * Pulse_Period_mS / Period_mS;
 	uint32_t n_interphase = n_tot * Interpulse_Period_mS / Period_mS;
-	float V_Dac = (((Amplitude_mA * R_SHUNT_OHMS/ 1000) / 2) + 1.65) ;
-	uint16_t Amplitude = ((V_Dac * 4096) / V_REF) - 2048;
+	float V_Shunt = Amplitude_mA * R_SHUNT_OHMS / 1000;
+	float V_Dac = (V_Shunt / 2) + 1.65 ;
+	uint16_t Amplitude = ((V_Dac * 4096) / V_REF) - 2048; // Subtract 2048 since 0mA corresponds to middle of DAC range
 	for (i = 0; i < n_phase; i++)
 	{
 		*(LUT + i) = 2048 + Amplitude; // Amplitude is currently just a 12-bit number specifying DAC_OUT value
@@ -160,12 +224,15 @@ void GenerateBiphasicPulse_LUT(uint32_t *LUT, float Amplitude_mA, uint16_t Pulse
 	}
 }
 
-void GenerateConstCurrent(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot)
+void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot)
 {
 	uint32_t i = 0;
+	float V_Shunt = Amplitude_mA * R_SHUNT_OHMS / 1000;
+	float V_Dac = (V_Shunt / 2) + 1.65 ;
+	uint16_t Amplitude = ((V_Dac * 4096) / V_REF) - 2048; // Subtract 2048 since 0mA corresponds to middle of DAC range
 	for (i = 0; i < n_tot; i++)
 	{
-		*(LUT + 1) = 2669;
+		*(LUT + i) = 2048 + Amplitude;
 	}
 }
 
@@ -176,7 +243,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 }
 
-
+void HAL_DMA1_CH1_XferCpltCallback(DMA_HandleTypeDef* hdma_adc)
+{
+	DMA_ADC_transfers++;
+}
 
 /* USER CODE END 0 */
 
@@ -217,13 +287,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
   uint32_t n_tot = GetSize_LUT();
   LUT = (uint32_t *) malloc(n_tot * sizeof(*LUT));
-  if (LUT != NULL) GenerateBiphasicPulse_LUT(LUT, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS, n_tot);
-  //GenerateConstCurrent(LUT, 10, n_tot);
+  //if (LUT != NULL) GenerateBiphasicPulse_LUT(LUT, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS, n_tot);
+  //GenerateTimerPulse(LUT, n_tot);
+
+  GenerateConstCurrent_LUT(LUT, 100, n_tot);
 
   HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, 128);
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)LUT, n_tot, DAC_ALIGN_12B_R);
   HAL_TIM_Base_Start(&htim2);
-
+  HAL_DMA_RegisterCallback(&hdma_adc, HAL_DMA_XFER_CPLT_CB_ID, HAL_DMA1_CH1_XferCpltCallback);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -231,8 +303,8 @@ int main(void)
 
       while (1)
       {
-    	  //CreateTxStr_UART(msg);
-    	  //HAL_UART_Transmit_IT(&huart2, (unsigned char *) msg, UART_BUF_SIZE);
+
+         CreateTxStr_UART(msg, n_tot);
     	  //HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
       }
 
@@ -312,9 +384,9 @@ static void MX_ADC_Init(void)
   */
   hadc.Instance = ADC1;
   hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_3CYCLES_5;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ContinuousConvMode = DISABLE;
@@ -412,9 +484,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 1;
+  htim2.Init.Prescaler = 0;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 2096;
+  htim2.Init.Period = 9599;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -455,7 +527,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
