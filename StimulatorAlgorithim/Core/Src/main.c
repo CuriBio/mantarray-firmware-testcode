@@ -246,7 +246,9 @@ void CreateTxStr_UART(char * msg, uint32_t n_tot)
 			well_current_A[i] = v_neg / R_SHUNT_OHMS;
 			well_voltage_V[i] = v_pos - v_neg;
 			well_impedance_OHMS[i] = well_voltage_V[i] / well_current_A[i];
-			sprintf(msg, "%f, %f,", v_pos, v_neg);
+			if (well_impedance_OHMS[i] >= 0){
+				sprintf(msg, "%f,", well_impedance_OHMS[i]);
+			}
 			HAL_UART_Transmit(&huart2, (uint8_t *) msg, strlen(msg), 100);
 			char newline[2] = "\r\n";
 			HAL_UART_Transmit(&huart2, (uint8_t *) newline, 2, 10);
@@ -348,7 +350,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
   /* This is called after the conversion is completed */
 	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	static int i = 0;
 	ADC3_Buf[0] = ADC_Buf[0];
 
 }
@@ -367,8 +368,8 @@ void Load_DAC_Timer(TIM_HandleTypeDef* htim)
 
 static void ADC_DMAConvCplt(DMA_HandleTypeDef *hdma_adc)
 {
-	ADC4_Buf[0] = ADC_Buf[1];
 	XferCplt = TRUE;
+	ADC4_Buf[0] = ADC_Buf[1];
 	HAL_ADC_Stop_DMA(&hadc);
 	HAL_TIM_Base_Stop(&htim6);
 }
@@ -414,9 +415,9 @@ int main(void)
   //uint32_t n_tot = GetReqSize_LUT(htim2);
   LUT = (uint32_t *) malloc(DAC_ARR_SIZE * sizeof(*LUT));
   tim_arr = (uint16_t *) malloc(DAC_ARR_SIZE * sizeof(*tim_arr));
-  //if (LUT != NULL) GenerateBiphasicPulse_LUT(LUT, tim_arr, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS);
+  if (LUT != NULL) GenerateBiphasicPulse_LUT(LUT, tim_arr, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS);
   //GenerateTimerPulse(LUT, DAC_ARR_SIZE);
-  GenerateConstCurrent_LUT(LUT, AMPLITUDE_MA, DAC_ARR_SIZE);
+  //GenerateConstCurrent_LUT(LUT, AMPLITUDE_MA, DAC_ARR_SIZE);
   HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)LUT, DAC_ARR_SIZE, DAC_ALIGN_12B_R);
   Load_DAC_Timer(&htim2);
   HAL_TIM_Base_Start(&htim2);
