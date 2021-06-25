@@ -35,12 +35,17 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define DAC_ARR_SIZE   4
-#define UART_BUF_SIZE 60
-#define PERIOD_MS           40
-#define AMPLITUDE_MA		20
-#define PULSE_PERIOD_MS     10
-#define INTERPULSE_PERIOD_MS   10
+#define DAC_ARR_SIZE   			4
+#define UART_BUF_SIZE 			60
+#define PERIOD_MS           	40
+#define AMPLITUDE_MA			10
+#define PULSE_PERIOD_MS     	10
+#define INTERPULSE_PERIOD_MS   	10
+#define BIPHASIC_OUTPUT         0
+
+#if (BIPHASIC_OUTPUT != 1)
+	#define CONSTANT_OUTPUT 1U
+#endif
 
 #define APB2_DIV            (uint32_t)((RCC->CFGR & RCC_CFGR_PPRE2) >> 3)
 #define V_REF               3.3
@@ -49,6 +54,9 @@
 #define ADC_BUF_SIZE 	   2
 #define ADC_LATENCY 	   4.5    // Number of ADC Clock cycles between Timer Trigger and Start of Conversion
 #define ADC_CONV_TIME_US   0.87
+#define ADC_CAL_ENABLE     1U
+
+#define NUM_XFERS_PER_TX   1	// Number of ADC Conversion Sequences to add to ADC Buffers before UART TX
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -69,7 +77,7 @@ TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-char msg[UART_BUF_SIZE] = {'\0'};
+
 
 typedef enum {
 	ADC_CH0,
@@ -82,14 +90,12 @@ typedef enum {
 }bool_t;
 
 
-uint32_t *LUT;
-uint16_t *tim_arr;
-
-volatile uint16_t ADC3_Buf[ADC_BUF_SIZE];
-volatile uint16_t ADC4_Buf[ADC_BUF_SIZE];
+volatile uint16_t ADC3_Res[NUM_XFERS_PER_TX];
+volatile uint16_t ADC4_Res[NUM_XFERS_PER_TX];
 volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
-float trig_period_g;
-extern bool_t XferCplt = FALSE;
+uint32_t *DAC_Lut;
+uint16_t *DAC_TIM_Lut;
+bool_t XferCplt = FALSE;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,12 +112,19 @@ uint32_t GetReqSize_LUT(TIM_HandleTypeDef htim);
 void GenerateTimerPulse(uint32_t *LUT,uint32_t n_tot);
 void GenerateBiphasicPulse_LUT(uint32_t *LUT, uint16_t *tim_arr, float Amplitude_mA, uint16_t Pulse_Period_mS, uint16_t Interpulse_Period_mS, uint16_t Period_mS);
 void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot);
+float ComputeImpedance(uint16_t ADC3_Res, uint16_t ADC4_Res);
+
 void HAL_DMA1_CH1_XferCpltCallback(DMA_HandleTypeDef* hdma_adc);
 void SetTimerPeriod(TIM_HandleTypeDef *htim, uint16_t *tim_arr, size_t n, uint8_t *index);
 float GetTimerPeriod_S(TIM_HandleTypeDef htim);
 uint16_t CalcTimerARR(TIM_HandleTypeDef htim, uint32_t period_ms);
 void Load_DAC_Timer(TIM_HandleTypeDef* htim);
-extern pHAL_DMA1_CH1_XferCpltCallback = HAL_DMA1_CH1_XferCpltCallback;
+
+void CreateTxStr_UART(char * msg, float Data);
+HAL_StatusTypeDef TransmitMessage_UART(char * msg);
+
+void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -183,78 +196,37 @@ int movingAvg(int *ptrArrNumbers, long *ptrSum, int pos, int len, uint16_t nextN
   return *ptrSum / len;
 }
 
-void CreateTxStr_UART(char * msg, uint32_t n_tot)
+float ComputeImpedance(uint16_t ADC3_Res, uint16_t ADC4_Res)
 {
-	int i = 0;
-	float trig_period = GetTimerPeriod_S(htim2);
-	trig_period_g = trig_period;
-	uint32_t time_stamp = i * trig_period;
-	uint16_t num_samples = n_tot/2;
-	float v_pos, v_neg;
-	float well_impedance_OHMS[num_samples];
-	float well_current_A[num_samples];
-	float well_voltage_V[num_samples];
+	//float trig_period = GetTimerPeriod_S(htim2);
+	//uint32_t time_stamp = i * trig_period;
 
-	int arrNumbers_adc3[1] = {0};
-	int arrNumbers_adc4[1] = {0};
+	float v_pos, v_neg, adc3_V, adc4_V;
+	float well_impedance_OHMS, well_current_A, well_voltage_V;
 
-	int pos_adc3 = 0, pos_adc4 = 0;
-	int newAvg_adc3, newAvg_adc4 = 0;
-	long sum_adc3 = 0, sum_adc4 = 0;
-	int len = sizeof(arrNumbers_adc3) / sizeof(int);
-	int samples = n_tot / 2;
-	uint16_t adc3_buf[samples];
-	uint16_t adc4_buf[samples];
-	int adc3_buf_avg[samples];
-    int adc4_buf_avg[samples];
-	uint16_t j = 0;
-	 for(int i = 0; i < n_tot; i++){
-		 if (i%2 == 0)
-		 {
-			 adc3_buf[j] = ADC_Buf[i]; // Index is even, so value is adc3
-		 }
-		 else if (i%2 != 0)
-		 {
-			 adc4_buf[j] = ADC_Buf[i];
-			 j++; // Both samples are stored so increment j
-		 }
-	 }
+	adc3_V = ((float) ADC3_Res / 4096) * 3.3;
+	v_pos = ( adc3_V - 1.65054 ) * 5.7;
+	adc4_V = ((float) ADC4_Res / 4096) * 3.3;
+	v_neg = ((adc4_V*2) - V_REF);  // Shunt Voltage
+	well_current_A = v_neg / R_SHUNT_OHMS;
+	well_voltage_V = v_pos - v_neg;
+	well_impedance_OHMS = well_voltage_V / well_current_A;
 
-	  for(int i = 0; i < samples; i++)
-	  {
-		newAvg_adc3 = movingAvg(arrNumbers_adc3, &sum_adc3, pos_adc3, len, adc3_buf[i]);
-		adc3_buf_avg[i] = newAvg_adc3;
-	    pos_adc3++;
-	    if (pos_adc3 >= len){
-	    	pos_adc3 = 0;
-	    }
-	  }
-	  for(int i = 0; i < samples; i++)
-	  {
-	  	newAvg_adc4 = movingAvg(arrNumbers_adc4, &sum_adc4, pos_adc4, len, adc4_buf[i]);
-	  	adc4_buf_avg[i] = newAvg_adc4;
-	  	pos_adc4++;
-	  	if (pos_adc4 >= len){
-	  	    pos_adc4 = 0;
-	  	}
-	  }
-	for (i = 0; i < samples; i++){
-			float adc3_V = ((float) adc3_buf[i] / 4096) * 3.3;
-			v_pos = ( adc3_V - 1.65054 ) * 5.7;
-			float adc4_V = ((float) adc4_buf[i] / 4096) * 3.3;
-			v_neg = ((adc4_V*2) - V_REF);  // Shunt Voltage
-			well_current_A[i] = v_neg / R_SHUNT_OHMS;
-			well_voltage_V[i] = v_pos - v_neg;
-			well_impedance_OHMS[i] = well_voltage_V[i] / well_current_A[i];
-			if (well_impedance_OHMS[i] >= 0){
-				sprintf(msg, "%f,", well_impedance_OHMS[i]);
-			}
-			HAL_UART_Transmit(&huart2, (uint8_t *) msg, strlen(msg), 100);
-			char newline[2] = "\r\n";
-			HAL_UART_Transmit(&huart2, (uint8_t *) newline, 2, 10);
+	return well_impedance_OHMS;
+}
 
-	}
+void CreateTxStr_UART(char * msg, float data)
+{
+	  sprintf(msg, "%f,", data);
+}
 
+HAL_StatusTypeDef TransmitMessage_UART(char * msg)
+{
+	HAL_StatusTypeDef status = HAL_UART_Transmit(&huart2, (uint8_t *) msg, strlen(msg), 100);
+	if (status != HAL_OK) { return status; }
+	char newline[2] = "\r\n";
+	HAL_UART_Transmit(&huart2, (uint8_t *) newline, 2, 10);
+	return status;
 }
 
 void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot)
@@ -274,34 +246,7 @@ void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot)
 		}
 }
 
-/*
-void GenerateBiphasicPulse_LUT(uint32_t *LUT, float Amplitude_mA, uint16_t Pulse_Period_mS, uint16_t Interpulse_Period_mS, uint16_t Period_mS, uint32_t n_tot)
-{
 
-	uint32_t i = 0;
-	uint32_t n_phase = n_tot * Pulse_Period_mS / Period_mS;
-	uint32_t n_interphase = n_tot * Interpulse_Period_mS / Period_mS;
-	float V_Shunt = Amplitude_mA * R_SHUNT_OHMS / 1000;
-	float V_Dac = (V_Shunt / 2) + 1.65 ;
-	uint16_t Amplitude = ((V_Dac * 4096) / V_REF) - 2048; // Subtract 2048 since 0mA corresponds to middle of DAC range
-	for (i = 0; i < n_phase; i++)2000
-	{
-		*(LUT + i) = 2048 + Amplitude; // Amplitude is currently just a 12-bit number specifying DAC_OUT value
-	}
-	for (i = n_phase; i < (n_phase + n_interphase); i++)
-	{
-		*(LUT + i) = 2048; // Middle of DAC Output Range is 0 mA
-	}
-	for (i = (n_phase + n_interphase); i < (2*n_phase + n_interphase); i++)
-	{
-		*(LUT + i) = 2048 - Amplitude;
-	}
-	for (i = (2*n_phase + n_interphase); i < n_tot; i++)
-	{
-		*(LUT + i) = 2048;
-	}
-}
- */
 void GenerateBiphasicPulse_LUT(uint32_t *LUT, uint16_t *tim_arr, float amplitude_mA, uint16_t pulse_period_mS, uint16_t interpulse_period_mS, uint16_t period_mS)
 {
 	/*
@@ -346,13 +291,6 @@ void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA, uint32_t n_tot)
 	}
 }
 
-void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
-{
-  /* This is called after the conversion is completed */
-	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	ADC3_Buf[0] = ADC_Buf[0];
-
-}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
@@ -363,15 +301,43 @@ void Load_DAC_Timer(TIM_HandleTypeDef* htim)
 {
 	  TIM2 -> DIER |= TIM_DIER_UIE;
 	  static uint8_t index = 0;
-	  SetTimerPeriod(htim, tim_arr, DAC_ARR_SIZE, &index); // Set the new ARR values for next portion of DAC waveform in advance
+	  SetTimerPeriod(htim, DAC_TIM_Lut, DAC_ARR_SIZE, &index); // Set the new ARR values for next portion of DAC waveform in advance
 }
 
-static void ADC_DMAConvCplt(DMA_HandleTypeDef *hdma_adc)
+void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
+{
+  /* This is called after the conversion is completed */
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	ADC3_Res[0] = ADC_Buf[0];
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	XferCplt = TRUE;
-	ADC4_Buf[0] = ADC_Buf[1];
-	HAL_ADC_Stop_DMA(&hadc);
+	ADC4_Res[0] = ADC_Buf[1];
 	HAL_TIM_Base_Stop(&htim6);
+}
+
+void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
+{
+	/* Remove errors due to op-amp offset voltage and ADC offset */
+	uint32_t data = 2048;
+	HAL_DAC_Start_DMA(hdac, DAC_CHANNEL_1, &data, 1, DAC_ALIGN_12B_R);
+	HAL_TIM_Base_Start(&htim2);
+	HAL_Delay(100);
+	HAL_ADCEx_Calibration_Start(hadc, ADC_SINGLE_ENDED);
+	uint32_t ADC_cal = HAL_ADCEx_Calibration_GetValue(hadc, ADC_SINGLE_ENDED);
+	HAL_ADC_Start(hadc);
+	uint32_t stim_offset;
+	if (HAL_ADC_PollForConversion(hadc, 100) == HAL_OK)
+	{
+		stim_offset = (uint16_t)HAL_ADC_GetValue(hadc) - 2048;
+		ADC_cal -= stim_offset;
+		HAL_ADCEx_Calibration_SetValue(hadc, ADC_SINGLE_ENDED, ADC_cal);
+	}
+	HAL_ADC_Stop(hadc);
+	HAL_TIM_Base_Stop(&htim2);
+	HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
 }
 
 /* USER CODE END 0 */
@@ -412,37 +378,37 @@ int main(void)
   MX_ADC_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-  //uint32_t n_tot = GetReqSize_LUT(htim2);
-  LUT = (uint32_t *) malloc(DAC_ARR_SIZE * sizeof(*LUT));
-  tim_arr = (uint16_t *) malloc(DAC_ARR_SIZE * sizeof(*tim_arr));
-  if (LUT != NULL) GenerateBiphasicPulse_LUT(LUT, tim_arr, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS);
-  //GenerateTimerPulse(LUT, DAC_ARR_SIZE);
-  //GenerateConstCurrent_LUT(LUT, AMPLITUDE_MA, DAC_ARR_SIZE);
-  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)LUT, DAC_ARR_SIZE, DAC_ALIGN_12B_R);
+
+
+  DAC_Lut = (uint32_t *) malloc(DAC_ARR_SIZE * sizeof(*DAC_Lut));
+  DAC_TIM_Lut = (uint16_t *) malloc(DAC_ARR_SIZE * sizeof(*DAC_TIM_Lut));
+
+#if (BIPHASIC_OUTPUT == 1)
+  if (DAC_LUT != NULL) GenerateBiphasicPulse_LUT(DAC_Lut, DAC_TIM_Lut, AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS);
+#elif (CONSTANT_OUTPUT == 1)
+  	  GenerateConstCurrent_LUT(DAC_Lut, AMPLITUDE_MA, DAC_ARR_SIZE);
+#endif
+
+  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, DAC_ARR_SIZE, DAC_ALIGN_12B_R);
   Load_DAC_Timer(&htim2);
   HAL_TIM_Base_Start(&htim2);
   HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
-  //HAL_ADC_Start_IT(&hadc);
-  hadc.DMA_Handle->XferCpltCallback = ADC_DMAConvCplt;
   HAL_TIM_Base_Start(&htim6);
-
-
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
 
+  /* USER CODE BEGIN WHILE */
       while (1)
       {
-
-    	 if (XferCplt == TRUE){
-    		 XferCplt = FALSE;
-             CreateTxStr_UART(msg, sizeof(ADC_Buf) / sizeof(ADC_Buf[0]));
-             HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
-             hadc.DMA_Handle->XferCpltCallback = ADC_DMAConvCplt;
-             HAL_TIM_Base_Start(&htim6);
+    	 if (XferCplt == TRUE)
+    	 {
+    		 XferCplt = FALSE;   // Reset Xfer Complete Flag
+    		 char msg[UART_BUF_SIZE] = {'\0'};
+    		 float Data = ComputeImpedance(ADC3_Res[0], ADC4_Res[0]);
+             CreateTxStr_UART(msg, Data);
+ 			 TransmitMessage_UART(msg);
+             HAL_TIM_Base_Start(&htim6); // Start the timer to begin ADC Conversions since Message has been transmitted
     	 }
     	  //HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
       }
@@ -522,6 +488,7 @@ static void MX_ADC_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc.Instance = ADC1;
+  hadc.DMA_Handle = &hdma_adc;
   hadc.Init.OversamplingMode = DISABLE;
   hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
@@ -531,9 +498,9 @@ static void MX_ADC_Init(void)
   hadc.Init.ContinuousConvMode = DISABLE;
   hadc.Init.DiscontinuousConvMode = DISABLE;
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
-  hadc.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T6_TRGO;
-  hadc.Init.DMAContinuousRequests = ENABLE;
-  hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc.Init.DMAContinuousRequests = DISABLE;
+  hadc.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc.Init.LowPowerAutoWait = DISABLE;
   hadc.Init.LowPowerFrequencyMode = DISABLE;
@@ -560,7 +527,19 @@ static void MX_ADC_Init(void)
 
 
   /* USER CODE BEGIN ADC_Init 2 */
-   HAL_ADCEx_Calibration_Start(&hadc, ADC_SINGLE_ENDED);
+  /* Calibrate for ADC and analog circuitry errors */
+#if (ADC_CAL_ENABLE == 1)
+   	   ADC_CalibrateStimulator(&hadc, &hdac);
+#endif
+
+   /* Reinitialize using DMA*/
+   hadc.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T6_TRGO;
+   hadc.Init.DMAContinuousRequests = ENABLE;
+   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+   if (HAL_ADC_Init(&hadc) != HAL_OK)
+   {
+      Error_Handler();
+   }
   /* USER CODE END ADC_Init 2 */
 
 }
@@ -671,7 +650,7 @@ static void MX_TIM6_Init(void)
   htim6.Instance = TIM6;
   htim6.Init.Prescaler = 0;
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim6.Init.Period = 1000;
+  htim6.Init.Period = 10;
   htim6.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
   {
