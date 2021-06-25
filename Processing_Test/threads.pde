@@ -88,6 +88,20 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     print(newPacket.data);
     logLog.println();
     println();
+    switch (newPacket.packetType){
+    case 0:
+      logDisplay.append("Beacon Recieved\n");
+      break;
+    case 100:
+      logDisplay.append("I2C Command Sent\n");
+      break;
+    case 101:
+      logDisplay.append("New I2C Address Set\n");
+      break;
+    case 4:
+      logDisplay.append("Command Response Recieved\n");
+      break;
+    }
   }
   
   thisAggregate.subList(0,thisScanner).clear();

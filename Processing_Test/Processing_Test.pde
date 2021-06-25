@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 Serial serialPort;
+boolean noBeacon = false;
 Calendar c;
 PrintWriter dataLog;
 PrintWriter logLog;
@@ -48,6 +49,8 @@ List<Packet> packetList = new ArrayList<Packet>();
 List<List<List<Integer>>> magnetometerConfigurationArray = new ArrayList<List<List<Integer>>>();
 List<Byte> magConfigurationByteArray = new ArrayList<Byte>();
 boolean magCaptureInProgress = false;
+boolean boardConfigSet = false;
+boolean sensorConfigSet = false;
 Checksum crc32 = new CRC32();
 
 Packet IAmHerePacket = new Packet();
@@ -60,13 +63,16 @@ long nanoStart;
 int start;
 int stop;
 
+//********************************************************************HOME PAGE DEFINES*******************************************************************************
 public ControlP5 cp5;
+ControlGroup homePage;
 Button loadFirmwareButton;
 Button startButton;
 Button stopButton;
-Button setConfigButton;
+Button setBoardConfigButton;
+Button setSensorConfigButton;
 Button saveAndQuitButton;
-
+Textarea logDisplay;
 Textfield I2CAddressField;
 Textfield I2CInputField;
 Button I2CSendCommand;
@@ -78,45 +84,91 @@ ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
 List<List<List<Toggle>>> magSensorSelector = new ArrayList<List<List<Toggle>>>();
 Textfield samplingRate;
+//***************************************************************HOME PAGE DEFINES /END**********************************************************************************
 
+//*************************************************************BOARD CONFIGURATION DEFINES*******************************************************************************  
 List<Button> magnetometerSelectorButtonList = new ArrayList<Button>();
 int NUM_BUTTONS = 18;
 String[] buttonNames = {"selectAllX", "selectAllY", "selectAllZ", "selectAllS1", "selectAllS2", "selectAllS3", 
   "selectAllRowA", "selectAllRowB", "selectAllRowC", "selectAllRowD", 
   "selectAllCol1", "selectAllCol2", "selectAllCol3", "selectAllCol4", "selectAllCol5", "selectAllCol6", 
-  "selectAll", "submitConfiguration"};
+  "selectAll", "boardConfigurationSubmit"};
 String[] labelNames = {"Select All X", "Select All Y", "Select All Z", "Select All S1", "Select All S2", "Select All S3", 
   "Select Row A", "Select Row B", "Select Row C", "Select Row D", 
   "Select Column 1", "Select Column 2", "Select Column 3", "Select Column 4", "Select Column 5", "Select Column 6", 
   "Select All", "Submit"};
+//**********************************************************BOARD CONFIGURATION DEFINES /END******************************************************************************  
+  
+//*************************************************************SENSOR CONFIGURATION DEFINES*******************************************************************************  
+ControlGroup magnetometerRegisterConfigurator;
+List<Textfield> magnetometerRegisterFields = new ArrayList<Textfield>();
+List<Button> magnetometerTypes = new ArrayList<Button>();
+List<Button> magnetometerSimpleSelector = new ArrayList<Button>();
+Button sensorConfigurationBack;
+Button sensorConfigurationSubmit;
+
+int magnetometerTypeNums = 3;
+String[] magnetometerTypeStrings = {"MMC5983", "LIS3MDL", "TBD"};
+int magnetometerSimpleSelectorNums = 4;
+String[] magnetometerRegisterSimpleStrings = {"Period>=20ms", "20ms>Period>=10ms", "10ms>Period>=5ms", "5ms>Period>=2ms"};
+String[] magnetometerRegisterSimpleConfig0Strings = {"00000000","00000000","00000000","00000000"};
+String[] magnetometerRegisterSimpleConfig1Strings = {"00000000","00000001","00000000","00000000"};
+String[] magnetometerRegisterSimpleConfig2Strings = {"00000000","00000010","00000000","00000000"};
+String[] magnetometerRegisterSimpleConfig3Strings = {"00000000","00000011","00000000","00000000"};
+int magnetometerRegisterFieldNums = 4;
+String[] magnetometerRegisterFieldStrings = {"Internal Control 0", "Internal Control 1", "Internal Control 2", "Internal Control 3"};
+String[] magnetometerRegisterFieldJSON = {"Internal_Control_0", "Internal_Control_1", "Internal_Control_2", "Internal_Control_3"};
+
+public JSONObject settingsJSON;
+public String topSketchPath = "";
+//**********************************************************SENSOR CONFIGURATION DEFINES /END*****************************************************************************
 
 public void setup() {
   size(1000, 600);  
   frameRate(60);
   cp5 = new ControlP5(this);
+  
+  //********************************************************************HOME PAGE*****************************************************************************************
+  homePage = cp5.addGroup("homePage")
+      .setPosition(0, 0)
+      .setSize(1000, 600)
+      .setBackgroundColor(color(255))
+      .hideBar();
+      
   loadFirmwareButton = cp5.addButton("loadFirmwareButton")
-    .setPosition(100, 50)
-    .setSize(200, 200);
+    .setPosition(75, 50)
+    .setSize(250, 50)
+    .moveTo(homePage);
   loadFirmwareButton.getCaptionLabel().setText("Load Firmware").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   startButton = cp5.addButton("startButton")
     .setPosition(75, 340)
-    .setSize(100, 50);
+    .setSize(100, 50)
+    .moveTo(homePage);
   startButton.getCaptionLabel().setText("Start").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   stopButton = cp5.addButton("stopButton")
     .setPosition(225, 340)
-    .setSize(100, 50);
+    .setSize(100, 50)
+    .moveTo(homePage);
   stopButton.getCaptionLabel().setText("Stop").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
-  setConfigButton = cp5.addButton("setConfigButton")
+  setSensorConfigButton = cp5.addButton("setSensorConfigButton")
     .setPosition(75, 270)
-    .setSize(250, 50);
-  setConfigButton.getCaptionLabel().setText("Set Configuration").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+    .setSize(250, 50)
+    .moveTo(homePage);
+  setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  
+  setBoardConfigButton = cp5.addButton("setBoardConfigButton")
+    .setPosition(75, 200)
+    .setSize(250, 50)
+    .moveTo(homePage);
+  setBoardConfigButton.getCaptionLabel().setText("Set Board Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
   
   saveAndQuitButton = cp5.addButton("saveAndQuitButton")
     .setPosition(75, 410)
-    .setSize(250, 50);
+    .setSize(250, 50)
+    .moveTo(homePage);
   saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
   I2CAddressField = cp5.addTextfield("I2CAddressField")
@@ -127,7 +179,8 @@ public void setup() {
     .setColorBackground(color(255))
     .setColorForeground(color(0))
     .setAutoClear(false)
-    .setText(String.valueOf(100));
+    .setText(String.valueOf(100))
+    .moveTo(homePage);
   I2CAddressField.getCaptionLabel().setText("Address").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
 
   I2CInputField = cp5.addTextfield("I2CInputField")
@@ -138,12 +191,14 @@ public void setup() {
     .setColorBackground(color(255))
     .setColorForeground(color(0))
     .setAutoClear(false)
-    .setText(String.valueOf(0));
+    .setText(String.valueOf(0))
+    .moveTo(homePage);
   I2CInputField.getCaptionLabel().setText("Command").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
   
   I2CSendCommand = cp5.addButton("I2CSendCommand")
     .setPosition(570, 120)
-    .setSize(200, 50);
+    .setSize(200, 50)
+    .moveTo(homePage);
   I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
   
   I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
@@ -154,7 +209,8 @@ public void setup() {
     .setColorBackground(color(255))
     .setColorForeground(color(0))
     .setAutoClear(false)
-    .setText(String.valueOf(1));
+    .setText(String.valueOf(1))
+    .moveTo(homePage);
   I2CSetAddressOld.getCaptionLabel().setText("Old Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
 
   I2CSetAddressNew = cp5.addTextfield("I2CSetAddressNew")
@@ -165,14 +221,28 @@ public void setup() {
     .setColorBackground(color(255))
     .setColorForeground(color(0))
     .setAutoClear(false)
-    .setText(String.valueOf(1));
+    .setText(String.valueOf(1))
+    .moveTo(homePage);
   I2CSetAddressNew.getCaptionLabel().setText("New Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
   
   I2CSetAddress = cp5.addButton("I2CSetAddress")
     .setPosition(570, 200)
-    .setSize(200, 50);
+    .setSize(200, 50)
+    .moveTo(homePage);
   I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
+  logDisplay = cp5.addTextarea("logDisplay")
+      .setPosition(400, 400)
+      .setColorBackground(color(255))
+      .setSize(500, 150)
+      .setFont(createFont("arial", 16))
+      .setLineHeight(20)
+      .setColor(color(0))
+      .setText("Starting utility tool\n")
+      .moveTo(homePage);
+  //******************************************************************HOME PAGE /END**************************************************************************************
+  
+  //*************************************************************BOARD CONFIGURATION PAGE*********************************************************************************
   int magConfigPageWidth = (int)(.9 * width);
   int magConfigPageHeight = (int)(.75 * height);
   int magConfigPageX = (int)(.05 * width);
@@ -205,7 +275,7 @@ public void setup() {
       .setAutoClear(false)
       .setText(String.valueOf(1000))
       .moveTo(magnetometerSelector);
-  samplingRate.getCaptionLabel().setText("Sampling Rate:").setColor(0).setFont(createFont("arial", magConfigBarBufferWidth)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-(int)(.65 * magConfigBarButtonWidth));
+  samplingRate.getCaptionLabel().setText("Sampling Period (ms):").setColor(0).setFont(createFont("arial", magConfigBarBufferWidth)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-(int)(.8 * magConfigBarButtonWidth));
   
   for (int buttonNum = 1; buttonNum < NUM_BUTTONS + 1; buttonNum++){
     Button thisButton = cp5.addButton(buttonNames[buttonNum - 1])
@@ -285,23 +355,112 @@ public void setup() {
       }
     }
   }
+  //**************************************************************BOARD CONFIGURATION PAGE /END****************************************************************************
+  
+  //****************************************************************SENSOR CONFIGURATION PAGE******************************************************************************
+  topSketchPath = sketchPath();
+  settingsJSON = loadJSONObject(topSketchPath+"/config/config.json");
+  
+  int configuratorWidth = 500;
+  int configuratorHeight = 500;
+  
+  magnetometerRegisterConfigurator = cp5.addGroup("magnetometerRegisterConfigurator")
+      .setPosition(100, 50)
+      .setSize(configuratorWidth, configuratorHeight)
+      .setBackgroundColor(color(255))
+      .hideBar()
+      .hide();
+      
+  int configuratorTextBoxX = configuratorWidth / 10;
+  int configuratorTextBoxFontSize = 20;
+  int configuratorTextBoxHeight = configuratorTextBoxFontSize * 3/2;
+  int configuratorTextBoxHeightBuffer = configuratorTextBoxHeight/2;
+  int configuratorTextBoxWidth = configuratorWidth / 3;
+  for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+    magnetometerRegisterFields.add(cp5.addTextfield(magnetometerRegisterFieldStrings[textBoxNum])
+      .setPosition(configuratorTextBoxX, 
+                  (configuratorTextBoxHeightBuffer * (textBoxNum + 1)) + (configuratorTextBoxHeight * textBoxNum))
+      .setSize(configuratorTextBoxWidth, configuratorTextBoxHeight)
+      .setFont(createFont("arial", configuratorTextBoxFontSize))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(settingsJSON.getString(magnetometerRegisterFieldJSON[textBoxNum]))
+      .moveTo(magnetometerRegisterConfigurator));
+    magnetometerRegisterFields.get(textBoxNum).getCaptionLabel().setText(magnetometerRegisterFieldStrings[textBoxNum]).setColor(0).setFont(createFont("arial", configuratorTextBoxFontSize)).align(CENTER, CENTER).toUpperCase(false).getStyle().setMarginLeft(configuratorTextBoxWidth);
+  }
+      
+  int configuratorBottomBarHeight = configuratorHeight / 7;
+  int configuratorBottomBarWidth = configuratorWidth;
+  int configuratorBottomBarButtonHeight = configuratorBottomBarHeight * 2/3;
+  
+  int configuratorBottomBarSimpleSelectorY = configuratorHeight - 3 * configuratorBottomBarHeight;
+  int configuratorBottomBarSimpleSelectorButtonWidth = configuratorBottomBarWidth / (magnetometerSimpleSelectorNums + 1);
+  int configuratorBottomBarSimpleSelectorButtonBufferWidth = (configuratorBottomBarWidth - (magnetometerSimpleSelectorNums * configuratorBottomBarSimpleSelectorButtonWidth)) / (magnetometerSimpleSelectorNums + 1);  
+  for (int simpleSelectorButtonNum = 0; simpleSelectorButtonNum < magnetometerSimpleSelectorNums; simpleSelectorButtonNum++){
+    magnetometerSimpleSelector.add(cp5.addButton(magnetometerRegisterSimpleStrings[simpleSelectorButtonNum])
+      .setPosition((configuratorBottomBarSimpleSelectorButtonBufferWidth * (simpleSelectorButtonNum + 1)) + (configuratorBottomBarSimpleSelectorButtonWidth * simpleSelectorButtonNum), 
+                   configuratorBottomBarSimpleSelectorY)
+      .setSize(configuratorBottomBarSimpleSelectorButtonWidth, configuratorBottomBarButtonHeight)
+      .moveTo(magnetometerRegisterConfigurator));
+    magnetometerSimpleSelector.get(simpleSelectorButtonNum).getCaptionLabel().setText(magnetometerRegisterSimpleStrings[simpleSelectorButtonNum]).setColor(255).setFont(createFont("arial", 10)).align(CENTER, CENTER).toUpperCase(false);
+  }    
+  
+  int configuratorBottomBarChipSelectorY = configuratorHeight - 2 * configuratorBottomBarHeight;
+  int configuratorBottomBarChipSelectorButtonWidth = configuratorBottomBarWidth / 4;
+  int configuratorBottomBarChipSelectorButtonBufferWidth = (configuratorBottomBarWidth - (3 * configuratorBottomBarChipSelectorButtonWidth)) / 4;
+  for (int bottomBarButtonNum = 0; bottomBarButtonNum < magnetometerTypeNums; bottomBarButtonNum++){
+    magnetometerTypes.add(cp5.addButton(magnetometerTypeStrings[bottomBarButtonNum])
+      .setPosition((configuratorBottomBarChipSelectorButtonBufferWidth * (bottomBarButtonNum + 1)) + (configuratorBottomBarChipSelectorButtonWidth * bottomBarButtonNum), 
+                   configuratorBottomBarChipSelectorY)
+      .setSize(configuratorBottomBarChipSelectorButtonWidth, configuratorBottomBarButtonHeight)
+      .moveTo(magnetometerRegisterConfigurator));
+    magnetometerTypes.get(bottomBarButtonNum).getCaptionLabel().setText(magnetometerTypeStrings[bottomBarButtonNum]).setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  }
+  
+  int configuratorBottomBarY = configuratorHeight - configuratorBottomBarHeight;
+  int configuratorBottomBarProgressButtonWidth = configuratorBottomBarWidth / 3;
+  int configuratorBottomBarProgressButtonBufferWidth = (configuratorBottomBarWidth - (2 * configuratorBottomBarProgressButtonWidth)) / 3;
+  sensorConfigurationBack = cp5.addButton("sensorConfigurationBack")
+    .setPosition(configuratorBottomBarProgressButtonBufferWidth * 1, 
+                 configuratorBottomBarY)
+    .setSize(configuratorBottomBarProgressButtonWidth, configuratorBottomBarButtonHeight)
+    .moveTo(magnetometerRegisterConfigurator);
+  sensorConfigurationBack.getCaptionLabel().setText("Back").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  sensorConfigurationSubmit = cp5.addButton("sensorConfigurationSubmit")
+    .setPosition(configuratorBottomBarProgressButtonBufferWidth * 2 + configuratorBottomBarProgressButtonWidth * 1, 
+                 configuratorBottomBarY)
+    .setSize(configuratorBottomBarProgressButtonWidth, configuratorBottomBarButtonHeight)
+    .moveTo(magnetometerRegisterConfigurator);
+  sensorConfigurationSubmit.getCaptionLabel().setText("Submit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  //****************************************************************SENSOR CONFIGURATION PAGE /END***************************************************************************
   
   c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
   logLog = createWriter(String.format("./log/%d-%d-%d_%d-%d-%d_log.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
   
-  String serialPortName = Serial.list() [0] ; //"/dev/tty.usbmodem1411";
-  serialPort = new Serial(this, serialPortName, 5000000);
-  thread("readPackets");
+  try {
+    String serialPortName = Serial.list() [0] ; //"/dev/tty.usbmodem1411";
+    serialPort = new Serial(this, serialPortName, 5000000);
+    thread("readPackets");
+  }
+  catch (Exception e) {
+    logDisplay.append("No serial port found\n");
+    print("No serial port found");
+    noBeacon = true;
+  }
   start = millis();
   nanoStart = System.nanoTime();
   IAmHerePacket.IAmHere();
   IAmHereConverted = IAmHerePacket.toByte();
+  logDisplay.append("Setup Complete\n");
 }
 
 public void draw() {
   rect(0,0,1920, 1000);
   long temp = ((System.nanoTime() - nanoStart)/1000);
-  if (temp - IAmHerePacket.timeStamp > 5000000)
+  if (temp - IAmHerePacket.timeStamp > 5000000 && !noBeacon)
   {
     IAmHerePacket.IAmHere();
     IAmHereConverted = IAmHerePacket.toByte();
@@ -348,15 +507,28 @@ public void controlEvent(ControlEvent theEvent) {
   if (theEvent.isAssignableFrom(Button.class)){
     if (controllerName.equals("loadFirmwareButton")){
       selectInput("Select a file to load as channel microcontroller firmware:", "LoadFirmware");
+      logDisplay.append("Loading Firmware\n");
     }
     if (controllerName.equals("startButton")){
-      c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-      dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
-      dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
-      magCaptureInProgress = true;
-      Packet magStart = new Packet();
-      byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
-      serialPort.write(magStartConverted);
+      if (boardConfigSet && sensorConfigSet){
+        c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+        dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+        dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
+        magCaptureInProgress = true;
+        Packet magStart = new Packet();
+        byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
+        serialPort.write(magStartConverted);
+        logDisplay.append("Starting Data Capture\n");
+      }
+      else {
+        if (!boardConfigSet && !sensorConfigSet){
+          logDisplay.append("Please set a board and sensor configuration before beginning a data capture\n");
+        } else if (!sensorConfigSet){
+          logDisplay.append("Please set a sensor configuration before beginning a data capture\n");
+        } else {
+          logDisplay.append("Please set a boardconfiguration before beginning a data capture\n");
+        }
+      }
     }
     if (controllerName.equals("stopButton")){
       Packet magStop = new Packet();
@@ -365,9 +537,15 @@ public void controlEvent(ControlEvent theEvent) {
       magCaptureInProgress = false;
       dataLog.flush();
       dataLog.close();
+      logDisplay.append("Stopping Data Capture\n");
     }
-    if (controllerName.equals("setConfigButton")){
+    if (controllerName.equals("setBoardConfigButton")){
       magnetometerSelector.show();
+      homePage.hide();
+    }
+    if (controllerName.equals("setSensorConfigButton")){
+      magnetometerRegisterConfigurator.show();
+      homePage.hide();
     }
     if (controllerName.equals("saveAndQuitButton")){
       if (magCaptureInProgress)
@@ -433,12 +611,15 @@ public void controlEvent(ControlEvent theEvent) {
     if (controllerName.equals("selectAll")){
       toggleBulk(NUM_WELLS, NUM_SENSORS, NUM_AXES, 0, 0, 0, 1);
     }
-    if (controllerName.equals("submitConfiguration")){
+    if (controllerName.equals("boardConfigurationSubmit")){
       magConfigurationByteArray = configDataGenerator();
       magnetometerSelector.hide();
+      homePage.show();
       Packet magConfig = new Packet();
       byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
       serialPort.write(magConfigConverted);
+      logDisplay.append("Board Configuration Set\n");
+      boardConfigSet = true;
     }
     if (controllerName.equals("I2CSendCommand")){
         Packet I2CCommandPacket = new Packet();
@@ -449,6 +630,58 @@ public void controlEvent(ControlEvent theEvent) {
         Packet I2CNewAddressPacket = new Packet();
         byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
         serialPort.write(I2CNewAddressPacketConverted);
+    }
+    if (controllerName.equals("sensorConfigurationSubmit")){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        settingsJSON.setString(magnetometerRegisterFieldJSON[textBoxNum], magnetometerRegisterFields.get(textBoxNum).getText());
+      }
+      saveJSONObject(settingsJSON, topSketchPath+"/config/config.json");
+      Packet sensorConfigurationPacket = new Packet();
+      byte[] sensorConfigurationPacketConverted = sensorConfigurationPacket.sensorConfig(settingsJSON);
+      serialPort.write(sensorConfigurationPacketConverted);
+      magnetometerRegisterConfigurator.hide();
+      homePage.show();
+      logDisplay.append("Sensor Configuration Set\n");
+      sensorConfigSet = true;
+    }
+    if (controllerName.equals("sensorConfigurationBack")){
+      magnetometerRegisterConfigurator.hide();
+      homePage.show();
+    }
+    if (controllerName.equals("Period>=20ms")){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).setText(magnetometerRegisterSimpleConfig0Strings[textBoxNum]);
+      }
+    }
+    if (controllerName.equals("20ms>Period>=10ms")){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).setText(magnetometerRegisterSimpleConfig1Strings[textBoxNum]);
+      }
+    }
+    if (controllerName.equals("10ms>Period>=5ms")){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).setText(magnetometerRegisterSimpleConfig2Strings[textBoxNum]);
+      }
+    }
+    if (controllerName.equals("5ms>Period>=2ms")){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).setText(magnetometerRegisterSimpleConfig3Strings[textBoxNum]);
+      }
+    }
+    if (controllerName.equals(magnetometerTypeStrings[0])){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).show();
+      }
+    }
+    if (controllerName.equals(magnetometerTypeStrings[1])){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).hide();
+      }
+    }
+    if (controllerName.equals(magnetometerTypeStrings[2])){
+      for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
+        magnetometerRegisterFields.get(textBoxNum).hide();
+      }
     }
   }
 }

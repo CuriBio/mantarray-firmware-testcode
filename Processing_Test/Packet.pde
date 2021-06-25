@@ -120,6 +120,19 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] sensorConfig(JSONObject settingsJSON){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 102;
+    this.packetLength = 18;
+    this.CRC = 123123123;
+    this.data.add(0, Byte.valueOf(settingsJSON.getString("Internal_Control_0"), 2));
+    this.data.add(1, Byte.valueOf(settingsJSON.getString("Internal_Control_1"), 2));
+    this.data.add(2, Byte.valueOf(settingsJSON.getString("Internal_Control_2"), 2));
+    this.data.add(3, Byte.valueOf(settingsJSON.getString("Internal_Control_3"), 2));
+    return this.toByte();
+  }
+  
   byte[] testPacket(int i){
         this.timeStamp = (System.nanoTime() - nanoStart)/1000;
         this.moduleID = 0;
