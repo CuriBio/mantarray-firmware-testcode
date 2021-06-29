@@ -404,12 +404,12 @@ void Load_DAC_Timer(TIM_HandleTypeDef* htim)
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	ADC_Buf_Status == ADC_BUF_HALF_FULL;
+	ADC_Buf_Status == ADC_BUF_FIRST_HALF_FULL;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-		ADC_Buf_Status == ADC_BUF_FULL;
+		ADC_Buf_Status == ADC_BUF_SECOND_HALF_FULL;
 }
 
 void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
@@ -507,7 +507,7 @@ int main(void)
     	 	 case STIM_RUN:
     	     {
     	    	 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
-    	    	 else if (CONSTANT_OUTPUT_ENABLE == 1) { GenerateConstCurrent_LUT(AMPLITUDE_MA, DAC_ARR_SIZE); }
+    	    	 else if (CONSTANT_OUTPUT_ENABLE == 1) { GenerateConstCurrent_LUT(AMPLITUDE_MA, DAC_ARR_SIZE_DEBUG); }
   	  	  	  	 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, n_elem, DAC_ALIGN_12B_R);
   	  	  	  	 Load_DAC_Timer(&htim2);
   	  	  	  	 HAL_TIM_Base_Start_IT(&htim2);
@@ -618,11 +618,11 @@ static void MX_ADC_Init(void)
   hadc.Init.OversamplingMode = DISABLE;
   hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_19CYCLES_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc.Init.ContinuousConvMode = ENABLE;
-  hadc.Init.DiscontinuousConvMode = DISABLE;
+  hadc.Init.ContinuousConvMode = DISABLE;
+  hadc.Init.DiscontinuousConvMode = ENABLE;
   hadc.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc.Init.DMAContinuousRequests = ENABLE;
