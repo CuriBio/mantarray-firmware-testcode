@@ -96,15 +96,38 @@ typedef enum {
 }bool_t;
 
 typedef enum {
+	STIM_WAIT,
+	STIM_RUN,
+	STIM_DISABLE,
+	STIM_ERROR
+}stim_state_t;
+
+typedef enum {
+	TX_DISABLED,
+	TX_ONGOING,
+	TX_CPLT,
+}tx_status_t;
+
+typedef enum {
 	ADC_BUF_EMPTY,
-	ADC_BUF_HALF_FULL,
-	ADC_BUF_FULL
+	ADC_BUF_FIRST_HALF_FILLING,
+	ADC_BUF_FIRST_HALF_FULL,
+	ADC_BUF_SECOND_HALF_FILLING,
+	ADC_BUF_SECOND_HALF_FULL
 }adc_buf_status_t;
 
-volatile uint16_t ADC3_Res;
-volatile uint16_t ADC4_Res;
+typedef struct {
+	adc_buf_status_t  adc_buf_status;
+	tx_status_t tx_status;
+	stim_state_t stim_state;
+}states_t;
+
 volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
-volatile adc_buf_status_t adc_buf_status = ADC_BUF_EMPTY;
+volatile states_t states = {
+		.adc_buf_status = ADC_BUF_EMPTY,
+		.tx_status = TX_DISABLED,
+		.stim_state = STIM_WAIT
+		};
 
 uint32_t *DAC_Lut;
 uint16_t *DAC_TIM_Lut;
@@ -411,6 +434,29 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
 	HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
 }
 
+states_t *StimRunStateMachine(states_t *states)
+{
+	switch (states -> adc_buf_status)
+	{
+		case (ADC_BUF_WAIT):
+			// Wait until tx is complete, then move to next state
+			if (states -> pre)states -> adc_buf_status = ADC_BUF_FIRST_HALF_FILLING;
+			states -> adc_buf_status = ADC_BUF_SECOND_HALF_FILLING;
+		case (ADC_BUF_FIRST_HALF_FILLING):
+			// TX Second Half if second half full (check previous state)
+			// Check if first half is full, if full move to next state
+		case (ADC_BUF_FIRST_HALF_FULL):
+			states -> adc_buf_status = ADC_BUF_WAIT;
+		case (ADC_BUF_SECOND_HALF_FILLING):
+			// TX First Half if first half full (check previous state)
+			// Check if second half is full, if full move to next state
+		case (ADC_BUF_SECOND_HALF_FULL):
+			//If tx of first half isn't complete, move to wait state
+			states -> adc_buf_status = ADC_BUF_WAIT;
+
+	}
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -449,32 +495,49 @@ int main(void)
   MX_ADC_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-#if (BIPHASIC_OUTPUT_ENABLE == 1)
-  GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS);
-#elif (CONSTANT_OUTPUT_ENABLE == 1)
-  GenerateConstCurrent_LUT(AMPLITUDE_MA, DAC_ARR_SIZE);
-#endif
 
-  HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, n_elem, DAC_ALIGN_12B_R);
-  Load_DAC_Timer(&htim2);
-  HAL_TIM_Base_Start_IT(&htim2);
-  HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
       while (1)
       {
-    	 if (XferCplt == TRUE)
+    	 switch (Status)
     	 {
-    		XferCplt = FALSE;   // Reset Xfer Complete Flag
-    	    char msg[UART_BUF_SIZE] = {'\0'};
-    		float data = ComputeImpedance(ADC3_Res, ADC4_Res);
-    		CreateTxStr(msg, data);
-    		TransmitMessage_UART(msg);
+    	 	 case STIM_RUN:
+    	     {
+    	    	 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
+    	    	 else if (CONSTANT_OUTPUT_ENABLE == 1) { GenerateConstCurrent_LUT(AMPLITUDE_MA, DAC_ARR_SIZE); }
+  	  	  	  	 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, n_elem, DAC_ALIGN_12B_R);
+  	  	  	  	 Load_DAC_Timer(&htim2);
+  	  	  	  	 HAL_TIM_Base_Start_IT(&htim2);
+  	  	  	  	 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
+
+  	  	  	  	 StimRunStateMachine(stim_states);
+  	  	  	  	 TransmitBufFirstHlf(ADC_buf);
+  	  	  	     XferCplt = FALSE;   // Reset Xfer Complete Flag
+  	  	  	     char msg[UART_BUF_SIZE] = {'\0'};
+  	  	  	     float data = ComputeImpedance(ADC3_Res, ADC4_Res);
+  	  	  	     CreateTxStr(msg, data);
+  	  	  	     TransmitMessage_UART(msg);
+    	     }
+    	 	 case STIM_WAIT:
+    	 	 {
+    	    	 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    	 	 }
+    	 	 case STIM_DISABLE:
+    	 	 {
+    	 		 HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
+    	 		 HAL_TIM_Base_Stop_IT(&htim2);
+    	 		 HAL_ADC_Stop_DMA(&hadc);
+    	 	 }
+    	 	 case STIM_ERROR:
+    	 	 {
+    	    	 HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+    	 	 }
     	 }
 
-    	 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
       }
 
     /* USER CODE END WHILE */
