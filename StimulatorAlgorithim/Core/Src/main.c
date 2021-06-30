@@ -115,7 +115,8 @@ typedef enum {
 	TX_BUF_TWO_CPLT,
 	BUF_ONE_FULL,
 	BUF_TWO_FULL,
-	ADC_DMA_STOPPED
+	ADC_DMA_STOPPED,
+	NO_EVENT
 }event_t;
 
 typedef struct {
@@ -447,21 +448,30 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
 event_t pop_event(stimulator_t *pStimulator)
 {
 	event_queue_t *pQueue = *(pStimulator -> event_queue);
-	event_t event = NULL;
+	event_t event;
 	head = *(pQueue -> head);
-	if (*(pQueue -> head) == *(pQueue -> tail))
+	if (pQueue -> head != pQueue -> tail)
 	{
-		*(pQueue -> head) == *(pQueue -> head)%*(pQueue -> size);
-		event = *(pQueue -> data + *(pQueue -> head));
+		pQueue -> head == ((pQueue -> head) + 1) % pQueue -> size;
+		event = pQueue -> data[pQueue -> head];
+		return event;
+	}
+	else {
+		return NO_EVENT;
 	}
 
 
-	return event;
 }
 
-void push_event(stimulator_t *pStimulator)
+void push_event(stimulator_t *pStimulator, event_t event)
 {
-	/* Push an event onto the event queue */
+	/* Push an event onto the back of the event queue */
+	event_queue_t *pQueue = *(pStimulator -> event_queue);
+	if (pQueue -> head != tail)
+	{
+		pQueue -> tail == ((pQueue -> tail) + 1) % pQueue -> size;
+		pQueue-> data[pQueue -> tail] = event;
+	}
 }
 
 /* USER CODE END 0 */
@@ -507,7 +517,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
       while (1)
       {
-    	 if (Get_Event()) //If a transfer or half transfer has been completed run state machine
+    	 event_t event = pop_event(pStimulator);
+    	 if ( event != NO_EVENT) // If a new event has been generated, run state machine
     	 {
 
     	 switch (pStimulator -> state_current)
@@ -523,13 +534,13 @@ int main(void)
   	  	  	  	 if (HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE) != HAL_OK) { pStimulator -> state = DO_STIM_STOP; }
   	  	  	  	 break;
     	     }
-    	 	 case STIM_RUNNING:
+    	 	 case STIM_RUNNING: // Need to add logic to this part to control the double buffer mechanism
     	 	 {
   	  	  	  		 /* ADC Buffer is full, transmit data if haven't already done so.*/
-  	  	  	  		 if ( pStimulator -> event == BUF_ONE_FULL )
+  	  	  	  		 if ( event == BUF_ONE_FULL )
   	  	  	  		 {
+  	  	  	  			 // Clear TX 1 complete flag
   	  	  	  			 TransmitBuf(ADC_Buf, BUF_ONE_ID); // If full transfer has been completed send out second half
-  	  	  	  		  	 char msg[UART_BUF_SIZE] = {'\0'};
   	  	  	  		  	 //float data = ComputeImpedance(ADC3_Res, ADC4_Res);
   	  	  	  		  	 //CreateTxStr(msg, data);
   	  	  	  		  	 // If transmit of second half completes and new half-xfer event occurs, then we can let the DMA start filling second half again,
@@ -539,22 +550,18 @@ int main(void)
   	  	  	  		  	 // Can use a uart callback to determine this. A uart event or a DMA Xfer event will be able to increment the state machine.
   	  	  	  		  	 // TransmitMessage_UART(msg);
   	  	  	  		 }
-  	  	  	  		 else if ( pStimulator -> event == BUF_TWO_FULL )
+  	  	  	  		 else if ( event == BUF_TWO_FULL )
   	  	  	  		 {
+  	  	  	  			 // Clear Tx 2 complete flag
   	  	  	  			 TransmitBuf(ADC_Buf, BUF_TWO_ID);
-  	  	  	  	  	  	 char msg[UART_BUF_SIZE] = {'\0'};
-  	  	  	  	  	  	 //float data = ComputeImpedance(ADC3_Res, ADC4_Res);
-  	  	  	  	  	  	 //CreateTxStr(msg, data);
-  	  	  	  	  	  	 //TransmitMessage_UART(msg);
-  	  	  	  	  	  	 	 // If transmit of first half completes and new xfer complete event occurs, then we can let the DMA start filling first half again,
-  	  	  	  	   	  	  	  // So move to next state.
-  	  	  	  	   	  	  	  // If transmit of first half is still incomplete when new xfer event occurs, then we need to stop the ADC and
-  	  	  	  	   	  	  	  // Wait until the transmit of first half is complete (go to adc_buf_wait state), then start filling the first half (moving to next state).
-  	  	  	  	  	  	 	 // Can use a uart callback to determine this.
   	  	  	  		 }
-  	  	  	  		 else if ( pStates -> adc_buf_state_current == ADC_BUF_WAIT )
+  	  	  	  		 else if ( event == TX_BUF_ONE_CPLT )
   	  	  	  		 {
-  	  	  	  		     pStates -> stim_state_current = DO_STIM_STOP_CAPTURE;
+  	  	  	  			 // Set TX 1 Complete Flag
+  	  	  	  		 }
+  	  	  	  		 else if ( event == TX_BUF_TWO_CPLT )
+  	  	  	  		 {
+  	  	  	  			 // Set TX 2 Complete Flag
   	  	  	  		 }
     	     }
     	 	 case DO_STIM_STOP:
@@ -563,25 +570,12 @@ int main(void)
     	 	 }
     	 	 case DO_STIM_STOP_CAPTURE:
     	 	 {
-    	 		HAL_ADC_Stop_DMA(&hadc);
 
-    	 		if ( pStates -> adc_buf_state_prev == ADC_BUF_FIRST_HALF_FILLING )
-    	 		{
-    	 		  	  TransmitBufFirstHlf(ADC_Buf);
-    	 		}
-    	 		else if ( pStates -> adc_buf_state_prev == ADC_BUF_SECOND_HALF_FILLING )
-    	 		{
-    	 		  	  TransmitBufSecondHlf(ADC_Buf);
-    	 		}
-    	 		pStates -> stim_state_current = DO_STIM_RESTART_CAPTURE;
-	  	  	    New_Event();
     	 		break;
     	 	 }
     	 	 case DO_STIM_RESTART_CAPTURE:
     	 	 {
     	 		 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
-    	 		 pStates -> stim_state_current = STIM_RUNNING;
-    	 		 pStates -> adc_buf_state_current = pStates -> adc_buf_state_prev; // We are now filling the buffer
     	    	 break;
     	 	 }
     	 	 default:
@@ -589,8 +583,6 @@ int main(void)
     	    	 HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     	 	 }
     	 }
-
-    	 pStates -> dma_xfer_state = NO_XFERS;
     	 }
       }
     /* USER CODE END WHILE */
