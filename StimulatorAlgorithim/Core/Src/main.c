@@ -58,6 +58,7 @@
 #define R_SHUNT_OHMS        33
 
 #define ADC_BUF_SIZE 	   512U
+#define
 #define ADC_LATENCY 	   4.5    // Number of ADC Clock cycles between Timer Trigger and Start of Conversion
 #define ADC_CONV_TIME_US   0.87
 #define ADC_CAL_ENABLE     0U
@@ -95,51 +96,48 @@ typedef enum {
 }bool_t;
 
 typedef enum {
+	BUF_ONE_ID,
+	BUF_TWO_ID
+}buf_id_t;
+
+typedef enum {
 	DO_STIM_RUN,
 	STIM_RUNNING,
 	DO_STIM_STOP_CAPTURE,
+	STIM_CAPTURE_STOPED,
 	DO_STIM_RESTART_CAPTURE,
-	STIM_DISABLE,
-}stim_state_t;
+	DO_STIM_STOP,
+	STIM_STOPPED
+}state_t;
 
 typedef enum {
-	TX_DISABLED,
-	TX_INCPLT,
-	TX_CPLT,
-}tx_state_t;
-
-typedef enum {
-	ADC_BUF_WAIT,
-	ADC_BUF_FIRST_HALF_FILLING,
-	ADC_BUF_SECOND_HALF_FILLING,
-}adc_buf_state_t;
-
-typedef enum {
-	NO_XFERS,
-	HALF_XFER_CPLT,
-	XFER_CPLT
-}dma_xfer_state_t;
-
+	TX_BUF_ONE_CPLT,
+	TX_BUF_TWO_CPLT,
+	BUF_ONE_FULL,
+	BUF_TWO_FULL,
+	ADC_DMA_STOPPED
+}event_t;
 
 typedef struct {
-	adc_buf_state_t  adc_buf_state_current;
-	adc_buf_state_t  adc_buf_state_prev;
-	dma_xfer_state_t  dma_xfer_state;
-	tx_state_t tx_state;
-	stim_state_t stim_state_current;
-	stim_state_t stim_state_prev;
-}states_t;
+	event_t *data; // FIFO Queue
+	uint16_t head; // This is the next event to be processed
+	uint16_t tail; // This is the most recent event to be added
+	size_t size;
+}event_queue_t;
+
+typedef struct {
+	event_queue_t event_queue;
+	state_t state_current;
+	state_t state_prev;
+}stimulator_t;
 
 volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
-volatile states_t states = {
-		.adc_buf_state_current = ADC_BUF_WAIT,
-		.adc_buf_state_prev = ADC_BUF_WAIT,
-		.dma_xfer_state = NO_XFERS,
-		.tx_state = TX_DISABLED,
-		.stim_state_current = DO_STIM_RUN,
+volatile stimulator_t stimulator = {
+		.state_current = DO_STIM_RUN,
+		.state_prev = STIM_STOPPED,
+		.event = NULL
 		};
-
-states_t *pStates = &states;
+volatile stimulator_t *pStimulator = &stimulator;
 
 uint32_t *DAC_Lut;
 uint16_t *DAC_TIM_Lut;
@@ -446,29 +444,24 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
 	HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
 }
 
-adc_buf_state_t StimBufState(states_t *pStates) // Only call during Stim Run State
+event_t pop_event(stimulator_t *pStimulator)
 {
-	switch (pStates -> adc_buf_state_current)
+	event_queue_t *pQueue = *(pStimulator -> event_queue);
+	event_t event = NULL;
+	head = *(pQueue -> head);
+	if (*(pQueue -> head) == *(pQueue -> tail))
 	{
-		case (ADC_BUF_WAIT):
-			break;
-		case (ADC_BUF_FIRST_HALF_FILLING):
-		    if (pStates -> dma_xfer_state == HALF_XFER_CPLT )
-		    {
-		    	pStates -> adc_buf_state_current = ADC_BUF_WAIT;
-		    }
-		pStates -> adc_buf_state_prev = pStates -> adc_buf_state_current;
-			break;
-		case (ADC_BUF_SECOND_HALF_FILLING):
-			if (pStates -> dma_xfer_state == XFER_CPLT )
-			{
-				pStates -> adc_buf_state_current = ADC_BUF_WAIT;
-			}
-		pStates -> adc_buf_state_prev = pStates -> adc_buf_state_current;
-			break;
-		default:
-			return pStates -> adc_buf_state_current;
+		*(pQueue -> head) == *(pQueue -> head)%*(pQueue -> size);
+		event = *(pQueue -> data + *(pQueue -> head));
 	}
+
+
+	return event;
+}
+
+void push_event(stimulator_t *pStimulator)
+{
+	/* Push an event onto the event queue */
 }
 
 /* USER CODE END 0 */
@@ -514,33 +507,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
       while (1)
       {
-    	 if (Is_New_Event()) //If a transfer or half transfer has been completed run state machine
+    	 if (Get_Event()) //If a transfer or half transfer has been completed run state machine
     	 {
-       	     StimBufState(pStates);
 
-    	 switch (pStates ->stim_state_current)
+    	 switch (pStimulator -> state_current)
     	 {
+    	 	 case STIM_STOPPED:
+    	 		 break;
     	 	 case DO_STIM_RUN:
     	     {
     	    	 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
-  	  	  	  	 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, n_elem, DAC_ALIGN_12B_R);
+  	  	  	  	 if (HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)DAC_Lut, n_elem, DAC_ALIGN_12B_R) != HAL_OK) { pStimulator -> state = DO_STIM_STOP; }
   	  	  	  	 Load_DAC_Timer(&htim2);
   	  	  	  	 HAL_TIM_Base_Start_IT(&htim2);
-  	  	  	  	 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
-
-  	  	  	  	 if (pStates ->dma_xfer_state == XFER_CPLT)
-  	  	  	  	 {
-  	  	  	  	pStates -> adc_buf_state_current = ADC_BUF_WAIT;
-  	  	  	pStates -> stim_state_current = STIM_RUNNING; // The stimulator DAC and ADC are now running
-  	  	  	  	 }
+  	  	  	  	 if (HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE) != HAL_OK) { pStimulator -> state = DO_STIM_STOP; }
   	  	  	  	 break;
     	     }
     	 	 case STIM_RUNNING:
     	 	 {
   	  	  	  		 /* ADC Buffer is full, transmit data if haven't already done so.*/
-  	  	  	  		 if ( pStates -> adc_buf_state_current == ADC_BUF_FIRST_HALF_FILLING )
+  	  	  	  		 if ( pStimulator -> event == BUF_ONE_FULL )
   	  	  	  		 {
-  	  	  	  			 TransmitBufSecondHlf(ADC_Buf); // If full transfer has been completed send out second half, need transmit cplt callback
+  	  	  	  			 TransmitBuf(ADC_Buf, BUF_ONE_ID); // If full transfer has been completed send out second half
   	  	  	  		  	 char msg[UART_BUF_SIZE] = {'\0'};
   	  	  	  		  	 //float data = ComputeImpedance(ADC3_Res, ADC4_Res);
   	  	  	  		  	 //CreateTxStr(msg, data);
@@ -549,11 +537,11 @@ int main(void)
   	  	  	  		  	 // If transmit of second half is still incomplete when new half-xfer occurs, then we need to stop the ADC and
   	  	  	  		  	 // Wait until the transmit of second half is complete, then start filling the second half (moving to next state).
   	  	  	  		  	 // Can use a uart callback to determine this. A uart event or a DMA Xfer event will be able to increment the state machine.
-  	  	  	  		  	 //TransmitMessage_UART(msg);
+  	  	  	  		  	 // TransmitMessage_UART(msg);
   	  	  	  		 }
-  	  	  	  		 else if ( pStates -> adc_buf_state_current == ADC_BUF_SECOND_HALF_FILLING )
+  	  	  	  		 else if ( pStimulator -> event == BUF_TWO_FULL )
   	  	  	  		 {
-  	  	  	  			 TransmitBufFirstHlf(ADC_Buf);
+  	  	  	  			 TransmitBuf(ADC_Buf, BUF_TWO_ID);
   	  	  	  	  	  	 char msg[UART_BUF_SIZE] = {'\0'};
   	  	  	  	  	  	 //float data = ComputeImpedance(ADC3_Res, ADC4_Res);
   	  	  	  	  	  	 //CreateTxStr(msg, data);
@@ -561,19 +549,21 @@ int main(void)
   	  	  	  	  	  	 	 // If transmit of first half completes and new xfer complete event occurs, then we can let the DMA start filling first half again,
   	  	  	  	   	  	  	  // So move to next state.
   	  	  	  	   	  	  	  // If transmit of first half is still incomplete when new xfer event occurs, then we need to stop the ADC and
-  	  	  	  	   	  	  	  // Wait until the transmit of first half is complete, then start filling the first half (moving to next state).
+  	  	  	  	   	  	  	  // Wait until the transmit of first half is complete (go to adc_buf_wait state), then start filling the first half (moving to next state).
   	  	  	  	  	  	 	 // Can use a uart callback to determine this.
   	  	  	  		 }
   	  	  	  		 else if ( pStates -> adc_buf_state_current == ADC_BUF_WAIT )
   	  	  	  		 {
-  	  	  	  		pStates -> stim_state_current = DO_STIM_STOP_CAPTURE;
-  	  	  	  	         New_Event();
+  	  	  	  		     pStates -> stim_state_current = DO_STIM_STOP_CAPTURE;
   	  	  	  		 }
-  	  	  	  	 break;
     	     }
+    	 	 case DO_STIM_STOP:
+    	 	 {
+    	 		 break;
+    	 	 }
     	 	 case DO_STIM_STOP_CAPTURE:
     	 	 {
-    	 		//HAL_ADC_Stop_DMA(&hadc);
+    	 		HAL_ADC_Stop_DMA(&hadc);
 
     	 		if ( pStates -> adc_buf_state_prev == ADC_BUF_FIRST_HALF_FILLING )
     	 		{
@@ -590,8 +580,8 @@ int main(void)
     	 	 case DO_STIM_RESTART_CAPTURE:
     	 	 {
     	 		 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
-    	 		pStates -> stim_state_current = STIM_RUNNING;
-    	 		pStates -> adc_buf_state_current = pStates -> adc_buf_state_prev; // We are now filling the buffer
+    	 		 pStates -> stim_state_current = STIM_RUNNING;
+    	 		 pStates -> adc_buf_state_current = pStates -> adc_buf_state_prev; // We are now filling the buffer
     	    	 break;
     	 	 }
     	 	 default:
@@ -720,12 +710,9 @@ static void MX_ADC_Init(void)
 #endif
 
    /* Reinitialize using DMA*/
-   hadc.Init.ExternalTrigConv = ADC_SOFTWARE_START;
    hadc.Init.DMAContinuousRequests = ENABLE;
-   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
-   hadc.Init.ContinuousConvMode = ENABLE;
-
    ADC1 -> IER |= ADC_IER_EOSEQIE | ADC_IER_EOCIE;
+
    if (HAL_ADC_Init(&hadc) != HAL_OK)
    {
       Error_Handler();
