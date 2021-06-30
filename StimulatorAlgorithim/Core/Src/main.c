@@ -96,37 +96,48 @@ typedef enum {
 }bool_t;
 
 typedef enum {
-	STIM_WAIT,
-	STIM_RUN,
+	DO_STIM_RUN,
+	STIM_RUNNING,
+	DO_STIM_STOP_CAPTURE,
+	DO_STIM_RESTART_CAPTURE,
 	STIM_DISABLE,
-	STIM_ERROR
 }stim_state_t;
 
 typedef enum {
 	TX_DISABLED,
-	TX_ONGOING,
+	TX_INCPLT,
 	TX_CPLT,
-}tx_status_t;
+}tx_state_t;
 
 typedef enum {
-	ADC_BUF_EMPTY,
+	ADC_BUF_WAIT,
 	ADC_BUF_FIRST_HALF_FILLING,
-	ADC_BUF_FIRST_HALF_FULL,
 	ADC_BUF_SECOND_HALF_FILLING,
-	ADC_BUF_SECOND_HALF_FULL
-}adc_buf_status_t;
+}adc_buf_state_t;
+
+typedef enum {
+	NO_XFERS,
+	HALF_XFER_CPLT,
+	XFER_CPLT
+}dma_xfer_state_t;
+
 
 typedef struct {
-	adc_buf_status_t  adc_buf_status;
-	tx_status_t tx_status;
-	stim_state_t stim_state;
+	adc_buf_state_t  adc_buf_state_current;
+	adc_buf_state_t  adc_buf_state_prev;
+	dma_xfer_state_t  dma_xfer_state;
+	tx_state_t tx_state;
+	stim_state_t stim_state_current;
+	stim_state_t stim_state_prev;
 }states_t;
 
 volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
 volatile states_t states = {
-		.adc_buf_status = ADC_BUF_EMPTY,
-		.tx_status = TX_DISABLED,
-		.stim_state = STIM_WAIT
+		.adc_buf_state_current = ADC_BUF_WAIT,
+		.adc_buf_state_prev = ADC_BUF_WAIT,
+		.dma_xfer_state = NO_XFERS,
+		.tx_state = TX_DISABLED,
+		.stim_state_current = DO_STIM_RUN,
 		};
 
 uint32_t *DAC_Lut;
@@ -162,6 +173,7 @@ HAL_StatusTypeDef TransmitMessage_UART(char * msg);
 
 void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac);
 
+adc_buf_state_t *StimRunStateMachine(states_t *states); // Only call during Stim Run State
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -404,12 +416,12 @@ void Load_DAC_Timer(TIM_HandleTypeDef* htim)
 
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	ADC_Buf_Status == ADC_BUF_FIRST_HALF_FULL;
+	states -> dma_xfer_state = HALF_XFER_CPLT;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-		ADC_Buf_Status == ADC_BUF_SECOND_HALF_FULL;
+	states -> dma_xfer_state = XFER_CPLT;
 }
 
 void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
@@ -434,26 +446,28 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
 	HAL_DAC_Stop_DMA(hdac, DAC_CHANNEL_1);
 }
 
-states_t *StimRunStateMachine(states_t *states)
+adc_buf_state_t *StimBufState(states_t *states) // Only call during Stim Run State
 {
-	switch (states -> adc_buf_status)
+	switch (states -> adc_buf_state_current)
 	{
 		case (ADC_BUF_WAIT):
-			// Wait until tx is complete, then move to next state
-			if (states -> pre)states -> adc_buf_status = ADC_BUF_FIRST_HALF_FILLING;
-			states -> adc_buf_status = ADC_BUF_SECOND_HALF_FILLING;
+			break;
 		case (ADC_BUF_FIRST_HALF_FILLING):
-			// TX Second Half if second half full (check previous state)
-			// Check if first half is full, if full move to next state
-		case (ADC_BUF_FIRST_HALF_FULL):
-			states -> adc_buf_status = ADC_BUF_WAIT;
+		    if (states -> dma_xfer_status == HALF_XFER_CPLT )
+		    {
+			    states -> adc_buf_state_current = ADC_BUF_WAIT;
+		    }
+		  	states -> adc_buf_state_prev = states -> adc_buf_state_current;
+			break;
 		case (ADC_BUF_SECOND_HALF_FILLING):
-			// TX First Half if first half full (check previous state)
-			// Check if second half is full, if full move to next state
-		case (ADC_BUF_SECOND_HALF_FULL):
-			//If tx of first half isn't complete, move to wait state
-			states -> adc_buf_status = ADC_BUF_WAIT;
-
+			if (states -> dma_xfer_status == XFER_CPLT )
+			{
+				states -> adc_buf_state_current = ADC_BUF_WAIT;
+			}
+			states -> adc_buf_state_prev = states -> adc_buf_state_current;
+			break;
+		default:
+			return states -> adc_buf_state_current;
 	}
 }
 
@@ -495,16 +509,19 @@ int main(void)
   MX_ADC_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
-
   /* USER CODE END 2 */
-
+  New_Event();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
       while (1)
       {
-    	 switch (Status)
+    	 if (Is_New_Event()) //If a transfer or half transfer has been completed run state machine
     	 {
-    	 	 case STIM_RUN:
+       	     StimBufState(states);
+
+    	 switch (states)
+    	 {
+    	 	 case DO_STIM_RUN:
     	     {
     	    	 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
     	    	 else if (CONSTANT_OUTPUT_ENABLE == 1) { GenerateConstCurrent_LUT(AMPLITUDE_MA, DAC_ARR_SIZE_DEBUG); }
@@ -513,30 +530,72 @@ int main(void)
   	  	  	  	 HAL_TIM_Base_Start_IT(&htim2);
   	  	  	  	 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
 
-  	  	  	  	 StimRunStateMachine(stim_states);
-  	  	  	  	 TransmitBufFirstHlf(ADC_buf);
-  	  	  	     XferCplt = FALSE;   // Reset Xfer Complete Flag
-  	  	  	     char msg[UART_BUF_SIZE] = {'\0'};
-  	  	  	     float data = ComputeImpedance(ADC3_Res, ADC4_Res);
-  	  	  	     CreateTxStr(msg, data);
-  	  	  	     TransmitMessage_UART(msg);
+  	  	  	  	 if (states ->dma_xfer_state == HALF_XFER_CPLT)
+  	  	  	  	 {
+  	  	  	  		 states -> adc_buf_state_current = ADC_BUF_SECOND_HALF_FILLING;
+  	  	  	  	  	 states -> state = STIM_RUNNING; // The stimulator DAC and ADC are now running
+  	  	  	  	 }
+  	  	  	  	 break;
+    	 	 case STIM_RUNNING:
+    	 	 {
+  	  	  	  		 /* ADC Buffer is full, transmit data if haven't already done so.*/
+  	  	  	  		 if ( states -> adc_buf_state_current == ADC_BUF_FIRST_HALF_FILLING )
+  	  	  	  		 {
+  	  	  	  			 TransmitBufSecondHlf(ADC_Buf); // If full transfer has been completed send out second half
+  	  	  	  		  	 char msg[UART_BUF_SIZE] = {'\0'};
+  	  	  	  		  	 float data = ComputeImpedance(ADC3_Res, ADC4_Res);
+  	  	  	  		  	 CreateTxStr(msg, data);
+  	  	  	  		  	 TransmitMessage_UART(msg);
+  	  	  	  		 }
+  	  	  	  		 else if ( states -> adc_buf_state_current == ADC_BUF_SECOND_HALF_FILLING )
+  	  	  	  		 {
+  	  	  	  			 TransmitBufFirstHlf(ADC_Buf);
+  	  	  	  	  	  	 char msg[UART_BUF_SIZE] = {'\0'};
+  	  	  	  	  	  	 float data = ComputeImpedance(ADC3_Res, ADC4_Res);
+  	  	  	  	  	  	 CreateTxStr(msg, data);
+  	  	  	  	  	  	 TransmitMessage_UART(msg);
+  	  	  	  		 }
+  	  	  	  		 else if ( states -> adc_buf_state_current == ADC_BUF_WAIT )
+  	  	  	  		 {
+  	  	  	  			 states -> state = DO_STIM_STOP_CAPTURE;
+  	  	  	  	         New_Event();
+  	  	  	  		 }
+  	  	  	  	 break;
     	     }
-    	 	 case STIM_WAIT:
+    	 	 case DO_STIM_STOP_CAPTURE:
     	 	 {
-    	    	 HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+    	 		HAL_ADC_Stop_DMA(&hadc);
+
+    	 		if ( states -> adc_buf_state_prev == ADC_BUF_FIRST_HALF_FILLING )
+    	 		{
+    	 		  	  TransmitBufFirstHlf(ADC_Buf);
+    	 		}
+    	 		else if ( states -> adc_buf_state_prev == ADC_BUF_SECOND_HALF_FILLING )
+    	 		{
+    	 		  	  TransmitBufSecondHlf(ADC_Buf);
+    	 		}
+    	 		states -> state = DO_STIM_RESTART_CAPTURE;
+	  	  	    New_Event();
+    	 		break;
     	 	 }
-    	 	 case STIM_DISABLE:
+    	 	 case DO_STIM_RESTART_CAPTURE:
     	 	 {
-    	 		 HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-    	 		 HAL_TIM_Base_Stop_IT(&htim2);
-    	 		 HAL_ADC_Stop_DMA(&hadc);
+    	 		 HAL_ADC_Start_DMA(&hadc, (uint32_t *)ADC_Buf, ADC_BUF_SIZE);
+    	    	 states -> state = STIM_RUNNING;
+        	     states -> adc_buf_state_current = states -> adc_buf_state_prev; // We are now filling the buffer
+    	    	 break;
     	 	 }
-    	 	 case STIM_ERROR:
+    	 	 case DO_STIM_DISABLE:
+    	 	 {
+
+    	 	 }
+    	 	 default:
     	 	 {
     	    	 HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     	 	 }
     	 }
-
+    	 }
+		 states -> dma_xfer_state = NO_XFERS;
 
       }
 
