@@ -42,7 +42,7 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 1;
-    this.packetLength = firmware.length + 14;
+    this.packetLength = firmware.length + 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(firmware.length + 5);
     this.data.add((byte) packetNum);
