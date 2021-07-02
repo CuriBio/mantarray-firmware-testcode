@@ -57,10 +57,10 @@
 
 /* External variables --------------------------------------------------------*/
 extern DMA_HandleTypeDef hdma_adc;
-extern ADC_HandleTypeDef hadc;
 extern DMA_HandleTypeDef hdma_dac_ch1;
 extern DAC_HandleTypeDef hdac;
 extern TIM_HandleTypeDef htim2;
+extern UART_HandleTypeDef huart2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -174,20 +174,6 @@ void DMA1_Channel2_3_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles ADC, COMP1 and COMP2 interrupts (COMP interrupts through EXTI lines 21 and 22).
-  */
-void ADC1_COMP_IRQHandler(void)
-{
-  /* USER CODE BEGIN ADC1_COMP_IRQn 0 */
-
-  /* USER CODE END ADC1_COMP_IRQn 0 */
-  HAL_ADC_IRQHandler(&hadc);
-  /* USER CODE BEGIN ADC1_COMP_IRQn 1 */
-
-  /* USER CODE END ADC1_COMP_IRQn 1 */
-}
-
-/**
   * @brief This function handles TIM2 global interrupt.
   */
 void TIM2_IRQHandler(void)
@@ -212,6 +198,20 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
