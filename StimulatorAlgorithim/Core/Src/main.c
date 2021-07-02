@@ -36,12 +36,12 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define V_REF               3.3
-#define R_SHUNT_OHMS        33
+#define V_REF               	3.3
+#define R_SHUNT_OHMS        	33
 
-#define ADC_BUF_SIZE            512U
-#define ADC_BUF_TWO_SIZE 	    ( ADC_BUF_SIZE / 2 )
-#define ADC_BUF_ONE_SIZE        ( ADC_BUF_SIZE / 2 )
+#define DATA_BUF_SIZE           64U // Must be power of two
+#define DATA_BUF_HALF_SIZE 	    ( DATA_BUF_SIZE / 2 )
+#define MSG_SIZE                ( DATA_BUF_SIZE * 6 ) + 1
 
 #define ADC_LATENCY 	  		4.5    // Number of ADC Clock cycles between Timer Trigger and Start of Conversion
 #define ADC_CONV_TIME_US   		0.87
@@ -64,18 +64,22 @@
 
 #define MAX_EVENT_QUEUE_SIZE    50U
 
-#define TX_ONE_FLAG_POS  0x0
-#define TX_TWO_FLAG_POS 0x1
-#define BUF_ONE_FLAG_POS  0x2
-#define BUF_TWO_FLAG_POS  0x3
-#define TX_ONE_CPLT_FLAG ( 1 << TX_ONE_FLAG_POS )
-#define TX_TWO_CPLT_FLAG ( 1 << TX_TWO_FLAG_POS )
-#define BUF_ONE_CPLT_FLAG ( 1 << BUF_ONE_FLAG_POS )
-#define BUF_TWO_CPLT_FLAG ( 1 << BUF_TWO_FLAG_POS )
+#define TX_ONE_FLAG_POS  		0x00
+#define TX_TWO_FLAG_POS 		0x01
+#define BUF_ONE_FLAG_POS  		0x02
+#define BUF_TWO_FLAG_POS  		0x03
+#define DMA_STOPPED_FLAG_POS 	0x04
+#define TX_ONE_CPLT_FLAG 		( 1 << TX_ONE_FLAG_POS )
+#define TX_TWO_CPLT_FLAG 		( 1 << TX_TWO_FLAG_POS )
+#define BUF_ONE_CPLT_FLAG 		( 1 << BUF_ONE_FLAG_POS )
+#define BUF_TWO_CPLT_FLAG 		( 1 << BUF_TWO_FLAG_POS )
 
-#define BIT_SET(BITS, BIT)  BITS | BIT
-#define BIT_CLR(BITS, BIT)  BITS & (!BIT)
-#define IS_BIT_SET(BITS, BIT) BITS & (BIT) ? 1 : 0
+#define FLAGS_BUFS_EMPTY     TX_ONE_CPLT_FLAG  | TX_TWO_CPLT_FLAG
+#define FLAGS_BUF_ONE_FULL   BUF_ONE_CPLT_FLAG | TX_TWO_CPLT_FLAG
+#define FLAGS_BUF_TWO_FULL   BUF_TWO_CPLT_FLAG | TX_ONE_CPLT_FLAG
+#define FLAGS_BUFS_FULL      BUF_ONE_CPLT_FLAG | BUF_TWO_CPLT_FLAG
+
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -110,19 +114,16 @@ typedef enum {
 typedef enum {
 	DO_STIM_RUN,
 	STIM_RUNNING,
-	DO_STIM_STOP_CAPTURE,
-	STIM_CAPTURE_STOPED,
-	DO_STIM_RESTART_CAPTURE,
 	DO_STIM_STOP,
 	STIM_STOPPED
 } state_t;
 
 typedef enum {
-	BUF_ONE_FULL_TX_TWO_CPLT,
-	BUF_ONE_FULL_TX_TWO_INCPLT,
-	BUF_TWO_FULL_TX_ONE_CPLT,
-	BUF_TWO_FULL_TX_ONE_INCPLT,
-	NO_EVENT
+	HALF_XFER_CPLT,
+	XFER_CPLT,
+	DMA_HALT_ON_HALF_XFER,
+	DMA_HALT_ON_XFER,
+	PROGRAM_START,
 } event_t;
 
 typedef struct {
@@ -145,15 +146,17 @@ event_queue_t event_queue = {
 typedef struct {
 	uint16_t flags;
 	state_t state_current;
-	state_t state_prev;
-	event_queue_t event_queue;
+    state_t state_prev;
+	volatile event_queue_t event_queue;
+	volatile uint16_t *data_buf;
 } stimulator_t;
 
-volatile uint16_t ADC_Buf[ADC_BUF_SIZE];
+volatile uint16_t data_buf[DATA_BUF_SIZE];
 volatile stimulator_t stimulator = {
 		.state_current = DO_STIM_RUN,
 		.state_prev = STIM_STOPPED,
-		.event_queue = NULL
+		.event_queue = {},
+		.data_buf = data_buf
 		};
 volatile stimulator_t *pStimulator = &stimulator;
 
@@ -184,7 +187,6 @@ float GetTimerPeriod_S(TIM_HandleTypeDef htim);
 void AllocateTimerLUT(TIM_HandleTypeDef htim, size_t n_elem);
 void Load_DAC_Timer(TIM_HandleTypeDef* htim);
 
-void CreateTxStr(char * msg, float Data);
 HAL_StatusTypeDef TransmitMessage_UART(char * msg);
 
 void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac);
@@ -193,6 +195,18 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void BIT_SET(volatile uint16_t *bits, uint16_t bit){
+	*(bits) = *(bits) | bit;
+}
+
+void BIT_CLR(volatile uint16_t *bits, uint16_t bit){
+	*(bits) = *(bits) & !bit;
+}
+
+uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit){
+	return (bits & (bit)) ? 1 : 0;
+}
 
 void AllocateLUT(TIM_HandleTypeDef htim, size_t n_elem)
 {
@@ -457,7 +471,8 @@ event_t pop_event(volatile stimulator_t *pStimulator)
 		return event;
 	}
 	else {
-		return NO_EVENT;
+		event = PROGRAM_START;
+		return event;
 	}
 
 
@@ -476,29 +491,51 @@ void push_event(volatile stimulator_t *pStimulator, event_t event)
 	}
 }
 
+bool_t isEmpty(volatile stimulator_t *pStimulator)
+{
+	volatile event_queue_t *pQueue = &(pStimulator -> event_queue);
+	event_t event;
+	if ((pQueue -> head == 0) && (pQueue -> tail == 0))
+	{
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef* hadc)
 {
+	BIT_SET(&(pStimulator -> flags), BUF_ONE_CPLT_FLAG);
+	BIT_CLR(&(pStimulator -> flags), TX_ONE_CPLT_FLAG);
+
 	if (!IS_BIT_SET(pStimulator -> flags, TX_TWO_CPLT_FLAG))
 	{
 		/* TX of buffer two is not yet complete and buffer one is full so halt dma requests and generate event */
-		HAL_ADC_Stop_DMA(&hadc);
-		push_event(pStimulator, BUF_ONE_FULL_TX_TWO_INCPLT);
-	} else
+		HAL_ADC_Stop_DMA(hadc);
+		push_event(pStimulator, DMA_HALT_ON_HALF_XFER);
+	}
+	else if (IS_BIT_SET(pStimulator -> flags, TX_TWO_CPLT_FLAG))
 	{
-		push_event(pStimulator, BUF_ONE_FULL_TX_TWO_CPLT);
+		/* Transmit of second buffer has already been completed so DMA requests can continue into second buffer */
+		push_event(pStimulator, HALF_XFER_CPLT);
 	}
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
+	BIT_SET(&(pStimulator -> flags), BUF_TWO_CPLT_FLAG);
+	BIT_CLR(&(pStimulator -> flags), TX_TWO_CPLT_FLAG);
+
 	if (!IS_BIT_SET(pStimulator -> flags, TX_ONE_CPLT_FLAG))
 	{
 		/* TX of buffer one is not yet complete and buffer two is full so halt dma requests and generate event */
-		HAL_ADC_Stop_DMA(&hadc);
-		push_event(pStimulator, BUF_TWO_FULL_TX_ONE_INCPLT);
-	} else
+		HAL_ADC_Stop_DMA(hadc);
+		push_event(pStimulator, DMA_HALT_ON_XFER);
+	}
+	else if (IS_BIT_SET(pStimulator -> flags, TX_ONE_CPLT_FLAG))
 	{
-		push_event(pStimulator, BUF_TWO_FULL_TX_ONE_CPLT);
+		/* Transmit of first buffer has already been completed so DMA requests can continue into first buffer */
+		push_event(pStimulator, XFER_CPLT);
 	}
 }
 
@@ -506,33 +543,32 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if (!IS_BIT_SET(pStimulator -> flags, TX_ONE_CPLT_FLAG))
 	{
-		BIT_SET(pStimulator -> flags, TX_ONE_CPLT_FLAG);
-		push_event(pStimulator, TX_BUF_ONE_CPLT); // Transmit of Buf 1 is complete
+		BIT_SET(&pStimulator -> flags, TX_ONE_CPLT_FLAG);
+		BIT_CLR(&pStimulator -> flags, BUF_ONE_CPLT_FLAG);
 	}
 	else if (!IS_BIT_SET(pStimulator -> flags, TX_TWO_CPLT_FLAG))
 	{
-		BIT_SET(pStimulator -> flags, TX_TWO_CPLT_FLAG);
-		push_event(pStimulator, TX_BUF_TWO_CPLT); // Transmit of Buf 2 is complete
+		BIT_SET(&(pStimulator -> flags), TX_TWO_CPLT_FLAG);
+		BIT_CLR(&(pStimulator -> flags), BUF_TWO_CPLT_FLAG);
 	}
-
 }
 
-void CreateStrFromArray(char * dest_str, uint16_t *data, size_t size)
+void CreateStrFromArray(char *dest_str, volatile uint16_t *data, size_t size)
 {
 	  for (int i = 0; i < size; i++)
 	  {
-		 char src_str[20] = {'\0'};
-		 sprintf(src_str, "%f,", data[i]);
+		 char src_str[6] = {'\0'};
+		 sprintf(src_str, "%d,", data[i]);
 		 strcat(dest_str, src_str);
 	  }
 }
 
 
-void TransmitBuf(uint16_t *buf, size_t size)
+void TransmitBuf(volatile uint16_t *buf)
 {
 
-	char *msg[200];
-	CreateStrFromArray(msg, buf, size);
+	char msg[MSG_SIZE];
+	CreateStrFromArray(msg, buf, MSG_SIZE);
 	HAL_UART_Transmit_IT(&huart2, (uint8_t *) msg, strlen(msg));
 }
 
@@ -578,12 +614,12 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+      push_event(pStimulator, PROGRAM_START);
       while (1)
       {
-    	 event_t event = pop_event(pStimulator);
-    	 if ( event != NO_EVENT) // If a new event has been generated, run state machine
+    	 if (isEmpty(pStimulator) == FALSE)
     	 {
-
+    	 event_t event = pop_event(pStimulator);
     	 switch (pStimulator -> state_current)
     	 {
     	 	 case STIM_STOPPED:
@@ -599,31 +635,69 @@ int main(void)
     	     }
     	 	 case STIM_RUNNING: // Need to add logic to this part to control the double buffer mechanism
     	 	 {
+    	 		/*
+    	 		 * State Table
+    	 		 * ROW 1: 			If both buffers are empty that means the transmission of one buffer was completed before the dma xfer of the other buffer could complete, so the system
+    	 		 * 		  			is not transmitting in this state and both of the TX complete flags are set.
+    	 		 * ROW 2 and ROW 3: If one buffer is full and the other isn't, then the system is operating normally, filling one buffer and transmitting the other. It is illegal for the
+    	 		 * 					TX and BUF flag of a single buffer to be in the same state at any given time.
+    	 		 * ROW 4: 			If both buffers are full that means the dma xfer of one buffer was completed before the transmission of the other so the dma is halted in this state.
+
+    	 		 *
+    	 		 * BUF 1 | BUF 2|  TX 1 | TX 2
+    	 		 * ______|______|_______|_______
+    	 		 *   0   |  0   |    1  |   1
+    	 		 * ______|______|_______|_______
+    	 		 *   0   |  1   |    1  |   0
+    	 		 * ______|______|_______|_______
+    	 		 *   1   |  0   |    0  |   1
+    	 		 * ______|______|_______|_______
+    	 		 *   1   |  1   |    0  |   0
+    	 		 * ______|______|_______|_______
+    	 		 *
+    	 		 *
+    	 		 */
   	  	  	  		 /* ADC Buffer is full, transmit data if haven't already done so.*/
-  	  	  	  		 if ( event == BUF_ONE_FULL_TX_TWO_CPLT )
+  	  	  	  		 if ( event == HALF_XFER_CPLT )
   	  	  	  		 {
   	  	  	  			 /* Second buffer has been transmitted so free to transmit first buffer */
-  	  	  	  			 idx = DATA_BUF_HALF_SIZE - 1;
-  	  	  	  		 	 uint16_t buf[DATA_BUF_HALF_SIZE];
-  	  	  	  		  	 memmove(buf, pStimulator -> data_buf + idx, DATA_BUF_HALF_SIZE);
-  	  	  	  		  	 TransmitBuf(buf, sizeof(buf) / sizeof(buf[0]));
-  	  	  			  	 /* Clear the TX_BUF_ONE_FLAG since we've just started a transmission */
-  	  	  			  	 BIT_CLR(pStimulator -> flags, TX_ONE_CPLT_FLAG);
+  	  	  	  			volatile  uint16_t *buf = pStimulator -> data_buf;
+  	  	  	  			 TransmitBuf(buf);
+  	  	  	  		     /* Clear the TX_ONE_CPLT_FLAG since we've just started a transmission */
+  	  	  	  			 BIT_CLR(&(pStimulator -> flags), TX_ONE_CPLT_FLAG);
+  	  	  	  			 BIT_SET(&(pStimulator -> flags), BUF_ONE_CPLT_FLAG);
+  	  	  	  			 /* Second buffer is now filling  */
   	  	  	  		 }
-  	  	  	  		 else if ( event == BUF_TWO_FULL_TX_ONE_CPLT )
+  	  	  	  		 else if ( event == XFER_CPLT )
   	  	  	  		 {
   	  	  	  			 /* First buffer has been transmitted so free to transmit second buffer */
-  	  	  	  			 idx = DATA_BUF_SIZE - 1;
-  	  	  	  		 	 uint16_t buf[DATA_BUF_HALF_SIZE];
-  	  	  	  		 	 memmove(buf, pStimulator -> data_buf + idx, DATA_BUF_HALF_SIZE);
-  	  	  	  		 	 TransmitBuf(buf, sizeof(buf) / sizeof(buf[0]));
-  	  	  	  		  	 BIT_CLR(pStimulator -> flags, TX_TWO_CPLT_FLAG);
+  	  	  	  			 volatile uint16_t *buf = pStimulator -> data_buf + (DATA_BUF_HALF_SIZE - 1);;
+  	  	  	  		 	 TransmitBuf(buf);
+  	  	  	  		     /* Clear the TX_TWO_CPLT_FLAG since we've just started a transmission */
+  	  	  	  		 	 BIT_CLR(&(pStimulator -> flags), TX_TWO_CPLT_FLAG);
+  	  	  	  			 BIT_SET(&(pStimulator -> flags), BUF_ONE_CPLT_FLAG);
+  	  	  	    	  	 /* First buffer is now filling */
   	  	  	  		 }
-  	  	  	  		 else if (event == DMA_STOPPED )
+  	  	  	  		 else if ( event == DMA_HALT_ON_HALF_XFER )
   	  	  	  		 {
-  	  	  	  		     // Do Nothing
+  	  	  	  		  	 /* Second buffer has finished transmitting so now loop back and transmit first buffer, then restart DMA */
+  	  	  	  		     volatile uint16_t *buf = pStimulator -> data_buf;
+  	  	  	  			 TransmitBuf(buf);
+  	  	  	  			 /* Clear the TX_ONE_CPLT_FLAG since we've just started a transmission */
+  	  	  	  		  	 BIT_CLR(&(pStimulator -> flags), TX_ONE_CPLT_FLAG);
+  	  	  	  		  	 BIT_SET(&(pStimulator -> flags), BUF_ONE_CPLT_FLAG);
+ 	  	  	  			 /* Second buffer will begin filling once DMA is restarted */
   	  	  	  		 }
-
+  	  	  	  		 else if ( event == DMA_HALT_ON_XFER )
+  	  	  	  		 {
+  	  	  	  		  	 /* First buffer has finished transmitting so now loop back and transmit second buffer, then restart DMA */
+  	  	  	  		     volatile uint16_t *buf = pStimulator -> data_buf + (DATA_BUF_HALF_SIZE - 1);;
+  	  	  	  			 TransmitBuf(buf);
+  	  	  	  		     /* Clear the TX_TWO_CPLT_FLAG since we've just started a transmission */
+  	  	  	  			 BIT_CLR(&(pStimulator -> flags), TX_TWO_CPLT_FLAG);
+  	  	  	  			 BIT_SET(&(pStimulator -> flags), BUF_ONE_CPLT_FLAG);
+  	  	  	  			 /* First buffer will begin filling once DMA is restarted */
+  	  	  	  		 }
     	     }
     	 	 case DO_STIM_STOP:
     	 	 {
@@ -631,10 +705,6 @@ int main(void)
     	 		 HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
   	  	  	  	 HAL_TIM_Base_Stop_IT(&htim2);
     	 		 break;
-    	 	 }
-    	 	 default:
-    	 	 {
-    	    	 HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
     	 	 }
     	 }
     	 }
