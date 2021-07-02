@@ -22,6 +22,7 @@ void readPackets(){
       {
         //This is no good, it means there is either noise on the line or it dropped a packet because a byte that doesn't belong to a magic word has been detected
         //Either way, it means trouble.  Keep track of when this happens.
+        println(aggregate.subList(0,scanner+1));
         aggregate.subList(0,scanner+1).clear();
         magicWordContent = 0;
         scanner = 0;
@@ -162,7 +163,7 @@ void LoadFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length();
+    long fileSize = firmwareFile.length(); //<>//
     int numFullPackets = (int)fileSize / 65532;
     int remainderBytes = (int)fileSize % 65532;
     
