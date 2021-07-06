@@ -165,7 +165,7 @@ static void MX_ADC_Init(void);
 void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot);
 void GenerateBiphasicPulse_LUT(float Amplitude_mA, float Pulse_Period_mS, float Interpulse_Period_mS, float Period_mS);
 void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA);
-float ComputeImpedance(uint16_t ADC3_Res, uint16_t ADC4_Res);
+void ComputeImpedances(uint16_t *ADC3_Res, uint16_t *ADC4_Res, float *Z_Buf);
 
 void HAL_DMA1_CH1_XferCpltCallback(DMA_HandleTypeDef* hdma_adc);
 void SetTimerPeriod(TIM_HandleTypeDef *htim, uint16_t *tim_arr, size_t n, uint8_t *index);
@@ -210,7 +210,7 @@ int movingAvg(int *ptrArrNumbers, long *ptrSum, int pos, int len, uint16_t nextN
   return *ptrSum / len;
 }
 
-float ComputeImpedance(uint16_t ADC3_Res, uint16_t ADC4_Res)
+void ComputeImpedances(uint16_t *ADC3_Buf, uint16_t *ADC4_Buf, float *Z_Buf)
 {
 	//float trig_period = GetTimerPeriod_S(htim2);
 	//uint32_t time_stamp = i * trig_period;
@@ -218,15 +218,16 @@ float ComputeImpedance(uint16_t ADC3_Res, uint16_t ADC4_Res)
 	float v_pos, v_neg, adc3_V, adc4_V;
 	float well_impedance_OHMS, well_current_A, well_voltage_V;
 
-	adc3_V = ((float) ADC3_Res / 4096) * 3.3;
-	v_pos = ( adc3_V - 1.65054 ) * 5.7;
-	adc4_V = ((float) ADC4_Res / 4096) * 3.3;
-	v_neg = ((adc4_V*2) - V_REF);  // Shunt Voltage
-	well_current_A = v_neg / R_SHUNT_OHMS;
-	well_voltage_V = v_pos - v_neg;
-	well_impedance_OHMS = well_voltage_V / well_current_A;
-
-	return well_impedance_OHMS;
+	for (int i = 0; i < DATA_BUF_HALF_SIZE; i++)
+	{
+		adc3_V = ((float) ADC3_Buf[i] / 4096) * 3.3;
+		v_pos = ( adc3_V - 1.65054 ) * 5.7;
+		adc4_V = ((float) ADC4_Buf[i] / 4096) * 3.3;
+		v_neg = ((adc4_V * 2) - V_REF);  // Shunt Voltage
+		well_current_A = v_neg / R_SHUNT_OHMS;
+		well_voltage_V = v_pos - v_neg;
+		Z_Buf[i] = well_voltage_V / well_current_A;
+	}
 }
 
 
@@ -471,20 +472,32 @@ void CreateStrFromArray(char *dest_str, volatile uint16_t *data, size_t size)
 
 }
 
+void parseBuf(volatile uint16_t *buf, uint16_t *adc3_buf, uint16_t *adc4_buf)
+{
+	int j = 0;
+	for (int i = 0; i < DATA_BUF_SIZE; i++)
+	{
+		if (i%2 == 0){
+			adc3_buf[j] = buf[i];
+		} else {
+			adc4_buf[j] = buf[i];
+			j++;
+		}
 
-void TransmitBuf(volatile uint16_t *buf)
+	}
+}
+
+void TransmitBuf(volatile float *buf, size_t size)
 {
 	full_counter++;
 	HAL_GPIO_TogglePin(GPIOA, GREEN_LED_PIN_Pin);
-	for (int i = 0; i < DATA_BUF_SIZE; i++)
+	for (int i = 0; i < size; i++)
 	{
-		char src_str[6] = {'\0'};
-		sprintf(src_str, "%d,", buf[i]);
-		ComputeImpedance(buf[i], buf[i+1]);
-		i++;
-		HAL_UART_Transmit(&huart2, (uint8_t *) src_str, strlen(src_str), 100);
+		char str[40] = {'\0'};
+		snprintf(str, sizeof(str), "%f,", buf[i]);
+		HAL_UART_Transmit(&huart2, (uint8_t *) str, strlen(str), 100);
 	}
-	HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r\n\r\n\r", 12, 100);
+	HAL_UART_Transmit(&huart2, (uint8_t *) "\n\r", 2, 100);
 }
 
 
@@ -546,8 +559,9 @@ int main(void)
     	 	 		 if ( event == STIM_RUN_CMD ) {
     	 	 			 pStimulator->state_current = DO_STIM_RUN;
         	 	 		 pStimulator->state_prev = STIM_STOPPED;
+    	 	 		 } else {
+        	 	 		 break;
     	 	 		 }
-    	 	 		 break;
     	 	 	 case DO_STIM_RUN:
     	 	 	 {
     	 	 		 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
@@ -564,7 +578,12 @@ int main(void)
   	  	  	  		 if ( event == XFER_CPLT )
   	  	  	  		 {
   	  	  	  			 volatile uint16_t *buf = pStimulator -> data_buf;
-  	  	  	  		 	 TransmitBuf(buf);
+  	  	  	  			 uint16_t adc3_buf[DATA_BUF_HALF_SIZE];
+  	  	  	  		     uint16_t adc4_buf[DATA_BUF_HALF_SIZE];
+  	  	  	  			 parseBuf(buf, adc3_buf, adc4_buf);
+  	  	  	  			 volatile float Z_Buf[DATA_BUF_HALF_SIZE];
+  	  	  	  			 ComputeImpedances(adc3_buf, adc4_buf, Z_Buf);
+  	  	  	  		 	 TransmitBuf(Z_Buf, sizeof(Z_Buf) / sizeof(Z_Buf[0]));
   	  	  	  		 	 HAL_ADC_Start_DMA(&hadc, (uint32_t *)pStimulator -> data_buf, DATA_BUF_SIZE);
   	  	  	  		 } else if ( event == STIM_STOP_CMD ){
   	    	 	 		 pStimulator->state_current = DO_STIM_STOP;
