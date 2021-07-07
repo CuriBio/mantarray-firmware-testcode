@@ -75,14 +75,14 @@ struct ring_buffer_t {
  * This function can also be used to empty/reset the buffer.
  * @param buffer The ring buffer to initialize.
  */
-void ring_buffer_init(ring_buffer_t *buffer);
+void ring_buffer_init(volatile ring_buffer_t *buffer);
 
 /**
  * Adds a byte to a ring buffer.
  * @param buffer The buffer in which the data should be placed.
  * @param data The byte to place.
  */
-void ring_buffer_queue(ring_buffer_t *buffer, event_t data);
+void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t data);
 
 /**
  * Adds an array of bytes to a ring buffer.
@@ -90,7 +90,7 @@ void ring_buffer_queue(ring_buffer_t *buffer, event_t data);
  * @param data A pointer to the array of bytes to place in the queue.
  * @param size The size of the array.
  */
-void ring_buffer_queue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t size);
+void ring_buffer_queue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t size);
 
 /**
  * Returns the oldest byte in a ring buffer.
@@ -98,7 +98,7 @@ void ring_buffer_queue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_siz
  * @param data A pointer to the location at which the data should be placed.
  * @return 1 if data was returned; 0 otherwise.
  */
-ring_buffer_size_t ring_buffer_dequeue(ring_buffer_t *buffer, event_t *data);
+ring_buffer_size_t ring_buffer_dequeue(volatile ring_buffer_t *buffer, event_t *data);
 
 /**
  * Returns the <em>len</em> oldest bytes in a ring buffer.
@@ -107,7 +107,7 @@ ring_buffer_size_t ring_buffer_dequeue(ring_buffer_t *buffer, event_t *data);
  * @param len The maximum number of bytes to return.
  * @return The number of bytes returned.
  */
-ring_buffer_size_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t len);
+ring_buffer_size_t ring_buffer_dequeue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t len);
 /**
  * Peeks a ring buffer, i.e. returns an element without removing it.
  * @param buffer The buffer from which the data should be returned.
@@ -115,11 +115,13 @@ ring_buffer_size_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, event_t *data,
  * @param index The index to peek.
  * @return 1 if data was returned; 0 otherwise.
  */
-ring_buffer_size_t ring_buffer_peek(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t index);
+ring_buffer_size_t ring_buffer_peek(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t index);
 
 
-unsigned char ring_buffer_is_empty(ring_buffer_t *buffer);
-unsigned char ring_buffer_is_full(ring_buffer_t *buffer);
-ring_buffer_size_t ring_buffer_num_items(ring_buffer_t *buffer);
+unsigned char ring_buffer_is_empty(volatile ring_buffer_t *buffer);
+unsigned char ring_buffer_is_full(volatile ring_buffer_t *buffer);
+void push_event(volatile ring_buffer_t *buffer, event_t data);
+void pop_event(volatile ring_buffer_t *buffer, event_t *data);
+ring_buffer_size_t ring_buffer_num_items(volatile ring_buffer_t *buffer);
 
 #endif /* INC_RINGBUFFER_H_ */

@@ -12,12 +12,12 @@
  * Implementation of ring buffer functions.
  */
 
-void ring_buffer_init(ring_buffer_t *buffer) {
+void ring_buffer_init(volatile ring_buffer_t *buffer) {
   buffer->tail_index = 0;
   buffer->head_index = 0;
 }
 
-void ring_buffer_queue(ring_buffer_t *buffer, event_t data) {
+void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t data) {
   /* Is buffer full? */
   if(ring_buffer_is_full(buffer)) {
     /* Is going to overwrite the oldest byte */
@@ -30,7 +30,12 @@ void ring_buffer_queue(ring_buffer_t *buffer, event_t data) {
   buffer->head_index = ((buffer->head_index + 1) & RING_BUFFER_MASK);
 }
 
-void ring_buffer_queue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t size) {
+void push_event(volatile ring_buffer_t *buffer, event_t data)
+{
+	ring_buffer_queue(buffer, data);
+}
+
+void ring_buffer_queue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t size) {
   /* Add bytes; one by one */
   ring_buffer_size_t i;
   for(i = 0; i < size; i++) {
@@ -38,7 +43,7 @@ void ring_buffer_queue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_siz
   }
 }
 
-ring_buffer_size_t ring_buffer_dequeue(ring_buffer_t *buffer, event_t *data) {
+ring_buffer_size_t ring_buffer_dequeue(volatile ring_buffer_t *buffer, event_t *data) {
   if(ring_buffer_is_empty(buffer)) {
     /* No items */
     return 0;
@@ -49,13 +54,18 @@ ring_buffer_size_t ring_buffer_dequeue(ring_buffer_t *buffer, event_t *data) {
   return 1;
 }
 
-ring_buffer_size_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t len) {
+void pop_event(volatile ring_buffer_t *buffer, event_t *data)
+{
+	ring_buffer_dequeue(buffer, data);
+}
+
+ring_buffer_size_t ring_buffer_dequeue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t len) {
   if(ring_buffer_is_empty(buffer)) {
     /* No items */
     return 0;
   }
 
-  char *data_ptr = data;
+  event_t *data_ptr = data;
   ring_buffer_size_t cnt = 0;
   while((cnt < len) && ring_buffer_dequeue(buffer, data_ptr)) {
     cnt++;
@@ -64,7 +74,7 @@ ring_buffer_size_t ring_buffer_dequeue_arr(ring_buffer_t *buffer, event_t *data,
   return cnt;
 }
 
-ring_buffer_size_t ring_buffer_peek(ring_buffer_t *buffer, event_t *data, ring_buffer_size_t index) {
+ring_buffer_size_t ring_buffer_peek(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t index) {
   if(index >= ring_buffer_num_items(buffer)) {
     /* No items at index */
     return 0;
@@ -80,7 +90,7 @@ ring_buffer_size_t ring_buffer_peek(ring_buffer_t *buffer, event_t *data, ring_b
  * @param buffer The buffer for which it should be returned whether it is empty.
  * @return 1 if empty; 0 otherwise.
  */
-unsigned char ring_buffer_is_empty(ring_buffer_t *buffer) {
+unsigned char ring_buffer_is_empty(volatile ring_buffer_t *buffer) {
   return (buffer->head_index == buffer->tail_index);
 }
 
@@ -89,7 +99,7 @@ unsigned char ring_buffer_is_empty(ring_buffer_t *buffer) {
  * @param buffer The buffer for which it should be returned whether it is full.
  * @return 1 if full; 0 otherwise.
  */
-unsigned char ring_buffer_is_full(ring_buffer_t *buffer) {
+unsigned char ring_buffer_is_full(volatile ring_buffer_t *buffer) {
   return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK) == RING_BUFFER_MASK;
 }
 
@@ -98,6 +108,6 @@ unsigned char ring_buffer_is_full(ring_buffer_t *buffer) {
  * @param buffer The buffer for which the number of items should be returned.
  * @return The number of items in the ring buffer.
  */
-ring_buffer_size_t ring_buffer_num_items(ring_buffer_t *buffer) {
+ring_buffer_size_t ring_buffer_num_items(volatile ring_buffer_t *buffer) {
   return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
 }
