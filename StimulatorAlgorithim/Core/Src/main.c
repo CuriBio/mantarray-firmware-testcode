@@ -261,18 +261,19 @@ void GenerateWavePWL(uint16_t *vals_tims, size_t size)
 
 	for (i; i < size; i++)
 	{
-		total_period_uS += vals_tims[i + 1];
-		uint16_t num_clk_cyc = (f_clk * ((double) total_period_uS / 1000000));
-		uint16_t n_elem = (uint16_t) ceil((double) num_clk_cyc / 65535);
-		uint16_t rem_clk_cyc = num_clk_cyc - (65535 * (n_elem - 1));
-		if (rem_clk_cyc > 0) { n_elem++; }
+		if (i%2 == 1)
+		{
+			uint16_t period_uS = vals_tims[i];
+			uint16_t num_clk_cyc = (f_clk * ((double) period_uS / 1000000));
+			n_elem += (uint16_t) ceil((double) num_clk_cyc / 65535);
+		}
 	}
 
 
 	AllocateArray(pStimulator->dac_lut, n_elem);
 	AllocateArray(pStimulator->dac_tim_lut, n_elem);
 
-	for (i; i < size; i++)
+	for (i = 0; i < size; i++)
 	{
 		/* Even indices correspond to DAC output values, odd indices correspond to time values */
 		if (i%2 == 0)
@@ -304,10 +305,6 @@ void GenerateWavePWL(uint16_t *vals_tims, size_t size)
 				DAC_TIM_Arr[j] = pStimulator->dac_tim_lut[j];
 				DAC_Arr[j] = pStimulator->dac_lut[j];
 			}
-		}
-		else
-		{
-			i++; // Skip this element as we've already processed it in prior if statement
 		}
 	}
 
