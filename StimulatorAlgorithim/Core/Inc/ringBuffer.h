@@ -13,6 +13,10 @@
 #ifndef RINGBUFFER_H
 #define RINGBUFFER_H
 
+#include <stdlib.h>
+#include <stdint.h>
+
+
 /**
  * The size of a ring buffer.
  * Due to the design only <tt> RING_BUFFER_SIZE-1 </tt> items
@@ -44,15 +48,17 @@ typedef unsigned char ring_buffer_size_t;
 /**
  * Simplifies the use of <tt>struct ring_buffer_t</tt>.
  */
-typedef enum {
+typedef enum event_name_e{
 	XFER_CPLT = 0x01,
 	STIM_RUN_CMD,
 	STIM_STOP_CMD,
-	STIM_RUN_CAPTURE_CMD,
-	STIM_STOP_CAPTURE_CMD
-} event_t;
+} event_name_e;
 
-
+typedef struct {
+	event_name_e name;
+	int16_t data[8];
+	size_t data_size;
+}event_t;
 
 typedef struct ring_buffer_t ring_buffer_t;
 

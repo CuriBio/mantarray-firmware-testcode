@@ -51,9 +51,9 @@
 #define AMPLITUDE_MA			30U
 #define PULSE_PERIOD_MS     	10U
 #define INTERPULSE_PERIOD_MS   	10U
-#define BIPHASIC_OUTPUT_ENABLE  1U
+#define OUTPUT_ENABLE  1U
 
-#if (BIPHASIC_OUTPUT_ENABLE != 1U)
+#if (OUTPUT_ENABLE != 1U)
 	#define CONSTANT_OUTPUT_ENABLE 1U
 #endif
 
@@ -112,6 +112,8 @@ typedef struct {
 	volatile uint16_t *data_buf;
 	uint16_t *dac_lut;
 	uint16_t *dac_tim_lut;
+	uint16_t lut_size;
+	int16_t *val_time_arr;
 } stimulator_t;
 
 volatile uint16_t data_buf[DATA_BUF_SIZE];
@@ -125,8 +127,10 @@ volatile stimulator_t stimulator = {
 		.state_prev = STIM_STOPPED,
 		.event_queue = &ring_buffer,
 		.data_buf = data_buf,
+		.val_time_arr = NULL,
 		.dac_lut = NULL,
-		.dac_tim_lut = NULL
+		.dac_tim_lut = NULL,
+		.lut_size = 0
 		};
 volatile stimulator_t *pStimulator = &stimulator;
 
@@ -137,7 +141,6 @@ uint32_t *DAC_Lut;
 uint16_t *DAC_TIM_Lut;
 uint16_t DAC_TIM_Arr[DAC_ARR_SIZE_DEBUG]; // Used for Debug only
 uint32_t DAC_Arr[DAC_ARR_SIZE_DEBUG];     // Used for Debug only
-size_t n_elem;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -150,7 +153,7 @@ static void MX_TIM2_Init(void);
 static void MX_ADC_Init(void);
 /* USER CODE BEGIN PFP */
 void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot);
-void GenerateWaveformPWL(uint16_t *vals_tims, size_t size);
+void GenerateWaveLUT(int16_t *vals_tims, size_t size);
 void GenerateConstCurrent_LUT(uint32_t *LUT, float Amplitude_mA);
 void ComputeImpedances(uint16_t *ADC3_Res, uint16_t *ADC4_Res, float *Z_Buf);
 
@@ -158,7 +161,7 @@ void HAL_DMA1_CH1_XferCpltCallback(DMA_HandleTypeDef* hdma_adc);
 void SetTimerPeriod(TIM_HandleTypeDef *htim, uint16_t *tim_arr, size_t n, uint8_t *index);
 float GetTimerPeriod_S(TIM_HandleTypeDef htim);
 uint16_t AllocateArray(uint16_t *array, size_t n_elem);
-void Load_DAC_Timer(TIM_HandleTypeDef* htim);
+void LoadTimerDac(TIM_HandleTypeDef* htim);
 
 HAL_StatusTypeDef TransmitMessage_UART(char * msg);
 
@@ -183,7 +186,8 @@ uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit){
 
 uint16_t AllocateArray(uint16_t *array, size_t n_elem)
 {
-	return  (uint16_t *) malloc(n_elem * sizeof(array[0])) != NULL ? 1 : 0;
+	array = malloc(n_elem * sizeof(array[0]));
+	return  (uint16_t *) array != NULL ? 1 : 0;
 }
 
 
@@ -239,7 +243,7 @@ void GenerateTimerPulse(uint32_t *LUT, uint32_t n_tot)
  * GenerateWavePWL fills look-up tables for DAC and associated timer to create piecewise-linear waveform from a time, value pair array
  */
 
-void GenerateWavePWL(uint16_t *vals_tims, size_t size)
+void GenerateWaveLUT(int16_t *vals_tims, size_t size)
 {
 	/*
 		I_Shunt | V_Shunt |   V_ADC_NEG (Also V_DAC)
@@ -254,24 +258,26 @@ void GenerateWavePWL(uint16_t *vals_tims, size_t size)
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 	HAL_RCC_GetClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0);
 	uint32_t f_clk = HAL_RCC_GetPCLK1Freq();
-	uint16_t n_elem = 0;
+	uint16_t n_tot_elem = 0;
 
 
 	int i = 0 , j = 0;
 
-	for (i; i < size; i++)
+	for (i = 0; i < size; i++)
 	{
 		if (i%2 == 1)
 		{
 			uint16_t period_uS = vals_tims[i];
-			uint16_t num_clk_cyc = (f_clk * ((double) period_uS / 1000000));
-			n_elem += (uint16_t) ceil((double) num_clk_cyc / 65535);
+			uint32_t num_clk_cyc = (f_clk * ((double) period_uS / 1000000));
+			n_tot_elem += (uint16_t) ceil((double) num_clk_cyc / 65535);
 		}
 	}
 
+	pStimulator->lut_size = n_tot_elem;
+	pStimulator->dac_lut = (uint16_t *) malloc(n_tot_elem * sizeof(pStimulator->dac_lut[0]));
+	pStimulator->dac_tim_lut = (uint16_t *) malloc(n_tot_elem * sizeof(pStimulator->dac_tim_lut[0]));
 
-	AllocateArray(pStimulator->dac_lut, n_elem);
-	AllocateArray(pStimulator->dac_tim_lut, n_elem);
+	uint16_t idx = 0;
 
 	for (i = 0; i < size; i++)
 	{
@@ -286,24 +292,28 @@ void GenerateWavePWL(uint16_t *vals_tims, size_t size)
 			double v_dac = (double) (v_shunt / 2) + 1.65 ;
 
 			int16_t dac_amp = ((v_dac * 4096) / V_REF) - 2048; // Subtract 2048 since 0mA corresponds to middle of DAC range
-			uint16_t num_clk_cyc = (f_clk * ((double) period_uS / 1000000));
+			uint32_t num_clk_cyc = (f_clk * ((double) period_uS / 1000000));
 			uint16_t n_elem = (uint16_t) ceil((double) num_clk_cyc / 65535);
 
-			for (j; j < n_elem; j++)
+			for (j = 0; j < n_elem; j++)
 			{
-				dac_amp = dac_amp < 0 ? 0 : dac_amp;
-				pStimulator->dac_lut[j] = 2047 + dac_amp;
-				if (j < n_elem - 1)
+				dac_amp = dac_amp < -2047 ? -2047 : dac_amp;
+				pStimulator->dac_lut[j + idx] = 2047 + dac_amp;
+				if (j < (n_elem) - 1)
 				{
-					pStimulator->dac_tim_lut[j] = 65534;
+					pStimulator->dac_tim_lut[j + idx] = 65534;
+					DAC_TIM_Arr[j + idx] = pStimulator->dac_tim_lut[j + idx];
+					DAC_Arr[j + idx] = pStimulator->dac_lut[j + idx];
 				}
-				else
+				else if (j == n_elem - 1)
 				{
 					uint16_t rem_clk_cyc = num_clk_cyc - (65535 * (n_elem - 1));
-					pStimulator->dac_tim_lut[j] = rem_clk_cyc == 0 ? 0 : (rem_clk_cyc + (TIM2 -> PSC)) - 1;
+					pStimulator->dac_tim_lut[j + idx] = rem_clk_cyc == 0 ? 0 : (rem_clk_cyc + (TIM2 -> PSC)) - 1;
+					DAC_TIM_Arr[j + idx] = pStimulator->dac_tim_lut[j + idx];
+					DAC_Arr[j + idx] = pStimulator->dac_lut[j + idx];
+					idx += n_elem;
 				}
-				DAC_TIM_Arr[j] = pStimulator->dac_tim_lut[j];
-				DAC_Arr[j] = pStimulator->dac_lut[j];
+
 			}
 		}
 	}
@@ -346,7 +356,7 @@ void ADC_CalibrateStimulator(ADC_HandleTypeDef* hadc, DAC_HandleTypeDef* hdac)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	if (htim == &htim2) { Load_DAC_Timer(htim); }
+	if (htim == &htim2) { LoadTimerDac(htim); }
 }
 
 float GetTimerPeriod_S(TIM_HandleTypeDef htim)
@@ -375,10 +385,10 @@ void SetTimerPeriod(TIM_HandleTypeDef *htim, uint16_t *tim_arr, size_t n, uint8_
 	*(index) = ((*index) + 1)%n;
 }
 
-void Load_DAC_Timer(TIM_HandleTypeDef* htim)
+void LoadTimerDac(TIM_HandleTypeDef* htim)
 {
 	  static uint8_t index = 0;
-	  SetTimerPeriod(htim, pStimulator->dac_tim_lut, n_elem, &index); // Set the new ARR values for next portion of DAC waveform in advance
+	  SetTimerPeriod(htim, pStimulator->dac_tim_lut, pStimulator->lut_size, &index); // Set the new ARR values for next portion of DAC waveform in advance
 }
 
 
@@ -395,7 +405,9 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 	/* TX of buffer one is not yet complete and buffer two is full so halt dma requests and generate event */
 	HAL_ADC_Stop_DMA(hadc);
-	ring_buffer_queue(pStimulator -> event_queue, XFER_CPLT);
+	event_t event;
+	event.name = XFER_CPLT;
+	ring_buffer_queue(pStimulator -> event_queue, event);
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
@@ -486,27 +498,31 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-      push_event(pStimulator->event_queue, STIM_RUN_CMD);
+  	  event_t event = {
+  			  .name = STIM_RUN_CMD,
+			  .data = { 0, 5000, 4000, 10000, 0, 10000, 2000, 10000  },
+  			  .data_size = 8
+  	  };
+      push_event(pStimulator->event_queue, event);
 
 
       while (1)
       {
-    	 event_t event;
-    	 event_t *pEvent = &event;
-    	 pEvent = (event_t *)NULL;
-    	 pop_event(pStimulator->event_queue, pEvent);
-    	 if (pStimulator->state_current != pStimulator->state_prev && !pEvent)
+    	 if (pStimulator->state_current != pStimulator->state_prev || !ring_buffer_is_empty(pStimulator->event_queue))
     	 {
+    		 event_t event;
+    		 pop_event(pStimulator->event_queue, &event);
     	 	 switch (pStimulator -> state_current)
     	 	 {
     	 	 case STIM_STOPPED:
-    	 		 if ( event == STIM_RUN_CMD )
+    	 		 if ( event.name == STIM_RUN_CMD )
     	 		 {
-    	 			 if (BIPHASIC_OUTPUT_ENABLE == 1) { GenerateBiphasicPulse_LUT(AMPLITUDE_MA, PULSE_PERIOD_MS, INTERPULSE_PERIOD_MS, PERIOD_MS); }
-    	 			 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)pStimulator->dac_lut, n_elem, DAC_ALIGN_12B_R);
-    	 			 Load_DAC_Timer(&htim2);
+    	 			 pStimulator->val_time_arr = event.data;
+    	 			 if (OUTPUT_ENABLE) { GenerateWaveLUT(pStimulator->val_time_arr, event.data_size); }
+    	 			 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)pStimulator->dac_lut, pStimulator->lut_size, DAC_ALIGN_12B_R);
+    	 			 LoadTimerDac(&htim2);
     	 			 HAL_TIM_Base_Start_IT(&htim2);
-    	 			 HAL_ADC_Start_DMA(&hadc, (uint32_t *)pStimulator -> data_buf, DATA_BUF_SIZE);
+    	 			 //HAL_ADC_Start_DMA(&hadc, (uint32_t *)pStimulator -> data_buf, DATA_BUF_SIZE);
     	 			 pStimulator->state_current = STIM_RUNNING;
     	 			 pStimulator->state_prev = STIM_STOPPED;
     	 			 BIT_CLR(&pStimulator->flags, STIM_IDLE_FLAG);
@@ -514,7 +530,7 @@ int main(void)
     	 		 }
     	 	 break;
     	 	 case STIM_RUNNING:
-    	 		 if ( event == XFER_CPLT )
+    	 		 if ( event.name == XFER_CPLT )
     	 		 {
   	  	  	  		 /*
   	  	  	  		 volatile uint16_t *buf = pStimulator -> data_buf;
@@ -525,11 +541,11 @@ int main(void)
   	  	  			 ComputeImpedances(adc3_buf, adc4_buf, Z_Buf);
   	  	  		 	 TransmitBuf(Z_Buf, sizeof(Z_Buf) / sizeof(Z_Buf[0]));
   	  	   		 	 */
-    	 			 HAL_ADC_Start_DMA(&hadc, (uint32_t *)pStimulator -> data_buf, DATA_BUF_SIZE);
+    	 			 //HAL_ADC_Start_DMA(&hadc, (uint32_t *)pStimulator -> data_buf, DATA_BUF_SIZE);
     	 			 BIT_SET(&pStimulator->flags, STIM_IDLE_FLAG);
     	 			 BIT_SET(&pStimulator->flags, DATA_READY_FLAG);
     	 		 }
-    	 		 else if ( event == STIM_STOP_CMD )
+    	 		 else if ( event.name == STIM_STOP_CMD )
     	 		 {
     	 			 HAL_ADC_Stop_DMA(&hadc);
     	 			 HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
@@ -540,9 +556,8 @@ int main(void)
     	 			 BIT_CLR(&pStimulator->flags, DATA_READY_FLAG);
     	 		 }
     	 		 break;
-    	 	  default:
-    	 		 break;
     	 	 }
+	 	 	 pStimulator->state_prev = pStimulator->state_current;
     	 }
       }
     /* USER CODE END WHILE */
