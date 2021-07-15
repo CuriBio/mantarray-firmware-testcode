@@ -72,6 +72,7 @@ System my_sys;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+
 static void MX_DMA_Init(void);
 
 /* USER CODE BEGIN PFP */
@@ -144,8 +145,8 @@ int main(void)
   MX_DAC_Init();
   MX_ADC_Init();
   MX_TIM21_Init();
-
-
+  MX_I2C2_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -223,6 +224,7 @@ void SystemClock_Config(void)
 }
 
 
+
 /**
   * Enable DMA controller clock
   */
@@ -241,6 +243,7 @@ static void MX_DMA_Init(void)
   HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
 }
+
 
 
 /* USER CODE BEGIN 4 */

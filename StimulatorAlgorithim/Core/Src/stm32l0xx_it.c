@@ -59,6 +59,7 @@
 extern DMA_HandleTypeDef hdma_adc;
 extern ADC_HandleTypeDef hadc;
 extern DMA_HandleTypeDef hdma_dac_ch1;
+extern I2C_HandleTypeDef hi2c2;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -184,6 +185,8 @@ void ADC1_COMP_IRQHandler(void)
 
   /* USER CODE END ADC1_COMP_IRQn 1 */
 }
+
+
 
 /* USER CODE BEGIN 1 */
 
