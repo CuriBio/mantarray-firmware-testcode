@@ -36,7 +36,7 @@ extern TIM_HandleTypeDef htim21;
 extern TIM_HandleTypeDef htim22;
 
 /* USER CODE BEGIN Private defines */
-
+#define TIM21_MAX_PERIOD_CNTS       65535
 /* USER CODE END Private defines */
 
 void MX_TIM6_Init(void);

@@ -19,6 +19,7 @@ void module_system_init(System *thisSystem)
 	HAL_GPIO_WritePin(SPI_C_CS_GPIO_Port, SPI_C_CS_Pin, GPIO_PIN_SET);
 	*/
 	my_sys.i2c_line = I2C_interface_create(&hi2c2,100);
+	my_sys.stimulator = stimulator_create(&hdac, &hadc, &htim21);
 	/*
 	// init sensors
 	my_sys.sensors[0] = magnetometer_create(MAGNETOMETER_TYPE_MMC5983,&hspi1 , SPI_A_CS_GPIO_Port , SPI_A_CS_Pin , mag_int_a_GPIO_Port , mag_int_a_Pin);
@@ -84,10 +85,13 @@ void state_machine(System *thisSystem)
 				{
 
 					//TODO Link data output to magnetometer memory instead
-					internal_bus_write_data_frame(thisSystem->data_bus, output_data, 33);
-					my_sys.sensors[0]->b_new_data_needed = 1;
-					my_sys.sensors[1]->b_new_data_needed = 1;
-					my_sys.sensors[2]->b_new_data_needed = 1;
+					/*
+					   internal_bus_write_data_frame(thisSystem->data_bus, output_data, 33);
+					   my_sys.sensors[0]->b_new_data_needed = 1;
+					   my_sys.sensors[1]->b_new_data_needed = 1;
+					   my_sys.sensors[2]->b_new_data_needed = 1;
+					 */
+
 					break;
 				}
 				//-------------------------------
@@ -187,8 +191,34 @@ void state_machine(System *thisSystem)
 				case I2C_PACKET_BEGIN_MAG_CONVERSION:
 				{
 					b_read_permit =1;
-					break;
 				}
+				break;
+				case I2C_PACKET_SEND_STIM_DATA_FRAME:
+				{
+					if (thisSystem->stimulator->flags & NEW_DATA_READY_FLAG)
+					{
+						/* New data is ready so transmit data over internal bus */
+
+
+						/* Once transfer is complete we can clear NEW_DATA_READY_FLAG*/
+						uint16_t flags = thisSystem->stimulator->flags;
+						BIT_CLR(&flags, NEW_DATA_READY_FLAG);
+					}
+				}
+				break;
+				case I2C_PACKET_BEGIN_STIMULATION:
+				{
+					uint16_t flags = thisSystem->stimulator->flags;
+					if (IS_BIT_SET(flags, STIM_READY_FLAG))
+					{
+						/* If stimulator is ready (stopped or idle) we can begin stimulation.*/
+						int16_t cmd_array[4] = { 3000, 10000, 0, 10000 }; // Send dummy command for now
+						event_t event;
+						create_event(STIM_RUN_CMD, cmd_array, sizeof(cmd_array), &event);
+						push_event(thisSystem->stimulator->event_queue, event);
+					}
+				}
+				break;
 			}
 			//-------- if we get any data higher than 0x80  it mean it is a new address
 			if ( thisSystem->i2c_line->receiveBuffer[0] > I2C_PACKET_SET_NEW_ADDRESS )
@@ -292,5 +322,5 @@ void state_machine(System *thisSystem)
 			case MODULE_SYSTEM_STATUS_FAULTY:
 			break;
 		}
-
+		stimulator_state_machine(thisSystem->stimulator);
 }

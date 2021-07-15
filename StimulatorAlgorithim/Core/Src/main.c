@@ -68,8 +68,6 @@ UART_HandleTypeDef huart2;
 
 System my_sys;
 
-uint16_t DAC_TIM_Arr[DAC_ARR_SIZE_DEBUG]; // Used for Debug only
-uint32_t DAC_Arr[DAC_ARR_SIZE_DEBUG];     // Used for Debug only
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,19 +82,22 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc);
 /* Private Functions */
 void TransmitBuf(uint16_t *buf, size_t size);
 void CreateStrFromArray(char *dest_str, volatile uint16_t *data, size_t size);
-void BIT_SET(volatile uint16_t *bits, uint16_t bit);
-void BIT_CLR(volatile uint16_t *bits, uint16_t bit);
-uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	HAL_ADC_Stop_DMA(hadc);
-	//HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-	//HAL_TIM_Base_Stop_IT(&htim21);
+#ifndef STIM_CONTINUOUS_MODE_ENABLED
+	/* Stop the ADC and DAC since memory is full */
+	HAL_ADC_Stop_DMA((&my_sys) -> stimulator -> hadc);
+	HAL_DAC_Stop_DMA((&my_sys) -> stimulator -> hdac, DAC_CHANNEL_1);
 
+	/* Enable the DAC peripheral again so that we can zero out stimulator current */
+	__HAL_DAC_ENABLE((&my_sys) -> stimulator -> hdac, DAC_CHANNEL_1);
+	HAL_DAC_SetValue((&my_sys) -> stimulator -> hdac, DAC_CHANNEL_1, DAC_ALIGN_12B_R, DAC_OUT_ZERO_MA);
+#endif
+	/* Push XFER_CPLT Event onto event queue */
 	event_t event;
 	create_event(XFER_CPLT, NULL, 0, &event);
 	ring_buffer_queue((&my_sys) -> stimulator -> event_queue, event);
@@ -151,12 +152,6 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  Stimulator_t *stimulator = (&my_sys)->stimulator;
-  int16_t cmd_array[4] = { 3000, 10000, 0, 10000 };
-  event_t event;
-  create_event(STIM_RUN_CMD, cmd_array, sizeof(cmd_array), &event);
-  push_event(stimulator->event_queue, event);
-
   module_system_init(&my_sys);
   /* USER CODE END 2 */
 
@@ -170,66 +165,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
 
-      while (1)
-      {
-    		 if (!ring_buffer_is_empty(stimulator->event_queue))
-    		 {
-        		 event_t event;
-    			 pop_event(stimulator->event_queue, &event);
-    			 switch (stimulator-> state_current)
-    			 {
-    			 case STIM_STOPPED:
-    				 if ( event.name == STIM_RUN_CMD )
-    			 	 {
-    					 /* Copy data from popped event to Stimulator struct. Free event memory. */
-    					 stimulator->val_time_arr = malloc(event.data_size);
-    					 stimulator->n_elem_val_time_arr = event.data_size / sizeof(event.data[0]);
-    		 	 		 memcpy(stimulator->val_time_arr, event.data, event.data_size);
-    			    	 free_event_data(&event);
-    			    	 if (OUTPUT_ENABLE) { stim_generate_wave_lut((&my_sys)->stimulator); }
 
-    			    	 /* Load the dac timer with values generated in GenerateWaveLUT and start it. Then, start the DAC and DMA with LUT generated in same function */
-    			    	 LoadTimerDac(&htim21, stimulator->dac_tim_lut, stimulator->n_elem_lut);
-    			    	 HAL_TIM_Base_Start_IT(&htim21);
-    			    	 HAL_DAC_Start_DMA(&hdac, DAC_CHANNEL_1, (uint32_t *)stimulator->dac_lut, stimulator->n_elem_lut, DAC_ALIGN_12B_R);
-
-    			    	 /*
-    			    	  * TODO: In future, timer 21 CC module interrupt will trigger a conversion and DMA transfer every 100uS.
-    			    	  */
-    			    	 HAL_ADC_Start_DMA(&hadc, (uint32_t *)stimulator-> data_buf, DATA_BUF_SIZE);
-
-    			    	 /* Set state and flags */
-    			    	 stimulator->state_current = STIM_RUNNING;
-    			    	 stimulator->state_prev = STIM_STOPPED;
-    			    	 uint16_t flags = stimulator->flags;
-    			    	 BIT_CLR(&flags, STIM_IDLE_FLAG);
-    			    	 BIT_CLR(&flags, DATA_READY_FLAG);
-    			     }
-    			     break;
-    			 case STIM_RUNNING:
-    				 if ( event.name == XFER_CPLT )
-    			     {
-    			    	 TransmitBuf(stimulator->data_buf, DATA_BUF_SIZE);
-    			    	 uint16_t flags = stimulator->flags;
-    			    	 BIT_SET(&flags, STIM_IDLE_FLAG);
-    			    	 BIT_SET(&flags, DATA_READY_FLAG);
-    			     }
-    			     else if ( event.name == STIM_STOP_CMD )
-    			     {
-    			    	 HAL_ADC_Stop_DMA(&hadc);
-    			    	 HAL_DAC_Stop_DMA(&hdac, DAC_CHANNEL_1);
-    			    	 HAL_TIM_Base_Stop_IT(&htim21);
-    			    	 stimulator->state_current = STIM_STOPPED;
-    			    	 stimulator->state_prev = STIM_RUNNING;
-    			    	 uint16_t flags = stimulator->flags;
-    			    	 BIT_CLR(&flags, STIM_IDLE_FLAG);
-    			    	 BIT_CLR(&flags, DATA_READY_FLAG);
-    			     }
-    			     break;
-    			 }
-
-    		 }
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -334,17 +270,6 @@ void TransmitBuf(uint16_t *buf, size_t size)
 	}
 }
 
-void BIT_SET(volatile uint16_t *bits, uint16_t bit){
-	*(bits) = *(bits) | bit;
-}
-
-void BIT_CLR(volatile uint16_t *bits, uint16_t bit){
-	*(bits) = *(bits) & !bit;
-}
-
-uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit){
-	return (bits & (bit)) ? 1 : 0;
-}
 /* USER CODE END 4 */
 
 /**

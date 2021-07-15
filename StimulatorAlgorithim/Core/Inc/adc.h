@@ -35,7 +35,7 @@ extern ADC_HandleTypeDef hadc;
 extern DMA_HandleTypeDef hdma_adc;
 
 /* USER CODE BEGIN Private defines */
-
+#define ADC_DMA_DATA_BUF_SIZE        1024U
 /* USER CODE END Private defines */
 
 void MX_ADC_Init(void);

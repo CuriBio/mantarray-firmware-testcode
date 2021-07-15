@@ -9,42 +9,38 @@
 #define SRC_STIMULATOR_H_
 
 #include "main.h"
+#include "adc.h"
 #include "ringBuffer.h"
 /* USER CODE BEGIN PD */
-#define DATA_BUF_SIZE           1024U
-#define MAX_EVENT_QUEUE_SIZE    50U
-#define MAX_PERIOD_DEBUG_MS     1U
-#define DAC_ARR_SIZE_DEBUG      (size_t) (PERIOD_MS / MAX_PERIOD_DEBUG_MS)
-#define MAX_PERIOD_US           65535  // 65mS
-#define MAX_CURRENT_10UA        10000  // 100mA
-#define V_REF               	3.3
-#define R_SHUNT_OHMS        	33
+#define STIM_CONTINUOUS_MODE_ENABLED
+
+#define STIM_MAX_PERIOD_US           65535U  // 65mS
+#define STIM_MAX_CURRENT_10UA        10000  // 100mA
+#define STIM_V_REF               	3.3
+#define STIM_R_SHUNT_OHMS        	33
+#define STIM_DAC_OUT_NEG_100_MA      0
+#define STIM_DAC_OUT_ZERO_MA         2048
+#define STIM_DAC_OUT_100_MA          4095
 
 /* Defines used with old version of generateBiphasicPulse_LUT*/
-#define PERIOD_MS           	50U
-#define AMPLITUDE_MA			30U
-#define PULSE_PERIOD_MS     	10U
-#define INTERPULSE_PERIOD_MS   	10U
-#define OUTPUT_ENABLE  1U
-
-#if (OUTPUT_ENABLE != 1U)
-	#define CONSTANT_OUTPUT_ENABLE 1U
-#endif
-
+#define STIM_PERIOD_MS           	50U
+#define STIM_AMPLITUDE_MA			30U
+#define STIM_PULSE_PERIOD_MS     	10U
+#define STIM_INTERPULSE_PERIOD_MS   10U
+#define STIM_OUTPUT_ENABLE  	1U
 
 /* Bit definitions for pStimulator flags variable*/
-#define DATA_READY_FLAG_POS 	0x01
-#define STIM_IDLE_FLAG_POS      0x02
-
-#define DATA_READY_FLAG			( 1 << DATA_READY_FLAG_POS ) // HIGH: ADC Data buffer is full
-#define STIM_IDLE_FLAG			( 1 << STIM_IDLE_FLAG_POS ) // HIGH: Stimulator is initialized and not currently in use.
+#define NEW_DATA_READY_FLAG_POS 	0x01
+#define STIM_READY_FLAG_POS      	0x02
+#define NEW_DATA_READY_FLAG			( 1 << NEW_DATA_READY_FLAG_POS ) // HIGH: ADC Data buffer is full
+#define STIM_READY_FLAG			( 1 << STIM_READY_FLAG_POS ) // HIGH: Stimulator is initialized and not currently in use.
 
 typedef enum {
 	STIM_RUNNING,
 	STIM_STOPPED,
 } State_t;
 
-typedef struct Stimulator_t{
+typedef struct {
 	uint16_t flags;
 	State_t state_current;
     State_t state_prev;
@@ -56,13 +52,15 @@ typedef struct Stimulator_t{
 	uint16_t n_elem_lut;
 	DAC_HandleTypeDef *hdac;
 	DMA_HandleTypeDef *hdma_dac;
-	uint16_t data_buf[DATA_BUF_SIZE];
+	uint16_t data_buf[ADC_DMA_DATA_BUF_SIZE];
 	ADC_HandleTypeDef *hadc;
 	DMA_HandleTypeDef *hdma_adc;
 	TIM_HandleTypeDef *htim;
 } Stimulator_t;
 
-void stim_generate_wave_lut(Stimulator_t *pStim);
+Stimulator_t *stimulator_create(DAC_HandleTypeDef *hdac, ADC_HandleTypeDef *hadc, TIM_HandleTypeDef *htim);
+void stimulator_generate_wave_lut(Stimulator_t *pStim);
 void ComputeImpedances(uint16_t *ADC3_Res, uint16_t *ADC4_Res, float *Z_Buf);
+void stimulator_state_machine (Stimulator_t *stimulator);
 
 #endif /* SRC_STIMULATOR_H_ */
