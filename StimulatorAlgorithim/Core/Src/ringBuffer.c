@@ -12,12 +12,12 @@
  * Implementation of ring buffer functions.
  */
 
-void ring_buffer_init(volatile ring_buffer_t *buffer) {
-  buffer->tail_index = 0;
-  buffer->head_index = 0;
+void ring_buffer_init(volatile ring_buffer_t *event_queue) {
+	event_queue->tail_index = 0;
+	event_queue->head_index = 0;
 }
 
-void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t data) {
+void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t event) {
   /* Is buffer full? */
   if(ring_buffer_is_full(buffer)) {
     /* Is going to overwrite the oldest byte */
@@ -26,55 +26,55 @@ void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t data) {
   }
 
   /* Place data in buffer */
-  buffer->buffer[buffer->head_index] = data;
+  buffer->buffer[buffer->head_index] = event;
   buffer->head_index = ((buffer->head_index + 1) & RING_BUFFER_MASK);
 }
 
-void push_event(volatile ring_buffer_t *buffer, event_t data)
+void push_event(volatile ring_buffer_t *eq, event_t event)
 {
-	ring_buffer_queue(buffer, data);
+	ring_buffer_queue(eq, event);
 }
 
-void ring_buffer_queue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t size) {
+void ring_buffer_queue_arr(volatile ring_buffer_t *buffer, event_t *pEvent, ring_buffer_size_t size) {
   /* Add bytes; one by one */
   ring_buffer_size_t i;
   for(i = 0; i < size; i++) {
-    ring_buffer_queue(buffer, data[i]);
+    ring_buffer_queue(buffer, pEvent[i]);
   }
 }
 
-ring_buffer_size_t ring_buffer_dequeue(volatile ring_buffer_t *buffer, event_t *data) {
+ring_buffer_size_t ring_buffer_dequeue(volatile ring_buffer_t *buffer, event_t *pEvent) {
   if(ring_buffer_is_empty(buffer)) {
     /* No items */
     return 0;
   }
 
-  *data = buffer->buffer[buffer->tail_index];
+  *pEvent = buffer->buffer[buffer->tail_index];
   buffer->tail_index = ((buffer->tail_index + 1) & RING_BUFFER_MASK);
   return 1;
 }
 
-void pop_event(volatile ring_buffer_t *buffer, event_t *data)
+void pop_event(volatile ring_buffer_t *buffer, event_t *pEvent)
 {
-	ring_buffer_dequeue(buffer, data);
+	ring_buffer_dequeue(buffer, pEvent);
 }
 
-ring_buffer_size_t ring_buffer_dequeue_arr(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t len) {
+ring_buffer_size_t ring_buffer_dequeue_arr(volatile ring_buffer_t *buffer, event_t *pEvent, ring_buffer_size_t len) {
   if(ring_buffer_is_empty(buffer)) {
     /* No items */
     return 0;
   }
 
-  event_t *data_ptr = data;
+  event_t *event_ptr = pEvent;
   ring_buffer_size_t cnt = 0;
-  while((cnt < len) && ring_buffer_dequeue(buffer, data_ptr)) {
+  while((cnt < len) && ring_buffer_dequeue(buffer, event_ptr)) {
     cnt++;
-    data_ptr++;
+    event_ptr++;
   }
   return cnt;
 }
 
-ring_buffer_size_t ring_buffer_peek(volatile ring_buffer_t *buffer, event_t *data, ring_buffer_size_t index) {
+ring_buffer_size_t ring_buffer_peek(volatile ring_buffer_t *buffer, event_t *pEvent, ring_buffer_size_t index) {
   if(index >= ring_buffer_num_items(buffer)) {
     /* No items at index */
     return 0;
@@ -82,7 +82,7 @@ ring_buffer_size_t ring_buffer_peek(volatile ring_buffer_t *buffer, event_t *dat
 
   /* Add index to pointer */
   ring_buffer_size_t data_index = ((buffer->tail_index + index) & RING_BUFFER_MASK);
-  *data = buffer->buffer[data_index];
+  *pEvent = buffer->buffer[data_index];
   return 1;
 }
 /**
@@ -111,3 +111,5 @@ unsigned char ring_buffer_is_full(volatile ring_buffer_t *buffer) {
 ring_buffer_size_t ring_buffer_num_items(volatile ring_buffer_t *buffer) {
   return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
 }
+
+

@@ -54,7 +54,19 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+static inline uint16_t BIT_SET(uint16_t bits, uint16_t bit){
+	bits = bits | bit;
+	return bits;
+}
 
+static inline uint16_t BIT_CLR(uint16_t bits, uint16_t bit){
+	bits = bits & !bit;
+	return bits;
+}
+
+static inline uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit){
+	return (bits & (bit)) ? 1 : 0;
+}
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
@@ -71,6 +83,7 @@ void Error_Handler(void);
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
 /* USER CODE BEGIN Private defines */
+
 
 /* USER CODE END Private defines */
 
