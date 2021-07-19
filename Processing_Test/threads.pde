@@ -13,8 +13,8 @@ void readPackets(){
     magicWordContent = 0;
     while(aggregate.size() - scanner > 2) //Make sure there are at least 2 more bytes to read packet length after detecting a magic word
     {
+      //print( " ", byte2uint(aggregate.get(scanner)));
       if (byte2uint(aggregate.get(scanner))==MAGIC_WORD[magicWordContent]){ //If the next character in the magic word is detected, keep track of that
-        //print( " ", byte2long(aggregate.get(i)));
         scanner++;
         magicWordContent++;
       }
@@ -22,7 +22,6 @@ void readPackets(){
       {
         //This is no good, it means there is either noise on the line or it dropped a packet because a byte that doesn't belong to a magic word has been detected
         //Either way, it means trouble.  Keep track of when this happens.
-        println(aggregate.subList(0,scanner+1));
         aggregate.subList(0,scanner+1).clear();
         magicWordContent = 0;
         scanner = 0;
