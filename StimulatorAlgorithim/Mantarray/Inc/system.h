@@ -55,7 +55,7 @@ typedef struct
 	GlobalTimer_t * ph_global_timer;
 
 	Magnetometer_t *sensors[NUM_SENSORS];
-	Stimulator_t *stimulator;
+	Stimulator_t stimulator;
 	I2C_t *i2c_line;
 
 	InternalBus_t *data_bus;

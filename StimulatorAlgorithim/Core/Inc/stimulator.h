@@ -19,8 +19,8 @@
 #define STIM_V_REF               	3.3
 #define STIM_R_SHUNT_OHMS        	33
 #define STIM_DAC_OUT_NEG_100_MA      0
-#define STIM_DAC_OUT_ZERO_MA         2048
-#define STIM_DAC_OUT_100_MA          4095
+#define STIM_DAC_OUT_ZERO_MA         0
+#define STIM_DAC_OUT_100_MA          100000
 
 /* Defines used with old version of generateBiphasicPulse_LUT*/
 #define STIM_PERIOD_MS           	50U
@@ -35,6 +35,10 @@
 #define NEW_DATA_READY_FLAG			( 1 << NEW_DATA_READY_FLAG_POS ) // HIGH: ADC Data buffer is full
 #define STIM_READY_FLAG			( 1 << STIM_READY_FLAG_POS ) // HIGH: Stimulator is initialized and not currently in use.
 
+#define VAL_TIM_ARR_SIZE         10
+#define LUT_SIZE                 40
+
+
 typedef enum {
 	STIM_RUNNING,
 	STIM_STOPPED,
@@ -44,11 +48,11 @@ typedef struct {
 	uint16_t flags;
 	State_t state_current;
     State_t state_prev;
-    int16_t *val_time_arr;
+    int16_t val_time_arr[VAL_TIM_ARR_SIZE];
     uint16_t n_elem_val_time_arr;
-	volatile ring_buffer_t *event_queue;
-	uint16_t *dac_lut;
-	uint16_t *dac_tim_lut;
+	volatile ring_buffer_t event_queue;
+	uint16_t dac_lut[LUT_SIZE];
+	uint16_t dac_tim_lut[LUT_SIZE];
 	uint16_t n_elem_lut;
 	DAC_HandleTypeDef *hdac;
 	DMA_HandleTypeDef *hdma_dac;
@@ -58,7 +62,7 @@ typedef struct {
 	TIM_HandleTypeDef *htim;
 } Stimulator_t;
 
-Stimulator_t *stimulator_create(DAC_HandleTypeDef *hdac, ADC_HandleTypeDef *hadc, TIM_HandleTypeDef *htim);
+Stimulator_t stimulator_create(DAC_HandleTypeDef *hdac, ADC_HandleTypeDef *hadc, TIM_HandleTypeDef *htim);
 void stimulator_generate_wave_lut(Stimulator_t *pStim);
 void ComputeImpedances(uint16_t *ADC3_Res, uint16_t *ADC4_Res, float *Z_Buf);
 void stimulator_state_machine (Stimulator_t *stimulator);

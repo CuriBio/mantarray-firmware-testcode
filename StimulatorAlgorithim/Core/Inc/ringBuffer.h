@@ -24,7 +24,7 @@
  * The buffer size must be a power of two.
 */
 #define RING_BUFFER_SIZE 32
-
+#define EVENT_DATA_SIZE  10
 #if (RING_BUFFER_SIZE & (RING_BUFFER_SIZE - 1)) != 0
 #error "RING_BUFFER_SIZE must be a power of two"
 #endif
@@ -49,14 +49,14 @@ typedef unsigned char ring_buffer_size_t;
  * Simplifies the use of <tt>struct ring_buffer_t</tt>.
  */
 typedef enum event_name_e{
-	XFER_CPLT = 0x01,
+	XFER_CPLT,
 	STIM_RUN_CMD,
 	STIM_STOP_CMD,
 } event_name_e;
 
 typedef struct {
 	event_name_e name;
-	int16_t *data;
+	int16_t data[EVENT_DATA_SIZE];
 	size_t data_size;
 }event_t;
 
@@ -127,8 +127,6 @@ unsigned char ring_buffer_is_empty(volatile ring_buffer_t *buffer);
 unsigned char ring_buffer_is_full(volatile ring_buffer_t *buffer);
 void push_event(volatile ring_buffer_t *buffer, event_t event);
 void pop_event(volatile ring_buffer_t *buffer, event_t *pEvent);
-void create_event(event_name_e name, void *data, size_t size, event_t *pEvent);
-void free_event_data(event_t *pEvent);
 ring_buffer_size_t ring_buffer_num_items(volatile ring_buffer_t *buffer);
 
 #endif /* INC_RINGBUFFER_H_ */

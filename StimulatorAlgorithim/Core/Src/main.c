@@ -74,7 +74,6 @@ System my_sys;
 void SystemClock_Config(void);
 
 static void MX_DMA_Init(void);
-
 /* USER CODE BEGIN PFP */
 /* User-defined Callback's*/
 void HAL_DMA1_CH1_XferCpltCallback(DMA_HandleTypeDef* hdma_adc);
@@ -100,13 +99,15 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 #endif
 	/* Push XFER_CPLT Event onto event queue */
 	event_t event;
-	create_event(XFER_CPLT, NULL, 0, &event);
-	ring_buffer_queue((&my_sys) -> stimulator -> event_queue, event);
+	event.name = XFER_CPLT;
+	memset(event.data, 0, sizeof(event.data[0]) * EVENT_DATA_SIZE);
+	event.data_size = sizeof(event.data[0]) * EVENT_DATA_SIZE;
+	ring_buffer_queue(&((&my_sys) -> stimulator.event_queue), event);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
 {
-	if (htim == (&my_sys)->stimulator->htim) { LoadTimerDac(htim, (&my_sys)->stimulator->dac_tim_lut, (&my_sys)->stimulator->n_elem_lut); } // If the overflowed timer belongs to the stimulator then load new value into it
+	if (htim == (&my_sys)->stimulator.htim) { LoadTimerDac(htim, (&my_sys)->stimulator.dac_tim_lut, (&my_sys)->stimulator.n_elem_lut); } // If the overflowed timer belongs to the stimulator then load new value into it
 }
 
 /* USER CODE END 0 */
@@ -161,6 +162,7 @@ int main(void)
   while (1)
   {
      state_machine(&my_sys);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -224,7 +226,6 @@ void SystemClock_Config(void)
 }
 
 
-
 /**
   * Enable DMA controller clock
   */
@@ -244,6 +245,11 @@ static void MX_DMA_Init(void)
 
 }
 
+/**
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 
 
 /* USER CODE BEGIN 4 */

@@ -78,6 +78,7 @@ void state_machine(System *thisSystem)
 		//------------------------------------------
 		if(my_sys.i2c_line->buffer_index)
 		{
+			NVIC_DisableIRQ(I2C2_IRQn);
 			switch(my_sys.i2c_line->receiveBuffer[0])
 			{
 				//-------------------------------
@@ -195,27 +196,33 @@ void state_machine(System *thisSystem)
 				break;
 				case I2C_PACKET_SEND_STIM_DATA_FRAME:
 				{
-					if (thisSystem->stimulator->flags & NEW_DATA_READY_FLAG)
+					if (IS_BIT_SET(thisSystem->stimulator.flags, NEW_DATA_READY_FLAG))
 					{
 						/* New data is ready so transmit data over internal bus */
 
 
 						/* Once transfer is complete we can clear NEW_DATA_READY_FLAG*/
-						uint16_t flags = thisSystem->stimulator->flags;
-						BIT_CLR(&flags, NEW_DATA_READY_FLAG);
+						uint16_t flags = thisSystem->stimulator.flags;
+						thisSystem->stimulator.flags = BIT_CLR(flags, NEW_DATA_READY_FLAG);
 					}
 				}
 				break;
 				case I2C_PACKET_BEGIN_STIMULATION:
 				{
-					uint16_t flags = thisSystem->stimulator->flags;
+					NVIC_DisableIRQ(I2C2_IRQn);
+					my_sys.i2c_line->multibyte_rx = TRUE;
+					uint16_t flags = thisSystem->stimulator.flags;
 					if (IS_BIT_SET(flags, STIM_READY_FLAG))
 					{
-						/* If stimulator is ready (stopped or idle) we can begin stimulation.*/
-						int16_t cmd_array[4] = { 3000, 10000, 0, 10000 }; // Send dummy command for now
+						/* If stimulator is ready we can begin stimulation.*/
+
+						int16_t cmd_array[4] = { 3000, 5000, 0, 10000 }; // Send dummy command for now
 						event_t event;
-						create_event(STIM_RUN_CMD, cmd_array, sizeof(cmd_array), &event);
-						push_event(thisSystem->stimulator->event_queue, event);
+						event.name = STIM_RUN_CMD;
+						memcpy(event.data, cmd_array, sizeof(cmd_array));
+						event.data_size = sizeof(cmd_array);
+						push_event(&(thisSystem->stimulator.event_queue), event);
+
 					}
 				}
 				break;
@@ -231,6 +238,9 @@ void state_machine(System *thisSystem)
 			}
 		my_sys.i2c_line->buffer_index =0;
 		}
+
+		/* Stimulator State Machine Start */
+		stimulator_state_machine(&((&my_sys)->stimulator));
 	}
 
 		switch(thisSystem->state)
@@ -322,5 +332,4 @@ void state_machine(System *thisSystem)
 			case MODULE_SYSTEM_STATUS_FAULTY:
 			break;
 		}
-		stimulator_state_machine(thisSystem->stimulator);
 }

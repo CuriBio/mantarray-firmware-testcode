@@ -12,9 +12,9 @@
  * Implementation of ring buffer functions.
  */
 
-void ring_buffer_init(volatile ring_buffer_t *buffer) {
-  buffer->tail_index = 0;
-  buffer->head_index = 0;
+void ring_buffer_init(volatile ring_buffer_t *event_queue) {
+	event_queue->tail_index = 0;
+	event_queue->head_index = 0;
 }
 
 void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t event) {
@@ -30,9 +30,9 @@ void ring_buffer_queue(volatile ring_buffer_t *buffer, event_t event) {
   buffer->head_index = ((buffer->head_index + 1) & RING_BUFFER_MASK);
 }
 
-void push_event(volatile ring_buffer_t *buffer, event_t event)
+void push_event(volatile ring_buffer_t *eq, event_t event)
 {
-	ring_buffer_queue(buffer, event);
+	ring_buffer_queue(eq, event);
 }
 
 void ring_buffer_queue_arr(volatile ring_buffer_t *buffer, event_t *pEvent, ring_buffer_size_t size) {
@@ -112,15 +112,4 @@ ring_buffer_size_t ring_buffer_num_items(volatile ring_buffer_t *buffer) {
   return ((buffer->head_index - buffer->tail_index) & RING_BUFFER_MASK);
 }
 
-void create_event(event_name_e name, void *data, size_t size, event_t *pEvent)
-{
-	pEvent -> name = name;
-	pEvent -> data = (int16_t *) malloc(size);
-	pEvent -> data_size = size;
-	if (data != NULL) { memcpy(pEvent->data, data, size); }
-}
 
-void free_event_data(event_t *pEvent)
-{
-	free(pEvent->data);
-}

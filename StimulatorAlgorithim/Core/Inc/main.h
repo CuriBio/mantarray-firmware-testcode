@@ -54,12 +54,14 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-static inline void BIT_SET(volatile uint16_t *bits, uint16_t bit){
-	*(bits) = *(bits) | bit;
+static inline uint16_t BIT_SET(uint16_t bits, uint16_t bit){
+	bits = bits | bit;
+	return bits;
 }
 
-static inline void BIT_CLR(volatile uint16_t *bits, uint16_t bit){
-	*(bits) = *(bits) & !bit;
+static inline uint16_t BIT_CLR(uint16_t bits, uint16_t bit){
+	bits = bits & !bit;
+	return bits;
 }
 
 static inline uint16_t IS_BIT_SET(volatile uint16_t bits, uint16_t bit){
