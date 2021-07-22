@@ -1,6 +1,26 @@
 {
-  "Internal_Control_2": "00000000",
-  "Internal_Control_3": "00000000",
-  "Internal_Control_0": "00000000",
-  "Internal_Control_1": "00000011"
+	"Internal_Control_2": "00000000",
+	"Internal_Control_3": "00000000",
+	"Internal_Control_0": "00000000",
+	"Internal_Control_1": "00000011",
+  
+	"defaultConstantCurrent": true,
+	"defaultConstantVoltage": false,
+  
+	"defaultPulseCurrent": {
+		"pulseFreq": 1.000,
+		"pulseHighAmp": 20.000,
+		"pulseHighDelay": 10.000,
+		"pulseMidDelay": 10.000,
+		"pulseLowAmp": 20.000,
+		"pulseLowDelay": 10.000,
+	},
+	"defaultPulseVoltage": {
+		"pulseFreq": 1.000,
+		"pulseHighAmp": 5.000,
+		"pulseHighDelay": 10.000,
+		"pulseMidDelay": 10.000,
+		"pulseLowAmp": 5.000,
+		"pulseLowDelay": 10.000,
+	},
 }

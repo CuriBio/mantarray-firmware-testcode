@@ -102,7 +102,7 @@ class Packet{
     this.packetType = 100;
     this.packetLength = 16;
     this.CRC = 123123123;
-    this.data = magConfigurationByteArray;
+    this.data = new ArrayList<Byte>();;
     this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
     this.data.add(1, uint2byte(Integer.valueOf(I2CInputField.getText())));
     return this.toByte();
@@ -114,7 +114,7 @@ class Packet{
     this.packetType = 101;
     this.packetLength = 16;
     this.CRC = 123123123;
-    this.data = magConfigurationByteArray;
+    this.data = new ArrayList<Byte>();;
     this.data.add(0, Byte.valueOf(I2CSetAddressOld.getText()));
     this.data.add(1, Byte.valueOf(I2CSetAddressNew.getText()));
     return this.toByte();
@@ -134,6 +134,18 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 3;
+    this.packetLength = 46;
+    this.CRC = 123123123;
+    this.data = timeAmplitudePairs;
+    this.data.add(0, (byte)16);
+    this.data.add(1, stimulationMode);
+    return this.toByte();
+  }
+    
   byte[] testPacket(int i){
         this.timeStamp = (System.nanoTime() - nanoStart)/1000;
         this.moduleID = 0;
@@ -146,7 +158,7 @@ class Packet{
   }
   
   byte[] toByte(){
-    int arrayLength = this.packetLength + 10;
+    int arrayLength = this.packetLength + 10; //<>//
     byte[] thisByteArray = new byte[arrayLength];
     for (int i = 0; i < 8; i++){
       thisByteArray[i] = this.MAGIC_WORD[i];

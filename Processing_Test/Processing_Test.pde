@@ -69,6 +69,7 @@ ControlGroup homePage;
 Button loadFirmwareButton;
 Button startButton;
 Button stopButton;
+Button setStimConfigButton;
 Button setBoardConfigButton;
 Button setSensorConfigButton;
 Button saveAndQuitButton;
@@ -89,14 +90,6 @@ Textfield samplingRate;
 //*************************************************************BOARD CONFIGURATION DEFINES*******************************************************************************  
 List<Button> magnetometerSelectorButtonList = new ArrayList<Button>();
 int NUM_BUTTONS = 18;
-String[] buttonNames = {"selectAllX", "selectAllY", "selectAllZ", "selectAllS1", "selectAllS2", "selectAllS3", 
-  "selectAllRowA", "selectAllRowB", "selectAllRowC", "selectAllRowD", 
-  "selectAllCol1", "selectAllCol2", "selectAllCol3", "selectAllCol4", "selectAllCol5", "selectAllCol6", 
-  "selectAll", "boardConfigurationSubmit"};
-String[] labelNames = {"Select All X", "Select All Y", "Select All Z", "Select All S1", "Select All S2", "Select All S3", 
-  "Select Row A", "Select Row B", "Select Row C", "Select Row D", 
-  "Select Column 1", "Select Column 2", "Select Column 3", "Select Column 4", "Select Column 5", "Select Column 6", 
-  "Select All", "Submit"};
 //**********************************************************BOARD CONFIGURATION DEFINES /END******************************************************************************  
   
 //*************************************************************SENSOR CONFIGURATION DEFINES*******************************************************************************  
@@ -122,6 +115,8 @@ String[] magnetometerRegisterFieldJSON = {"Internal_Control_0", "Internal_Contro
 public JSONObject settingsJSON;
 public String topSketchPath = "";
 //**********************************************************SENSOR CONFIGURATION DEFINES /END*****************************************************************************
+
+StimPageControllers thisStimPageControllers;
 
 public void setup() {
   size(1000, 600);  
@@ -152,6 +147,12 @@ public void setup() {
     .setSize(100, 50)
     .moveTo(homePage);
   stopButton.getCaptionLabel().setText("Stop").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  
+  setStimConfigButton = cp5.addButton("setStimConfigButton")
+    .setPosition(75, 130)
+    .setSize(250, 50)
+    .moveTo(homePage);
+  setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
   
   setSensorConfigButton = cp5.addButton("setSensorConfigButton")
     .setPosition(75, 270)
@@ -276,6 +277,15 @@ public void setup() {
       .setText(String.valueOf(1000))
       .moveTo(magnetometerSelector);
   samplingRate.getCaptionLabel().setText("Sampling Period (ms):").setColor(0).setFont(createFont("arial", magConfigBarBufferWidth)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-(int)(.8 * magConfigBarButtonWidth));
+  
+  String[] buttonNames = {"selectAllX", "selectAllY", "selectAllZ", "selectAllS1", "selectAllS2", "selectAllS3", 
+    "selectAllRowA", "selectAllRowB", "selectAllRowC", "selectAllRowD", 
+    "selectAllCol1", "selectAllCol2", "selectAllCol3", "selectAllCol4", "selectAllCol5", "selectAllCol6", 
+    "selectAll", "boardConfigurationSubmit"};
+  String[] labelNames = {"Select All X", "Select All Y", "Select All Z", "Select All S1", "Select All S2", "Select All S3", 
+    "Select Row A", "Select Row B", "Select Row C", "Select Row D", 
+    "Select Column 1", "Select Column 2", "Select Column 3", "Select Column 4", "Select Column 5", "Select Column 6", 
+    "Select All", "Submit"};
   
   for (int buttonNum = 1; buttonNum < NUM_BUTTONS + 1; buttonNum++){
     Button thisButton = cp5.addButton(buttonNames[buttonNum - 1])
@@ -437,6 +447,8 @@ public void setup() {
   sensorConfigurationSubmit.getCaptionLabel().setText("Submit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   //****************************************************************SENSOR CONFIGURATION PAGE /END***************************************************************************
   
+  thisStimPageControllers = new StimPageControllers(this);
+  
   c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
   logLog = createWriter(String.format("./log/%d-%d-%d_%d-%d-%d_log.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
   
@@ -458,7 +470,20 @@ public void setup() {
 }
 
 public void draw() {
-  rect(0,0,1920, 1000);
+  background(255);
+  if (thisStimPageControllers.stimWindow.isVisible()){
+    //Build the pulse that will be visualized based off of the textvalues from each text field controller on the thiStimPage class
+    List<Float> pulse = new ArrayList<Float>();
+    //The beginning and the end of the pulse is always 1/8 of the total x limit
+    pulse.add(thisStimPageControllers.pulseXLim/8.0);
+    pulse.add(thisStimPageControllers.pulseHighAmpText);
+    pulse.add(thisStimPageControllers.pulseHighDelayText);
+    pulse.add(thisStimPageControllers.pulseMidDelayText);
+    pulse.add(thisStimPageControllers.pulseLowAmpText);
+    pulse.add(thisStimPageControllers.pulseLowDelayText);
+    //plot the pulse in the edit window
+    PulsePlotter (pulse, thisStimPageControllers);
+  }
   long temp = ((System.nanoTime() - nanoStart)/1000);
   if (temp - IAmHerePacket.timeStamp > 5000000 && !noBeacon)
   {
@@ -468,6 +493,79 @@ public void draw() {
     numMessagesOut++;
     println(String.format("Handshake %d Sent:", numMessagesOut));
   }
+}
+
+public void PulsePlotter(List<Float> pulse, StimPageControllers thisStimPageControllers) {
+  int graphWidth = thisStimPageControllers.stimWindowWidth;
+  int graphHeight = thisStimPageControllers.stimWindowHeight;
+  int graphX = thisStimPageControllers.stimWindowX;
+  int graphY = thisStimPageControllers.stimWindowY;
+  //Calculates the height and width of the axes in pixels
+  int pulseYAxisHeight = (3*graphHeight)/8;
+  int pulseXAxisLength = (5*graphWidth)/6;
+  //The beginning and end of the pulse are always 1/8 of the axes lengths
+  int beginningAndEndLength = thisStimPageControllers.pulseXLim/8;
+  //Figure out conversion ratio between axes limits and pixels
+  float pulseScaleHeight = 1.0*pulseYAxisHeight/thisStimPageControllers.pulseYLim;
+  float pulseScaleWidth = 1.0*pulseXAxisLength/thisStimPageControllers.pulseXLim;
+  //Black medium thickness lines.  Draw axes
+  stroke(0); 
+  strokeWeight(2);
+  pushMatrix();
+  //Begin drawing at upper left point of graph starting point
+  translate(graphX, graphY);
+  translate(graphWidth/12, graphHeight/8);
+  line(0, 0, 0, (6*graphHeight)/8);
+  line(0, 0, 10, 10);
+  line(0, 0, -10, 10);
+  translate(0, (6*graphHeight)/8);
+  line(0, 0, 10, -10);
+  line(0, 0, -10, -10);
+  translate((10*graphWidth)/12, -(3*graphHeight)/8);
+  line(0, 0, -(10*graphWidth)/12, 0);
+  line(0, 0, -10, 10);
+  line(0, 0, -10, -10);
+  popMatrix();
+
+  pushMatrix();
+  //Begin drawing at upper left point of graph starting point
+  translate(graphX, graphY);
+  translate(graphWidth/12, graphHeight/2);
+
+  //Check whether to draw constant current or constant voltage colors
+  if (thisStimPageControllers.isConstantCurrent)
+    stroke(thisStimPageControllers.constantCurrentColor);
+  else
+    stroke(thisStimPageControllers.constantVoltageColor);
+
+  //double the line thickness and draw the pulse
+  strokeWeight(4);
+  line(0, 0, beginningAndEndLength*pulseScaleWidth, 0);
+  translate(beginningAndEndLength*pulseScaleWidth, 0);
+
+  line(0, 0, 0, -pulse.get(1)*pulseScaleHeight);
+  translate(0, -pulse.get(1)*pulseScaleHeight);
+
+  line(0, 0, pulse.get(2)*pulseScaleWidth, 0);
+  translate(pulse.get(2)*pulseScaleWidth, 0);
+
+  line(0, 0, 0, pulse.get(1)*pulseScaleHeight);
+  translate(0, pulse.get(1)*pulseScaleHeight);
+
+  line(0, 0, pulse.get(3)*pulseScaleWidth, 0);
+  translate(pulse.get(3)*pulseScaleWidth, 0);
+
+  line(0, 0, 0, pulse.get(4)*pulseScaleHeight);
+  translate(0, pulse.get(4)*pulseScaleHeight);
+
+  line(0, 0, pulse.get(5)*pulseScaleWidth, 0);
+  translate(pulse.get(5)*pulseScaleWidth, 0);
+
+  line(0, 0, 0, -pulse.get(4)*pulseScaleHeight);
+  translate(0, -pulse.get(4)*pulseScaleHeight);
+
+  line(0, 0, beginningAndEndLength*pulseScaleWidth, 0);
+  popMatrix();
 }
 
 void sendIAmHerePacket(){
@@ -545,6 +643,10 @@ public void controlEvent(ControlEvent theEvent) {
     }
     if (controllerName.equals("setSensorConfigButton")){
       magnetometerRegisterConfigurator.show();
+      homePage.hide();
+    }
+    if (controllerName.equals("setStimConfigButton")){
+      thisStimPageControllers.stimWindow.show();
       homePage.hide();
     }
     if (controllerName.equals("saveAndQuitButton")){
