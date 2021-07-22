@@ -121,7 +121,7 @@ class Packet{
   }
   
   byte[] sensorConfig(JSONObject settingsJSON){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000; //<>//
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000; //<>// //<>//
     this.moduleID = 0;
     this.packetType = 102;
     this.packetLength = 18;
@@ -138,11 +138,12 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
-    this.packetLength = 46;
+    this.packetLength = 41;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, (byte)16);
-    this.data.add(1, stimulationMode);
+    this.data.add(1, (byte)0);
+    this.data.add(2, stimulationMode);
     return this.toByte();
   }
     
@@ -157,7 +158,7 @@ class Packet{
         return this.toByte();
   }
   
-  byte[] toByte(){
+  byte[] toByte(){ //<>//
     int arrayLength = this.packetLength + 10; //<>//
     byte[] thisByteArray = new byte[arrayLength];
     for (int i = 0; i < 8; i++){
