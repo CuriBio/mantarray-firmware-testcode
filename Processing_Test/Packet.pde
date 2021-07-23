@@ -96,6 +96,26 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] StimulatorBegin(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 17;
+    this.packetLength = 14;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    return this.toByte();
+  }
+  
+  byte[] StimulatorEnd(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 18;
+    this.packetLength = 14;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    return this.toByte();
+  }
+  
   byte[] I2CCommand(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
@@ -138,7 +158,7 @@ class Packet{
     this.moduleID = 0;
     this.packetType = 104;
     this.packetLength = 16;
-    this.CRC = 123123123;
+    this.CRC = 123123123; //<>//
     this.data = new ArrayList<Byte>();;
     int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*1000;
     this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
@@ -158,7 +178,7 @@ class Packet{
     this.data.add(2, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_2"), 2)));
     this.data.add(3, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_3"), 2)));
     return this.toByte();
-  } //<>//
+  }
   
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;

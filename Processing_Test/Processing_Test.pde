@@ -67,8 +67,10 @@ int stop;
 public ControlP5 cp5;
 ControlGroup homePage;
 Button loadFirmwareButton;
-Button startButton;
-Button stopButton;
+Button startButtonMags;
+Button stopButtonMags;
+Button startButtonStims;
+Button stopButtonStims;
 Button setStimConfigButton;
 Button setBoardConfigButton;
 Button setSensorConfigButton;
@@ -141,17 +143,29 @@ public void setup() {
     .moveTo(homePage);
   loadFirmwareButton.getCaptionLabel().setText("Load Firmware").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
-  startButton = cp5.addButton("startButton")
+  startButtonMags = cp5.addButton("startButtonMags")
     .setPosition(75, 340)
-    .setSize(100, 50)
+    .setSize(120, 20)
     .moveTo(homePage);
-  startButton.getCaptionLabel().setText("Start").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  startButtonMags.getCaptionLabel().setText("Start Mags").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
   
-  stopButton = cp5.addButton("stopButton")
-    .setPosition(225, 340)
-    .setSize(100, 50)
+  stopButtonMags = cp5.addButton("stopButtonMags")
+    .setPosition(205, 340)
+    .setSize(120, 20)
     .moveTo(homePage);
-  stopButton.getCaptionLabel().setText("Stop").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  stopButtonMags.getCaptionLabel().setText("Stop Mags").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  
+  startButtonStims = cp5.addButton("startButtonStims")
+    .setPosition(75, 370)
+    .setSize(120, 20)
+    .moveTo(homePage);
+  startButtonStims.getCaptionLabel().setText("Start Stims").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  
+  stopButtonStims = cp5.addButton("stopButtonStims")
+    .setPosition(205, 370)
+    .setSize(120, 20)
+    .moveTo(homePage);
+  stopButtonStims.getCaptionLabel().setText("Stop Stims").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
   
   setStimConfigButton = cp5.addButton("setStimConfigButton")
     .setPosition(75, 130)
@@ -648,7 +662,7 @@ public void controlEvent(ControlEvent theEvent) {
       selectInput("Select a file to load as channel microcontroller firmware:", "LoadFirmware");
       logDisplay.append("Loading Firmware\n");
     }
-    if (controllerName.equals("startButton")){
+    if (controllerName.equals("startButtonMags")){
       if (boardConfigSet && sensorConfigSet){
         c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
         dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
@@ -669,7 +683,7 @@ public void controlEvent(ControlEvent theEvent) {
         }
       }
     }
-    if (controllerName.equals("stopButton")){
+    if (controllerName.equals("stopButtonMags")){
       Packet magStop = new Packet();
       byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
       serialPort.write(magStopConverted);
@@ -677,6 +691,16 @@ public void controlEvent(ControlEvent theEvent) {
       dataLog.flush();
       dataLog.close();
       logDisplay.append("Stopping Data Capture\n");
+    }
+    if (controllerName.equals("startButtonStims")){
+      Packet startStimulatorPacket = new Packet();
+      byte[] startStimulatorPacketConverted = startStimulatorPacket.StimulatorBegin();
+      serialPort.write(startStimulatorPacketConverted);
+    }
+    if (controllerName.equals("stopButtonStims")){
+      Packet stopStimulatorPacket = new Packet();
+      byte[] stopStimulatorPacketConverted = stopStimulatorPacket.StimulatorEnd();
+      serialPort.write(stopStimulatorPacketConverted);
     }
     if (controllerName.equals("setBoardConfigButton")){
       magnetometerSelector.show();
