@@ -81,6 +81,11 @@ Textfield I2CSetAddressOld;
 Textfield I2CSetAddressNew;
 Button I2CSetAddress;
 
+Textfield allStimulatorCurrentField;
+Button setAllStimulatorCurrent;
+Textfield allStimulatorVoltageField;
+Button setAllStimulatorVoltage;
+
 ControlGroup magnetometerSelector;
 List<Textlabel> magSensorLabels = new ArrayList<Textlabel>();
 List<List<List<Toggle>>> magSensorSelector = new ArrayList<List<List<Toggle>>>();
@@ -232,8 +237,44 @@ public void setup() {
     .moveTo(homePage);
   I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
   
+  allStimulatorCurrentField = cp5.addTextfield("allStimulatorCurrentField")
+    .setPosition(370, 280)
+    .setSize(150, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.format ("%.3f", 75.000))
+    .moveTo(homePage);
+  allStimulatorCurrentField.getCaptionLabel().setText("Stimulator Amplitude (mA)").setColor(0).setFont(createFont("arial", 15)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  
+  setAllStimulatorCurrent = cp5.addButton("setAllStimulatorCurrent")
+    .setPosition(570, 280)
+    .setSize(200, 50)
+    .moveTo(homePage);
+  setAllStimulatorCurrent.getCaptionLabel().setText("Set Stimulator Current").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+  
+  allStimulatorVoltageField = cp5.addTextfield("allStimulatorVoltageField")
+    .setPosition(370, 360)
+    .setSize(150, 50)
+    .setFont(createFont("arial", 20))
+    .setColor(0)
+    .setColorBackground(color(255))
+    .setColorForeground(color(0))
+    .setAutoClear(false)
+    .setText(String.format ("%.3f", 2.000))
+    .moveTo(homePage);
+  allStimulatorVoltageField.getCaptionLabel().setText("Stimulator Amplitude (V)").setColor(0).setFont(createFont("arial", 15)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  
+  setAllStimulatorVoltage = cp5.addButton("setAllStimulatorVoltage")
+    .setPosition(570, 360)
+    .setSize(200, 50)
+    .moveTo(homePage);
+  setAllStimulatorVoltage.getCaptionLabel().setText("Set Stimulator Voltage").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+  
   logDisplay = cp5.addTextarea("logDisplay")
-      .setPosition(400, 400)
+      .setPosition(400, 420)
       .setColorBackground(color(255))
       .setSize(500, 150)
       .setFont(createFont("arial", 16))
@@ -555,14 +596,14 @@ public void PulsePlotter(List<Float> pulse, StimPageControllers thisStimPageCont
   line(0, 0, pulse.get(3)*pulseScaleWidth, 0);
   translate(pulse.get(3)*pulseScaleWidth, 0);
 
-  line(0, 0, 0, pulse.get(4)*pulseScaleHeight);
-  translate(0, pulse.get(4)*pulseScaleHeight);
+  line(0, 0, 0, -pulse.get(4)*pulseScaleHeight);
+  translate(0, -pulse.get(4)*pulseScaleHeight);
 
   line(0, 0, pulse.get(5)*pulseScaleWidth, 0);
   translate(pulse.get(5)*pulseScaleWidth, 0);
 
-  line(0, 0, 0, -pulse.get(4)*pulseScaleHeight);
-  translate(0, -pulse.get(4)*pulseScaleHeight);
+  line(0, 0, 0, pulse.get(4)*pulseScaleHeight);
+  translate(0, pulse.get(4)*pulseScaleHeight);
 
   line(0, 0, beginningAndEndLength*pulseScaleWidth, 0);
   popMatrix();
@@ -733,6 +774,17 @@ public void controlEvent(ControlEvent theEvent) {
         byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
         serialPort.write(I2CNewAddressPacketConverted);
     }
+    if (controllerName.equals("setAllStimulatorCurrent")){
+        Packet setAllStimulatorCurrentPacket = new Packet();
+        byte[] setAllStimulatorCurrentPacketConverted = setAllStimulatorCurrentPacket.SetStimulatorAtConstantCurrent();
+        serialPort.write(setAllStimulatorCurrentPacketConverted);
+    }
+    if (controllerName.equals("setAllStimulatorVoltage")){
+        Packet setAllStimulatorVoltagePacket = new Packet();
+        byte[] setAllStimulatorVoltagePacketConverted = setAllStimulatorVoltagePacket.SetStimulatorAtConstantVoltage();
+        serialPort.write(setAllStimulatorVoltagePacketConverted);
+    }
+    
     if (controllerName.equals("sensorConfigurationSubmit")){
       for (int textBoxNum = 0; textBoxNum < magnetometerRegisterFieldNums; textBoxNum++){
         settingsJSON.setString(magnetometerRegisterFieldJSON[textBoxNum], magnetometerRegisterFields.get(textBoxNum).getText());

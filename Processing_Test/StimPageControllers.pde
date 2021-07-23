@@ -20,8 +20,6 @@ public class StimPageControllers implements ControlListener {
   
   private ControlGroup stimWindow;
   List<Button> stimWindowButtonList = new ArrayList<Button>();
-  private Toggle constantCurrent;  /*!< */
-  private Toggle constantVoltage;  /*!< */
   private Textfield pulseXLimIn;  /*!< */
   private Textfield pulseYLimIn;  /*!< */
   private Textfield pulseFreq;  /*!< */
@@ -73,22 +71,12 @@ public class StimPageControllers implements ControlListener {
     }
     
     JSONObject defaultPulseVoltageJSON = settingsJSON.getJSONObject("defaultPulseVoltage");
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseFreq"));
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseHighAmp"));
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseHighDelay"));
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseMidDelay"));
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseLowAmp"));
-    defaultPulseVoltage.add(defaultPulseVoltageJSON.getFloat("pulseLowDelay"));
+    defaultPulseVoltage = retrievePulseFromSettings(defaultPulseVoltageJSON);
     pulseXLimVolt = int(2*(defaultPulseVoltage.get(2) + defaultPulseVoltage.get(3) + defaultPulseVoltage.get(5)));
     pulseYLimVolt = int(Math.max(defaultPulseVoltage.get(1), defaultPulseVoltage.get(4))/.8);
     
     JSONObject defaultPulseCurrentJSON = settingsJSON.getJSONObject("defaultPulseCurrent");
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseFreq"));
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseHighAmp"));
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseHighDelay"));
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseMidDelay"));
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseLowAmp"));
-    defaultPulseCurrent.add(defaultPulseCurrentJSON.getFloat("pulseLowDelay"));
+    defaultPulseCurrent = retrievePulseFromSettings(defaultPulseCurrentJSON);
     pulseXLimCurr = int(2*(defaultPulseCurrent.get(2) + defaultPulseCurrent.get(3) + defaultPulseCurrent.get(5)));
     pulseYLimCurr = int(Math.max(defaultPulseCurrent.get(1), defaultPulseCurrent.get(4))/.8);
   
@@ -134,7 +122,7 @@ public class StimPageControllers implements ControlListener {
                    stimWindowTotHeight - bottomBarHeight + bottomBarBufferHeight)
       .setSize(bottomBarButtonWidth, bottomBarButtonHeight)
       .moveTo(stimWindow);
-      thisButton.getCaptionLabel().setText(stimWindowLabelNames[buttonNum]).setColor(255).setFont(createFont("arial", bottomBarButtonWidth/10)).align(CENTER, CENTER).toUpperCase(false);
+      thisButton.getCaptionLabel().setText(stimWindowLabelNames[buttonNum]).setColor(255).setFont(createFont("arial", stimWindowWidth/50)).align(CENTER, CENTER).toUpperCase(false);
       stimWindowButtonList.add(thisButton);
     }
     
@@ -152,7 +140,7 @@ public class StimPageControllers implements ControlListener {
     float pulseScaleWidth = 1.0*pulseXAxisLength/pulseXLim;
 
     int pulseBeginning = stimWindowWidth/12;
-    int pulseFreqX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + edgeBuffer + imageSize;
+    int pulseFreqX = stimWindowWidth/2;
     int pulseFreqY = 0;
     int pulseHighAmpX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + edgeBuffer;
     int pulseHighAmpY = stimWindowHeight/2 - imageSize - textBoxHeight - edgeBuffer;
@@ -163,7 +151,7 @@ public class StimPageControllers implements ControlListener {
     int pulseLowAmpX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + int(pulseMidDelayText*pulseScaleWidth) - edgeBuffer - textBoxWidth;
     int pulseLowAmpY = stimWindowHeight/2 + edgeBuffer + imageSize;
     int pulseLowDelayX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + int(pulseMidDelayText*pulseScaleWidth) + edgeBuffer + imageSize;
-    int pulseLowDelayY = stimWindowHeight/2 + int(pulseLowAmpText*pulseScaleHeight) + edgeBuffer;
+    int pulseLowDelayY = stimWindowHeight/2 - int(pulseLowAmpText*pulseScaleHeight) + edgeBuffer;
     int pulseYLimInX = stimWindowWidth/12 - textBoxWidth/2;
     int pulseYLimInY = stimWindowHeight/8 - textBoxHeight;
     int pulseXLimInX = (23*stimWindowWidth)/24 - textBoxWidth/2;
@@ -180,7 +168,7 @@ public class StimPageControllers implements ControlListener {
       .setAutoClear(false)
       .setText(String.valueOf(pulseYLim))
       .moveTo(stimWindow);
-    pulseYLimIn.getCaptionLabel().setText("Y Lim:").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
+    pulseYLimIn.getCaptionLabel().setText("Y Lim (mA):").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
   
     pulseXLimIn = cp5.addTextfield("pulseXLimIn")
       .setPosition(pulseXLimInX, pulseXLimInY)
@@ -193,7 +181,7 @@ public class StimPageControllers implements ControlListener {
       .setAutoClear(false)
       .setText(String.valueOf(pulseXLim))
       .moveTo(stimWindow);
-    pulseXLimIn.getCaptionLabel().setText("X Lim:").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
+    pulseXLimIn.getCaptionLabel().setText("X Lim (ms):").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
   
     pulseFreq = cp5.addTextfield("pulseFreq")
       .setPosition(pulseFreqX, pulseFreqY)
@@ -204,9 +192,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseFreqText))
+      .setText(String.format ("%.1f", pulseFreqText))
       .moveTo(stimWindow);
-    pulseFreq.getCaptionLabel().setVisible(false);
+    pulseFreq.getCaptionLabel().setText("Frequency (Hz)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-20);
   
     pulseFreqUp = cp5.addButton("pulseFreqUp")
       .setPosition(pulseFreqX + textBoxWidth, pulseFreqY + textBoxHeight/4)
@@ -229,9 +217,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseHighAmpText))
+      .setText(String.format ("%.3f", pulseHighAmpText))
       .moveTo(stimWindow);
-    pulseHighAmp.getCaptionLabel().setVisible(false);
+    pulseHighAmp.getCaptionLabel().setText("High Amplitude (mA)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(75);
   
     pulseHighAmpUp = cp5.addButton("pulseHighAmpUp")
       .setPosition(pulseHighAmpX + textBoxWidth/4, pulseHighAmpY - imageSize)
@@ -254,9 +242,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseHighDelayText))
+      .setText(String.format ("%.3f", pulseHighDelayText))
       .moveTo(stimWindow);
-    pulseHighDelay.getCaptionLabel().setVisible(false);
+    pulseHighDelay.getCaptionLabel().setText("High Delay (ms)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-20);
   
     pulseHighDelayUp = cp5.addButton("pulseHighDelayUp")
       .setPosition(pulseHighDelayX + textBoxWidth, pulseHighDelayY + textBoxHeight/4)
@@ -279,9 +267,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseMidDelayText))
+      .setText(String.format ("%.3f", pulseMidDelayText))
       .moveTo(stimWindow);
-    pulseMidDelay.getCaptionLabel().setVisible(false);
+    pulseMidDelay.getCaptionLabel().setText("Mid Delay (ms)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-20);
   
     pulseMidDelayUp = cp5.addButton("pulseMidDelayUp")
       .setPosition(pulseMidDelayX + textBoxWidth, pulseMidDelayY + textBoxHeight/4)
@@ -304,9 +292,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseLowAmpText))
+      .setText(String.format ("%.3f", pulseLowAmpText))
       .moveTo(stimWindow);
-    pulseLowAmp.getCaptionLabel().setVisible(false);
+    pulseLowAmp.getCaptionLabel().setText("Low Amplitude (mA)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-85);
   
     pulseLowAmpUp = cp5.addButton("pulseLowAmpUp")
       .setPosition(pulseLowAmpX + textBoxWidth/4, pulseLowAmpY - imageSize)
@@ -329,9 +317,9 @@ public class StimPageControllers implements ControlListener {
       .setColorForeground(color(255))
       .setColorCursor(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(pulseLowDelayText))
+      .setText(String.format ("%.3f", pulseLowDelayText))
       .moveTo(stimWindow);
-    pulseLowDelay.getCaptionLabel().setVisible(false);
+    pulseLowDelay.getCaptionLabel().setText("Low Delay (ms)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(20);
   
     pulseLowDelayUp = cp5.addButton("pulseLowDelayUp")
       .setPosition(pulseLowDelayX + textBoxWidth, pulseLowDelayY + textBoxHeight/4)
@@ -359,10 +347,7 @@ public class StimPageControllers implements ControlListener {
     if (theEvent.isAssignableFrom(Textfield.class)){
       try {
         float numValue = Float.parseFloat(theEvent.getStringValue());          
-        if (numValue < 0) {
-          logDisplay.append("Please input a non-negative number");
-        }
-        else if (controllerName.equals("pulseXLimIn")){
+        if (controllerName.equals("pulseXLimIn")){
           if (pulseHighDelayText + pulseLowDelayText + pulseMidDelayText + numValue/4 > numValue) {
             logDisplay.append("Input is too small for set values\n");
             pulseXLimIn.setText(String.valueOf(pulseXLim));
@@ -386,35 +371,35 @@ public class StimPageControllers implements ControlListener {
         else if (controllerName.equals("pulseHighAmp")){
           if (pulseYLim < numValue) {
             logDisplay.append("Input is too large for scale");
-            pulseHighAmp.setText(String.format ("%.1f", pulseHighAmpText));
+            pulseHighAmp.setText(String.format ("%.3f", pulseHighAmpText));
           } else
             pulseHighAmpText = numValue;
         }
         else if (controllerName.equals("pulseHighDelay")){
           if (numValue + pulseLowDelayText + pulseMidDelayText > (3*pulseXLim)/4) {
             logDisplay.append("Input is too large for scale");
-            pulseHighDelay.setText(String.format ("%.1f", pulseHighDelayText));
+            pulseHighDelay.setText(String.format ("%.3f", pulseHighDelayText));
           } else
             pulseHighDelayText = numValue;
         }
         else if (controllerName.equals("pulseMidDelay")){
           if (pulseHighDelayText + pulseLowDelayText + numValue > (3*pulseXLim)/4) {
             logDisplay.append("Input is too large for scale");
-            pulseMidDelay.setText(String.format ("%.1f", pulseMidDelayText));
+            pulseMidDelay.setText(String.format ("%.3f", pulseMidDelayText));
           } else
             pulseMidDelayText = numValue;
         }
         else if (controllerName.equals("pulseLowAmp")){
           if (pulseYLim < numValue) {
             logDisplay.append("Input is too large for scale");
-            pulseLowAmp.setText(String.format ("%.1f", pulseLowAmpText));
+            pulseLowAmp.setText(String.format ("%.3f", pulseLowAmpText));
           } else
             pulseLowAmpText = numValue;
         }
         else if (controllerName.equals("pulseLowDelay")){
           if (pulseHighDelayText + pulseMidDelayText + numValue > (3*pulseXLim)/4) {
             logDisplay.append("Input is too large for scale");
-            pulseLowDelay.setText(String.format ("%.1f", pulseLowDelayText));
+            pulseLowDelay.setText(String.format ("%.3f", pulseLowDelayText));
           } else
             pulseLowDelayText = numValue;
         }
@@ -423,68 +408,116 @@ public class StimPageControllers implements ControlListener {
         logDisplay.append("Error Reading Input Number");
       }
     } else if (theEvent.isAssignableFrom(Button.class)){
-      if (controllerName.equals("stimWindowBack")){
+      if (controllerName.equals("constantSelector")){
+        if (isConstantCurrent){
+          isConstantCurrent = false;
+          stimWindowButtonList.get(3).setColorBackground(constantVoltageColor);
+          stimWindowButtonList.get(3).getCaptionLabel().setText("Constant Voltage").setColor(255).setFont(createFont("arial", stimWindowWidth/50)).align(CENTER, CENTER).toUpperCase(false);
+          pulseHighAmp.getCaptionLabel().setText("High Amplitude (V)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(75);
+          pulseLowAmp.getCaptionLabel().setText("Low Amplitude (V)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-85);
+          pulseYLimIn.getCaptionLabel().setText("Y Lim (V):").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
+          List<Float> thisDefaultPulse = CheckDefaultPulse();
+          SetPulseAsDefault(thisDefaultPulse);
+          pulseXLimCurr = pulseXLim;
+          pulseYLimCurr = pulseYLim;
+          pulseXLim = pulseXLimVolt;
+          pulseYLim = pulseYLimVolt;
+          WritePulseText();
+          resetStimControllerPositions();
+        } else {
+          isConstantCurrent = true;
+          stimWindowButtonList.get(3).setColorBackground(constantCurrentColor);
+          stimWindowButtonList.get(3).getCaptionLabel().setText("Constant Current").setColor(255).setFont(createFont("arial", stimWindowWidth/50)).align(CENTER, CENTER).toUpperCase(false);
+          pulseHighAmp.getCaptionLabel().setText("High Amplitude (mA)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(75);
+          pulseLowAmp.getCaptionLabel().setText("Low Amplitude (mA)").setColor(0).setFont(createFont("arial", 10)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-85);
+          pulseYLimIn.getCaptionLabel().setText("Y Lim (mA):").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, BOTTOM).getStyle().setMarginTop(-textBoxHeight + edgeBuffer);
+          List<Float> thisDefaultPulse = CheckDefaultPulse();
+          SetPulseAsDefault(thisDefaultPulse);
+          pulseXLimVolt = pulseXLim;
+          pulseYLimVolt = pulseYLim;
+          pulseXLim = pulseXLimCurr;
+          pulseYLim = pulseYLimCurr;
+          WritePulseText();
+          resetStimControllerPositions();
+        }
+      }
+      else if (controllerName.equals("stimWindowBack")){
         stimWindow.hide();
         homePage.show();
       } else if (controllerName.equals("stimWindowReset")){
-        //TODO
+        List<Float> thisDefaultPulse = CheckDefaultPulse();
+        SetPulseAsDefault(thisDefaultPulse);
+        WritePulseText();
+        resetStimControllerPositions();
       } else if (controllerName.equals("stimWindowSubmit")){
         List<Byte> timeValuePairs = new ArrayList<Byte>();
-        int thisByte = 0;
+        String defaultPulseString = "defaultPulseCurrent";
+        int amplitudeModifier = 100;
         byte stimulatorMode = 1;
-        if (isConstantCurrent){
-          int cumulativeTime = 0;
-          //First time value pair
-          int timeDelayInMicroseconds = (int)(pulseHighDelayText*1000);
-          cumulativeTime += timeDelayInMicroseconds;
-          for (int j = 0; j < 4; j++){
-            thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          int amplitudeInTensOfMicroamps = (int)(pulseHighAmpText*100);
-          for (int j = 0; j < 2; j++){
-            thisByte = (amplitudeInTensOfMicroamps>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          
-          //Second time value pair
-          timeDelayInMicroseconds = (int)(pulseMidDelayText*1000);
-          cumulativeTime += timeDelayInMicroseconds;
-          for (int j = 0; j < 4; j++){
-            thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          timeValuePairs.add((byte)0);
-          timeValuePairs.add((byte)0);
-          
-          //Third time value pair
-          timeDelayInMicroseconds = (int)(pulseLowDelayText*1000);
-          cumulativeTime += timeDelayInMicroseconds;
-          for (int j = 0; j < 4; j++){
-            thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          amplitudeInTensOfMicroamps = (int)(pulseLowAmpText*100);
-          for (int j = 0; j < 2; j++){
-            thisByte = (amplitudeInTensOfMicroamps>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          
-          //Fourth time value pair
-          timeDelayInMicroseconds = (int)(((1 / pulseFreqText) * 1000000) - cumulativeTime);
-          for (int j = 0; j < 4; j++){
-            thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
-            timeValuePairs.add(uint2byte(thisByte));
-          }
-          timeValuePairs.add((byte)0);
-          timeValuePairs.add((byte)0);
-        } else {
+        if (!isConstantCurrent){
+          amplitudeModifier = 1000;
           stimulatorMode = 0;
+          defaultPulseString = "defaultPulseVoltage";
         }
+        
+        int thisByte = 0;
+        int cumulativeTime = 0;
+        //First time value pair
+        int timeDelayInMicroseconds = (int)(pulseHighDelayText*1000);
+        cumulativeTime += timeDelayInMicroseconds;
+        for (int j = 0; j < 4; j++){
+          thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        int amplitudeInNewUnit = (int)(pulseHighAmpText*amplitudeModifier);
+        for (int j = 0; j < 2; j++){
+          thisByte = (amplitudeInNewUnit>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        
+        //Second time value pair
+        timeDelayInMicroseconds = (int)(pulseMidDelayText*1000);
+        cumulativeTime += timeDelayInMicroseconds;
+        for (int j = 0; j < 4; j++){
+          thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        timeValuePairs.add((byte)0);
+        timeValuePairs.add((byte)0);
+        
+        //Third time value pair
+        timeDelayInMicroseconds = (int)(pulseLowDelayText*1000);
+        cumulativeTime += timeDelayInMicroseconds;
+        for (int j = 0; j < 4; j++){
+          thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        amplitudeInNewUnit = (int)(pulseLowAmpText*amplitudeModifier);
+        for (int j = 0; j < 2; j++){
+          thisByte = (amplitudeInNewUnit>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        
+        //Fourth time value pair
+        timeDelayInMicroseconds = (int)(((1 / pulseFreqText) * 1000000) - cumulativeTime);
+        for (int j = 0; j < 4; j++){
+          thisByte = (timeDelayInMicroseconds>>(8*j) & 0x000000ff);
+          timeValuePairs.add(uint2byte(thisByte));
+        }
+        timeValuePairs.add((byte)0);
+        timeValuePairs.add((byte)0);
         
         Packet stimConfig = new Packet();
         byte[] stimConfigConverted = stimConfig.StimulatorConfiguration(timeValuePairs, stimulatorMode);
         serialPort.write(stimConfigConverted);
+        
+        JSONObject defaultPulseJSON = settingsJSON.getJSONObject(defaultPulseString);
+        defaultPulseJSON = setPulseToSettings(defaultPulseJSON);
+        settingsJSON.setJSONObject(defaultPulseString, defaultPulseJSON);
+        saveJSONObject(settingsJSON, topSketchPath+"/config/config.json");
+        List<Float> thisDefaultPulse = CheckDefaultPulse();
+        thisDefaultPulse = WritePulse(thisDefaultPulse);
+        
         stimWindow.hide();
         homePage.show();
       } else if (controllerName.equals("pulseFreqUp")){
@@ -498,72 +531,140 @@ public class StimPageControllers implements ControlListener {
           pulseFreq.setText(String.format ("%.1f", pulseFreqText));
         }
       } else if (controllerName.equals("pulseHighAmpUp")){
-        float inc = 1;
-        if (constantCurrent.getState())
-          inc = .1;
-        if (pulseHighAmpText+inc<=pulseYLim) {
-          pulseHighAmpText += inc;
-          pulseHighAmp.setText(String.format ("%.1f", pulseHighAmpText));
+        if (pulseHighAmpText+.1<=pulseYLim) {
+          pulseHighAmpText += .1;
+          pulseHighAmp.setText(String.format ("%.3f", pulseHighAmpText));
         }
       } else if (controllerName.equals("pulseHighAmpDown")){
-        float inc = 1;
-        if (constantCurrent.getState())
-          inc = .1;
-        if (pulseHighDelayText-inc>=0) {
-          pulseHighAmpText -=inc;
-          pulseHighAmp.setText(String.format ("%.1f", pulseHighAmpText));
+        if (pulseHighDelayText-.1>=-pulseYLim) {
+          pulseHighAmpText -=.1;
+          pulseHighAmp.setText(String.format ("%.3f", pulseHighAmpText));
         }
       } else if (controllerName.equals("pulseHighDelayUp")){
         if (pulseHighDelayText + pulseLowDelayText + pulseMidDelayText + 1 <= (6*pulseXLim)/8) {
           pulseHighDelayText += 1;
-          pulseHighDelay.setText(String.format ("%.1f", pulseHighDelayText));
+          pulseHighDelay.setText(String.format ("%.3f", pulseHighDelayText));
         }
       } else if (controllerName.equals("pulseHighDelayDown")){
         if (pulseHighDelayText - 1 >= 0) {
           pulseHighDelayText -= 1;
-          pulseHighDelay.setText(String.format ("%.1f", pulseHighDelayText));
+          pulseHighDelay.setText(String.format ("%.3f", pulseHighDelayText));
         }
       } else if (controllerName.equals("pulseMidDelayUp")){
         if (pulseHighDelayText + pulseLowDelayText + pulseMidDelayText + 1 <= (6*pulseXLim)/8) {
           pulseMidDelayText += 1;
-          pulseMidDelay.setText(String.format ("%.1f", pulseMidDelayText));
+          pulseMidDelay.setText(String.format ("%.3f", pulseMidDelayText));
         }
       } else if (controllerName.equals("pulseMidDelayDown")){
         if (pulseMidDelayText - 1 >= 0) {
           pulseMidDelayText -= 1;
-          pulseMidDelay.setText(String.format ("%.1f", pulseMidDelayText));
+          pulseMidDelay.setText(String.format ("%.3f", pulseMidDelayText));
         }
       } else if (controllerName.equals("pulseLowAmpUp")){
-        float inc = 1;
-        if (constantCurrent.getState())
-          inc = .1;
-        if (pulseLowAmpText-inc>=0) {
-          pulseLowAmpText -= inc;
-          pulseLowAmp.setText(String.format ("%.1f", pulseLowAmpText));
+        if (pulseLowAmpText+.1<=pulseYLim) {
+          pulseLowAmpText += .1;
+          pulseLowAmp.setText(String.format ("%.3f", pulseLowAmpText));
         }
       } else if (controllerName.equals("pulseLowAmpDown")){
-        float inc = 1;
-        if (constantCurrent.getState())
-          inc = .1;
-        if (pulseLowAmpText+inc<=pulseYLim) {
-          pulseLowAmpText += inc;
-          pulseLowAmp.setText(String.format ("%.1f", pulseLowAmpText));
+        if (pulseLowAmpText-.1>=-pulseYLim) {
+          pulseLowAmpText -= .1;
+          pulseLowAmp.setText(String.format ("%.3f", pulseLowAmpText));
         }
       } else if (controllerName.equals("pulseLowDelayUp")){
         if (pulseHighDelayText + pulseLowDelayText + pulseMidDelayText + 1 <= (6*pulseXLim)/8) {
           pulseLowDelayText += 1;
-          pulseLowDelay.setText(String.format ("%.1f", pulseLowDelayText));
+          pulseLowDelay.setText(String.format ("%.3f", pulseLowDelayText));
         }
       } else if (controllerName.equals("pulseLowDelayDown")){
         if (pulseLowDelayText - 1 >= 0) {
           pulseLowDelayText -= 1;
-          pulseLowDelay.setText(String.format ("%.1f", pulseLowDelayText));
+          pulseLowDelay.setText(String.format ("%.3f", pulseLowDelayText));
         }
       }
       resetStimControllerPositions();
     }
     println("got an event from stim page");
   } 
+  
+  /*!
+  Checks whether constant current or constant voltage is selected by user and returns the appropriate corresponding default pulse array list
+  */
+  private List<Float> CheckDefaultPulse() {
+    List<Float> thisPulse = new ArrayList<Float>();
+    if (isConstantCurrent)
+      thisPulse = defaultPulseCurrent;    
+    else 
+      thisPulse = defaultPulseVoltage;
+    return thisPulse;
+  }
+  
+  /*!
+  Writes the default pulse arrayList passed into this function to the displayed pulse in the waveform editing window
+  */
+  private void SetPulseAsDefault(List<Float> defaultPulse) {
+    pulseFreqText = defaultPulse.get(0);
+    pulseHighAmpText = defaultPulse.get(1);
+    pulseHighDelayText = defaultPulse.get(2);
+    pulseMidDelayText = defaultPulse.get(3);
+    pulseLowAmpText = defaultPulse.get(4);
+    pulseLowDelayText = defaultPulse.get(5);
+  }
+  
+  /*!
+  Writes the displayed pulse in the waveform editing window to the pulse arrayList passed into this function
+  */
+  private List<Float> WritePulse(List<Float> thisPulse) {
+    thisPulse.set(0, pulseFreqText);
+    thisPulse.set(1, pulseHighAmpText);
+    thisPulse.set(2, pulseHighDelayText);
+    thisPulse.set(3, pulseMidDelayText);
+    thisPulse.set(4, pulseLowAmpText);
+    thisPulse.set(5, pulseLowDelayText);
+    return thisPulse;
+  }
+  
+  /*!
+  Given a specific JSON object from the config file, retrieve a breakdown of each of it's pulse components using specific keys
+  */
+  private JSONObject setPulseToSettings(JSONObject source){
+    source.setFloat("pulseFreq", pulseFreqText);
+    source.setFloat("pulseHighAmp", pulseHighAmpText);
+    source.setFloat("pulseHighDelay", pulseHighDelayText);
+    source.setFloat("pulseMidDelay", pulseMidDelayText);
+    source.setFloat("pulseLowAmp", pulseLowAmpText);
+    source.setFloat("pulseLowDelay", pulseLowDelayText);
+    return source;
+  }
+  
+  /*!
+  Writes the curent values stored in the data objects to the GUI objects
+  */
+  private void WritePulseText() {
+    pulseFreq.setText(String.format ("%.1f", pulseFreqText));
+    pulseHighAmp.setText(String.format ("%.3f", pulseHighAmpText));
+    pulseHighDelay.setText(String.format ("%.3f", pulseHighDelayText));
+    pulseMidDelay.setText(String.format ("%.3f", pulseMidDelayText));
+    pulseLowAmp.setText(String.format ("%.3f", pulseLowAmpText));
+    pulseLowDelay.setText(String.format ("%.3f", pulseLowDelayText));
+    pulseXLimIn.setText(String.valueOf(pulseXLim));
+    pulseYLimIn.setText(String.valueOf(pulseYLim));
+  }
+  
+  /*!
+  Given a specific JSON object from the config file, retrieve a breakdown of each of it's pulse components using specific keys
+  */
+  private List<Float> retrievePulseFromSettings(JSONObject source){
+    List<Float> thisPulse = new ArrayList<Float>();
+    thisPulse.add(source.getFloat("pulseFreq"));
+    thisPulse.add(source.getFloat("pulseHighAmp"));
+    thisPulse.add(source.getFloat("pulseHighDelay"));
+    thisPulse.add(source.getFloat("pulseMidDelay"));
+    thisPulse.add(source.getFloat("pulseLowAmp"));
+    thisPulse.add(source.getFloat("pulseLowDelay"));
+    return thisPulse;
+  }
+  
+  
    
   /*!
   After every time a stim waveform piece has been edited, shift the location of the controllers within the edit waveform panel to match the new waveform shape
@@ -578,7 +679,7 @@ public class StimPageControllers implements ControlListener {
     int beginningAndEndLength = pulseXLim/8;
     
     int pulseBeginning = stimWindowWidth/12;
-    int pulseFreqX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + edgeBuffer + imageSize;
+    int pulseFreqX = stimWindowWidth/2;
     int pulseFreqY = 0;
     int pulseHighAmpX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + edgeBuffer;
     int pulseHighAmpY = stimWindowHeight/2 - imageSize - textBoxHeight - edgeBuffer;
@@ -589,7 +690,7 @@ public class StimPageControllers implements ControlListener {
     int pulseLowAmpX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + int(pulseMidDelayText*pulseScaleWidth) - edgeBuffer - textBoxWidth;
     int pulseLowAmpY = stimWindowHeight/2 + edgeBuffer + imageSize;
     int pulseLowDelayX = pulseBeginning + int(beginningAndEndLength*pulseScaleWidth) + int(pulseHighDelayText*pulseScaleWidth) + int(pulseMidDelayText*pulseScaleWidth) + edgeBuffer + imageSize;
-    int pulseLowDelayY = stimWindowHeight/2 + int(pulseLowAmpText*pulseScaleHeight) + edgeBuffer;
+    int pulseLowDelayY = stimWindowHeight/2 - int(pulseLowAmpText*pulseScaleHeight) + edgeBuffer;
     
     pulseFreq.setPosition(pulseFreqX, pulseFreqY);
     pulseFreqUp.setPosition(pulseFreqX + textBoxWidth, pulseFreqY + textBoxHeight/4);

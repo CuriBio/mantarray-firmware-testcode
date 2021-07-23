@@ -120,8 +120,34 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] SetStimulatorAtConstantCurrent(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 103;
+    this.packetLength = 16;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*100;
+    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
+    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
+    return this.toByte();
+  }
+  
+  byte[] SetStimulatorAtConstantVoltage(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 104;
+    this.packetLength = 16;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();;
+    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*1000;
+    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
+    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
+    return this.toByte();
+  }
+  
   byte[] sensorConfig(JSONObject settingsJSON){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000; //<>// //<>//
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 102;
     this.packetLength = 18;
@@ -132,7 +158,7 @@ class Packet{
     this.data.add(2, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_2"), 2)));
     this.data.add(3, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_3"), 2)));
     return this.toByte();
-  }
+  } //<>//
   
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
@@ -148,17 +174,17 @@ class Packet{
   }
     
   byte[] testPacket(int i){
-        this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-        this.moduleID = 0;
-        this.packetType = 3;
-        this.packetLength = 15;
-        this.CRC = 123123123;
-        this.data = magConfigurationByteArray;
-        this.data.add(0, (byte)i);
-        return this.toByte();
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 3;
+    this.packetLength = 15;
+    this.CRC = 123123123;
+    this.data = magConfigurationByteArray;
+    this.data.add(0, (byte)i);
+    return this.toByte();
   }
   
-  byte[] toByte(){ //<>//
+  byte[] toByte(){
     int arrayLength = this.packetLength + 10; //<>//
     byte[] thisByteArray = new byte[arrayLength];
     for (int i = 0; i < 8; i++){
