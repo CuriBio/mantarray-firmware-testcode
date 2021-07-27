@@ -121,7 +121,7 @@ class Packet{
     this.moduleID = 0;
     this.packetType = 100;
     this.packetLength = 16;
-    this.CRC = 123123123;
+    this.CRC = 123123123; //<>//
     this.data = new ArrayList<Byte>();;
     this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
     this.data.add(1, uint2byte(Integer.valueOf(I2CInputField.getText())));
@@ -180,16 +180,18 @@ class Packet{
     return this.toByte();
   }
   
-  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
+  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode, int stimulatorPeriod){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
-    this.packetLength = 41;
+    this.packetLength = 43;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, (byte)16);
     this.data.add(1, (byte)0);
-    this.data.add(2, stimulationMode);
+    this.data.add(2, (byte)((stimulatorPeriod) & 0x000000ff));
+    this.data.add(3, (byte)((stimulatorPeriod >> 8) & 0x000000ff));
+    this.data.add(4, stimulationMode);
     return this.toByte();
   }
     

@@ -136,8 +136,8 @@ void PrintDataToFile(List<Byte> thisPacketData){
     }
     dataLog.print(Arrays.toString(dataList.toArray()).replace("[", "").replace("]", ""));
     dataLog.println();
-    print(thisPacketData);
-    println();
+    //print(thisPacketData);
+    //println();
   }
   catch (Exception E)
   {
