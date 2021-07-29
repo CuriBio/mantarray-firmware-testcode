@@ -1,0 +1,11 @@
+v1.0.0
+I guess this is a real tool now that we are sending to people.  That's neat I guess ¯\_(ツ)_/¯
+
+v1.0.1
+Fixed a bad bug where the tool would select the wrong COM port when connected
+Made an incorrect assumption that computers wouldn't have more than 1 serial device connected, but apparently Bluetooth sometimes uses simulated COM ports?
+As a fun discovery, I found out that making Linux support would be easy during the fix process, so we can add that as a potential option down the line
+
+future devs:
+v1.0.2 (ETA 8-2-21)
+Different colors for toggle buttons
