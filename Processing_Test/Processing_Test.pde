@@ -49,6 +49,7 @@ List<Packet> packetList = new ArrayList<Packet>();
 List<List<List<Integer>>> magnetometerConfigurationArray = new ArrayList<List<List<Integer>>>();
 List<Byte> magConfigurationByteArray = new ArrayList<Byte>();
 boolean magCaptureInProgress = false;
+boolean stimulationInProgress = false;
 boolean boardConfigSet = false;
 boolean sensorConfigSet = false;
 Checksum crc32 = new CRC32();
@@ -514,6 +515,7 @@ public void setup() {
   }
   catch (Exception e) {
     logDisplay.append("No serial port found\n");
+    logLog.println("No serial port found");
     print("No serial port found");
     noBeacon = true;
   }
@@ -522,6 +524,7 @@ public void setup() {
   IAmHerePacket.IAmHere();
   IAmHereConverted = IAmHerePacket.toByte();
   logDisplay.append("Setup Complete\n");
+  logLog.println("Setup Complete");
 }
 
 public void draw() {
@@ -661,9 +664,10 @@ public void controlEvent(ControlEvent theEvent) {
     if (controllerName.equals("loadFirmwareButton")){
       selectInput("Select a file to load as channel microcontroller firmware:", "LoadFirmware");
       logDisplay.append("Loading Firmware\n");
+      logLog.println("Loading firmware");
     }
     if (controllerName.equals("startButtonMags")){
-      if (boardConfigSet && sensorConfigSet){
+      if (boardConfigSet && !magCaptureInProgress){
         c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
         dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
         dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
@@ -672,35 +676,61 @@ public void controlEvent(ControlEvent theEvent) {
         byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
         serialPort.write(magStartConverted);
         logDisplay.append("Starting Data Capture\n");
+        logLog.println("Starting data capture");
       }
-      else {
-        if (!boardConfigSet && !sensorConfigSet){
-          logDisplay.append("Please set a board and sensor configuration before beginning a data capture\n");
-        } else if (!sensorConfigSet){
-          logDisplay.append("Please set a sensor configuration before beginning a data capture\n");
-        } else {
-          logDisplay.append("Please set a boardconfiguration before beginning a data capture\n");
-        }
+      else if (magCaptureInProgress){
+        logDisplay.append("There is already a magnetometer data capture running\n");
+        logLog.println("There is already a magnetometer data capture running");
+      } else {
+        logDisplay.append("Please set a board configuration before beginning a data capture\n");
+        logLog.println("Please set a board configuration before beginning a data capture");
       }
     }
     if (controllerName.equals("stopButtonMags")){
-      Packet magStop = new Packet();
-      byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
-      serialPort.write(magStopConverted);
-      magCaptureInProgress = false;
-      dataLog.flush();
-      dataLog.close();
-      logDisplay.append("Stopping Data Capture\n");
+      if (magCaptureInProgress){
+        Packet magStop = new Packet();
+        byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
+        serialPort.write(magStopConverted);
+        magCaptureInProgress = false;
+        dataLog.flush();
+        dataLog.close();
+        logDisplay.append("Stopping Data Capture\n");
+        logLog.println("Stopping data capture");
+      } else {
+        logDisplay.append("No magnetometer data capture currently running to stop\n");
+        logLog.println("No magnetometer data capture currently running to stop");
+      }
     }
     if (controllerName.equals("startButtonStims")){
-      Packet startStimulatorPacket = new Packet();
-      byte[] startStimulatorPacketConverted = startStimulatorPacket.StimulatorBegin();
-      serialPort.write(startStimulatorPacketConverted);
+      if (thisStimPageControllers.stimConfigSet && !stimulationInProgress){
+        stimulationInProgress = true;
+        Packet startStimulatorPacket = new Packet();
+        byte[] startStimulatorPacketConverted = startStimulatorPacket.StimulatorBegin();
+        serialPort.write(startStimulatorPacketConverted);
+        logDisplay.append("Starting Stimulator\n");
+        logLog.println("Starting stimulator");
+      }
+      else if (stimulationInProgress){
+        logDisplay.append("There is already a stimulation process running\n");
+        logLog.println("There is already a stimulation process running");
+      } else {
+        logDisplay.append("Please set a stimulator configuration before starting the stimulator\n");
+        logLog.println("Please set a stimulator configuration before starting the stimulator");
+      }
+      
     }
     if (controllerName.equals("stopButtonStims")){
-      Packet stopStimulatorPacket = new Packet();
-      byte[] stopStimulatorPacketConverted = stopStimulatorPacket.StimulatorEnd();
-      serialPort.write(stopStimulatorPacketConverted);
+      if (stimulationInProgress) {
+        stimulationInProgress = false;
+        Packet stopStimulatorPacket = new Packet();
+        byte[] stopStimulatorPacketConverted = stopStimulatorPacket.StimulatorEnd();
+        serialPort.write(stopStimulatorPacketConverted);
+        logDisplay.append("Stopping Data Capture\n");
+        logLog.println("Stopping data capture");
+      } else {
+        logDisplay.append("No stimulation process currently running to stop\n");
+        logLog.println("No stimulation process currently running to stop");
+      }
     }
     if (controllerName.equals("setBoardConfigButton")){
       magnetometerSelector.show();
@@ -715,13 +745,17 @@ public void controlEvent(ControlEvent theEvent) {
       homePage.hide();
     }
     if (controllerName.equals("saveAndQuitButton")){
-      if (magCaptureInProgress)
-      {
+      if (magCaptureInProgress) {
         Packet magStop = new Packet();
         byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
         serialPort.write(magStopConverted);
         dataLog.flush();
         dataLog.close();
+      }
+      if (stimulationInProgress) {
+        Packet stopStimulatorPacket = new Packet();
+        byte[] stopStimulatorPacketConverted = stopStimulatorPacket.StimulatorEnd();
+        serialPort.write(stopStimulatorPacketConverted);
       }
       logLog.flush();
       logLog.close();
@@ -786,27 +820,36 @@ public void controlEvent(ControlEvent theEvent) {
       byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
       serialPort.write(magConfigConverted);
       logDisplay.append("Board Configuration Set\n");
+      logLog.println("Board configuration set");
       boardConfigSet = true;
     }
     if (controllerName.equals("I2CSendCommand")){
-        Packet I2CCommandPacket = new Packet();
-        byte[] I2CCommandPacketConverted = I2CCommandPacket.I2CCommand();
-        serialPort.write(I2CCommandPacketConverted);
+      Packet I2CCommandPacket = new Packet();
+      byte[] I2CCommandPacketConverted = I2CCommandPacket.I2CCommand();
+      serialPort.write(I2CCommandPacketConverted);
+      logDisplay.append("I2C Command Sent\n");
+      logLog.println("I2C command sent");
     }
     if (controllerName.equals("I2CSetAddress")){
-        Packet I2CNewAddressPacket = new Packet();
-        byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
-        serialPort.write(I2CNewAddressPacketConverted);
+      Packet I2CNewAddressPacket = new Packet();
+      byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
+      serialPort.write(I2CNewAddressPacketConverted);
+      logDisplay.append("New I2C address set\n");
+      logLog.println("New I2C address set");
     }
     if (controllerName.equals("setAllStimulatorCurrent")){
-        Packet setAllStimulatorCurrentPacket = new Packet();
-        byte[] setAllStimulatorCurrentPacketConverted = setAllStimulatorCurrentPacket.SetStimulatorAtConstantCurrent();
-        serialPort.write(setAllStimulatorCurrentPacketConverted);
+      //Packet setAllStimulatorCurrentPacket = new Packet();
+      //byte[] setAllStimulatorCurrentPacketConverted = setAllStimulatorCurrentPacket.SetStimulatorAtConstantCurrent();
+      //serialPort.write(setAllStimulatorCurrentPacketConverted);
+      logDisplay.append("This process is still in development\n");
+      logLog.println("This process is still in development");
     }
     if (controllerName.equals("setAllStimulatorVoltage")){
-        Packet setAllStimulatorVoltagePacket = new Packet();
-        byte[] setAllStimulatorVoltagePacketConverted = setAllStimulatorVoltagePacket.SetStimulatorAtConstantVoltage();
-        serialPort.write(setAllStimulatorVoltagePacketConverted);
+      //Packet setAllStimulatorVoltagePacket = new Packet();
+      //byte[] setAllStimulatorVoltagePacketConverted = setAllStimulatorVoltagePacket.SetStimulatorAtConstantVoltage();
+      //serialPort.write(setAllStimulatorVoltagePacketConverted);
+      logDisplay.append("This process is still in development\n");
+      logLog.println("This process is still in development");
     }
     
     if (controllerName.equals("sensorConfigurationSubmit")){
@@ -820,6 +863,7 @@ public void controlEvent(ControlEvent theEvent) {
       magnetometerRegisterConfigurator.hide();
       homePage.show();
       logDisplay.append("Sensor Configuration Set\n");
+      logLog.println("Sensor configuration set");
       sensorConfigSet = true;
     }
     if (controllerName.equals("sensorConfigurationBack")){

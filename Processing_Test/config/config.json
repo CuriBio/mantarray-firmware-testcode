@@ -1,11 +1,11 @@
 {
   "defaultPulseCurrent": {
-    "pulseMidDelay": 21,
-    "pulseLowAmp": 20,
-    "pulseFreq": 1,
+    "pulseMidDelay": 10,
+    "pulseLowAmp": -20,
+    "pulseFreq": 2.5,
     "pulseHighDelay": 20,
-    "pulseHighAmp": 21.600006103515625,
-    "pulseLowDelay": 16
+    "pulseHighAmp": 20,
+    "pulseLowDelay": 20
   },
   "defaultConstantVoltage": false,
   "Internal_Control_2": "00000000",

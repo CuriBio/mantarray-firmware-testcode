@@ -44,6 +44,7 @@ public class StimPageControllers implements ControlListener {
   private color constantVoltageColor = #0f0f96;  /*!< The color for constant voltage pulse plots*/
   private color constantCurrentColor = #b01010;  /*!< The color for constant current pulse plots*/
   boolean isConstantCurrent = true;
+  boolean stimConfigSet = false;
   String[] stimWindowButtonNames = {"stimWindowBack", "stimWindowReset", "stimWindowSubmit", "constantSelector"};
   String[] stimWindowLabelNames = {"Back", "Reset", "Submit", "Constant Current"};
   
@@ -518,6 +519,7 @@ public class StimPageControllers implements ControlListener {
         List<Float> thisDefaultPulse = CheckDefaultPulse();
         thisDefaultPulse = WritePulse(thisDefaultPulse);
         
+        stimConfigSet = true;
         stimWindow.hide();
         homePage.show();
       } else if (controllerName.equals("pulseFreqUp")){
@@ -583,7 +585,6 @@ public class StimPageControllers implements ControlListener {
       }
       resetStimControllerPositions();
     }
-    println("got an event from stim page");
   } 
   
   /*!
