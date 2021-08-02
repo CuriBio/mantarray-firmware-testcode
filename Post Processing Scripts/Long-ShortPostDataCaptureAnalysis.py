@@ -88,17 +88,17 @@ def GraphSingleWellCompare(data_x,
 timestamps, data = ImportData('Static Capture - Long Post - Round 1')
 longPostData = data[5]
 longPostTimestamps = timestamps[5]
-longPostTimestampsLinear = LineraizeTimestampsSingleWell(longPostTimestamps)[0]
+longPostTimestampsLinear,_ = LineraizeTimestampsSingleWell(longPostTimestamps)
 
 timestamps, data = ImportData('Static Capture - Short Post - Round 1')
 shortPostData = data[5]
 shortPostTimestamps = timestamps[5]
-shortPostTimestampsLinear = LineraizeTimestampsSingleWell(shortPostTimestamps)[0]
+shortPostTimestampsLinear,_ = LineraizeTimestampsSingleWell(shortPostTimestamps)
 
 timestamps, data = ImportData('Static Capture - No magnets (A6 only)')
 noMagData = data[5]
 noMagTimestamps = timestamps[5]
-noMagTimestampsLinear = LineraizeTimestampsSingleWell(noMagTimestamps)[0]
+noMagTimestampsLinear,_ = LineraizeTimestampsSingleWell(noMagTimestamps)
 
 #%%
 newLength = min(shortPostData.shape[2], longPostData.shape[2], noMagData.shape[2])
