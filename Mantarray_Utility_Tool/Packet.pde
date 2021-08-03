@@ -181,18 +181,16 @@ class Packet{
     return this.toByte();
   }
   
-  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode, int stimulatorPeriod){
+  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
-    this.packetLength = 43;
+    this.packetLength = 41;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, (byte)16);
     this.data.add(1, (byte)0);
-    this.data.add(2, (byte)((stimulatorPeriod) & 0x000000ff));
-    this.data.add(3, (byte)((stimulatorPeriod >> 8) & 0x000000ff));
-    this.data.add(4, stimulationMode);
+    this.data.add(2, stimulationMode);
     return this.toByte();
   }
     

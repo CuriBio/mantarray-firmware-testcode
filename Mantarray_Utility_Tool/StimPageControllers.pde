@@ -508,7 +508,7 @@ public class StimPageControllers implements ControlListener {
         timeValuePairs.add((byte)0);
         
         Packet stimConfig = new Packet();
-        byte[] stimConfigConverted = stimConfig.StimulatorConfiguration(timeValuePairs, stimulatorMode, (int)((1.0/pulseFreqText)*1000));
+        byte[] stimConfigConverted = stimConfig.StimulatorConfiguration(timeValuePairs, stimulatorMode);
         serialPort.write(stimConfigConverted);
         
         JSONObject defaultPulseJSON = settingsJSON.getJSONObject(defaultPulseString);
