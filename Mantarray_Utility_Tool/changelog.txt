@@ -6,6 +6,9 @@ Fixed a bad bug where the tool would select the wrong COM port when connected
 Made an incorrect assumption that computers wouldn't have more than 1 serial device connected, but apparently Bluetooth sometimes uses simulated COM ports?
 As a fun discovery, I found out that making Linux support would be easy during the fix process, so we can add that as a potential option down the line
 
+v1.0.2
+Fixed the length of stimulator configuration packets by removing the stimulator period from the metadata
+
 future devs:
-v1.0.2 (ETA 8-2-21)
+v1.0.3 (ETA 8-5-21)
 Different colors for toggle buttons

@@ -100,20 +100,22 @@ class Packet{
   byte[] StimulatorBegin(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 17;
-    this.packetLength = 14;
+    this.packetType = 3;
+    this.packetLength = 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();
+    this.data.add((byte)17);
     return this.toByte();
   }
   
   byte[] StimulatorEnd(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 18;
-    this.packetLength = 14;
+    this.packetType = 3;
+    this.packetLength = 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();
+    this.data.add((byte)18);
     return this.toByte();
   }
   
