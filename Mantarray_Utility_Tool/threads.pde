@@ -160,7 +160,7 @@ void LoadFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>//
     int numFullPackets = (int)fileSize / 65532;
     int remainderBytes = (int)fileSize % 65532;
     
