@@ -68,6 +68,9 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
+    //HARDWARE TEST uncomment this line if you want to use set/reset commands
+    //Make sure the configuration generator is changed in MagPageControllers.pde and the input parser is updated in Communicator.c
+    //this.packetLength = 90;
     this.packetLength = 89;
     this.CRC = 123123123;
     this.data = magConfigurationByteArray;

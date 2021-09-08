@@ -212,7 +212,7 @@ public class MagPageControllers implements ControlListener {
       }
       if (controllerName.equals("boardConfigurationSubmit")){
         magConfigurationByteArray = configDataGenerator();
-        thisMagPageControllers.magnetometerSelector.hide();
+        thisMagPageControllers.magnetometerSelector.hide(); //<>//
         homePage.show();
         Packet magConfig = new Packet();
         byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
@@ -277,11 +277,13 @@ public class MagPageControllers implements ControlListener {
     int microSamplingRate = Integer.valueOf(samplingRate.getText());
     dataConfig.add((byte) (microSamplingRate & 0xFF));
     dataConfig.add((byte) (microSamplingRate>>8 & 0xFF));
-    if (useSetReset.getState()){
-      dataConfig.add((byte) 1);
-    } else {
+    //HARDWARE TEST uncomment this line if you want to use set/reset commands
+    //Make sure the packet length is changed in Packet.pde and the input parser is updated in Communicator.c
+    /*if (useSetReset.getState()){
       dataConfig.add((byte) 0);
-    }
+    } else {
+      dataConfig.add((byte) 1);
+    }*/
     
     for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++)
     {
