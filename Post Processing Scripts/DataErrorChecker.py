@@ -8,7 +8,7 @@ from tabulate import tabulate
 
 
 #%% Load data
-dateName = "9-17-2021_3-11-10_data"
+dateName = "2.1.5 Test Stim"
 fileName = f'{dateName}.txt'
 numWells = 24
 numSensors = 3
