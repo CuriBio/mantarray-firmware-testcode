@@ -378,7 +378,7 @@ public void setup() {
   thisStimPageControllers = new StimPageControllers(this);
   
   c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-  logLog = createWriter(String.format("./log/%d-%d-%d_%d-%d-%d_log.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+  logLog = createWriter(String.format("./log/%04d-%02d-%02d_%02d-%02d-%02d_log.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
   
   nanoStart = System.nanoTime();
   start = millis();
@@ -572,7 +572,7 @@ public void controlEvent(ControlEvent theEvent) {
     if (controllerName.equals("startButtonMags")){
       if (boardConfigSet && !magCaptureInProgress){
         c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-        dataLog = createWriter(String.format("./data/%d-%d-%d_%d-%d-%d_data.txt", c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.YEAR), c.get(Calendar.HOUR), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+        dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
         dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
         magCaptureInProgress = true;
         Packet magStart = new Packet();

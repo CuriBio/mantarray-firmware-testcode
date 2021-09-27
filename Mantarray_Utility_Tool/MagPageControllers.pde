@@ -130,8 +130,8 @@ public class MagPageControllers implements ControlListener {
             .moveTo(magnetometerSelector)
             .setPosition((magConfigPageCellWidth) * (wellNum%6) + magConfigButtonSensorx[sensorNum] + magConfigButtonAxisx[axisNum],
                          (magConfigPageCellHeight) * (wellNum/6) + magConfigButtonSensory[sensorNum] + magConfigButtonAxisy[axisNum])
-            .setColorBackground(color(230))
-            .setColorActive(color(100))
+            .setColorActive(color(100,230,30))
+            .setColorBackground(color(100,10,30))
             .setColorLabel(0)
             .setSize(magConfigAxisWidth, magConfigAxisHeight)
             .toggle()
