@@ -1,0 +1,99 @@
+The tests that were performed were:
+
+2021-10-1_13-54-8_data: PCB placed in enclosure (laser cutter and fume hood running in the same room)
+~2 mins of ambient noise
+
+2021-10-1_14-8-26_data: PCB placed in enclosure (laser cutter, fume hood, laptop speakers, and hand drill running in the same room)
+~2 mins of ambient noise
+
+2021-10-1_14-43-50_data: PCB placed in enclosure with sensors on the opposite side of the cooling fan side per existing breadboard design intent (appx 7 inches away). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at 1 A
+~30 sec dead
+~30 sec fan at 0%
+~30 sec fan at 50%
+~30 sec fan at 100%
+~30 sec fan at 50%
+~30 sec fan at 0%
+~30 sec dead
+~30 sec TEC at 1 A
+~30 sec TEC at 1 A and fan at 0%
+~30 sec TEC at 1 A and fan at 50%
+~30 sec TEC at 1 A and fan at 100%
+~30 sec TEC at 1 A and fan at 50%
+~30 sec TEC at 1 A and fan at 0%
+~30 sec TEC at 1 A
+~30 sec dead
+
+2021-10-1_15-25-32_data: PCB resting on feet, and TEC unscrewed and moved 78 mm to the side towards the daughter board. Also moved down in Z appx 2.8 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_15-47-57_data: PCB resting on feet, and TEC unscrewed and moved 158.8 mm to the side towards the daughter board. Also moved down in Z appx 2.8 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_16-7-16_data: PCB resting on feet, and TEC unscrewed and moved 312 mm to the side towards the daughter board. Also moved down in Z appx 2.8 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_16-23-2_data: PCB resting on feet, and TEC unscrewed and moved down in Z appx 2.8 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_16-46-4_data: PCB resting on feet, and TEC unscrewed and moved down in Z appx 2.8 mm (to clear bottom side components). Used TEC-1091 controller in constant current drive mode (to get a 1:1 comparison test between DC PSU and TEC controller). Disconnected fan from power and controller. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_17-36-9_data: PCB resting on feet, and TEC unscrewed and moved down in Z appx 2.8 + 17.6 = 20.4 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_17-55-21_data: PCB resting on feet, and TEC unscrewed and moved down in Z appx 2.8 + 17.6 + 17.6 = 38 mm (to clear bottom side components). Used DC PSU. Recorded:
+~1 min dead
+~30 sec TEC at .1 A
+~30 sec dead
+~30 sec TEC at .2 A
+Etc…
+~30 sec TEC at 1 A
+~1 min dead
+
+2021-10-1_18-24-46_data: PCB resting on feet, and TEC unscrewed and rotated 90 degrees in roll (to look for orientation effects). Used DC PSU. Recorded:
+~1 min dead
+~1 min TEC at 1 A
+~1 min dead
+
+2021-10-1_18-32-32_data: PCB resting on feet, and TEC unscrewed and rotated 90 degrees in roll then pitch (to look for orientation effects). Used DC PSU. Recorded:
+~1 min dead
+~1 min TEC at 1 A
+~1 min dead

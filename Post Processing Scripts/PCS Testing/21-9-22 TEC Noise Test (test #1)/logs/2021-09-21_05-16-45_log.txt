@@ -1,0 +1,8 @@
+Testing serial device COM3
+Beginning to read from serial port
+COM3 failed
+Testing serial device COM4
+Beginning to read from serial port
+COM4 failed
+No Mantarray Detected
+Setup Complete

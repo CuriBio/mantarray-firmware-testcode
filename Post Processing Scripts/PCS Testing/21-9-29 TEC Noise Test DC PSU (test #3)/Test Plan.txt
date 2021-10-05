@@ -1,0 +1,24 @@
+The tests that were performed were:
+
+2021-9-29_15-35-54_data:
+~2 mins of steady state, TEC and PSU off
+~2 mins of TEC at 1 A with DC PSU
+~2 mins of cooldown, TEC and PSU off
+
+2021-9-29_15-44-3_data:
+~2 mins of normal shop noise, some power tools were turning on and off in the neighboring room
+
+2021-9-29_15-50-29_data:
+~30 sec off, ~30 sec on intervals for each step
+With DC PSU, stairstep TEC current 0 > .1 > 0 >.2 > 0 > .3 > … > 1 > 0
+With DC PSU, stairstep TEC current 0 > .1 > .2 > .3 > … > 1 > .9 > .8 > … > 0
+    i. In test 3c above, there was one blip where the current knob was briefly accidentally changed the wrong way. It was somewhere around the .6 A step on the way back down to 0. Will probably show up as some weird blips in the magnetometer data.
+
+2021-9-29_16-14-4_data:
+~1 min of TEC and stimulation off
+~1 min of TEC at 1 A with DC PSU
+~1 min of TEC and stimulation off
+~1 min of stimulators on at default settings
+~1 min of TEC and stimulation off
+~1 min of TEC at 1 A and stimulators on at default settings
+~1 min of TEC and stimulation off
