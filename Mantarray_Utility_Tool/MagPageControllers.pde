@@ -212,7 +212,7 @@ public class MagPageControllers implements ControlListener {
       }
       if (controllerName.equals("boardConfigurationSubmit")){
         magConfigurationByteArray = configDataGenerator();
-        thisMagPageControllers.magnetometerSelector.hide(); //<>//
+        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>//
         homePage.show();
         Packet magConfig = new Packet();
         byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
@@ -274,7 +274,7 @@ public class MagPageControllers implements ControlListener {
   List<Byte> configDataGenerator ()
   {
     List<Byte> dataConfig = new ArrayList<Byte>();
-    int microSamplingRate = Integer.valueOf(samplingRate.getText());
+    int microSamplingRate = Integer.valueOf(samplingRate.getText())*1000;
     dataConfig.add((byte) (microSamplingRate & 0xFF));
     dataConfig.add((byte) (microSamplingRate>>8 & 0xFF));
     //HARDWARE TEST uncomment this line if you want to use set/reset commands

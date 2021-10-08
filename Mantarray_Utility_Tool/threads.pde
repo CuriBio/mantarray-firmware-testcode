@@ -114,7 +114,7 @@ void PrintDataToFile(List<Byte> thisPacketData){
                             (byte2uint(thisPacketData.get(packetScanner + 2))<<16) + 
                             (byte2uint(thisPacketData.get(packetScanner + 3))<<24) + 
                             (byte2uint(thisPacketData.get(packetScanner + 4))<<32);
-    packetScanner+=5;
+    packetScanner+=8;
     List<Long> dataList = new ArrayList<Long>();
     for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++){
       for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
@@ -160,7 +160,7 @@ void LoadFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / 65532;
     int remainderBytes = (int)fileSize % 65532;
     
