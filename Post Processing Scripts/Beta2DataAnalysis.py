@@ -8,7 +8,7 @@ from tabulate import tabulate
 
 
 #%%
-dateName = "7-28-2021_5-16-55_data"
+dateName = "Dynamic Capture - One Big Magnet - Step Motion - Magnetic Data"
 fileName = f'{dateName}.txt'
 numWells = 24
 numSensors = 3
@@ -56,6 +56,9 @@ for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
     if status:
         fullTimestamps[wellNum, sensorNum] = timestamps[2:, timestampCounter]
         timestampCounter+=1
+
+
+
         
 #%%
 def CreateFancyDataFrame(thisData, floatNums = False):
