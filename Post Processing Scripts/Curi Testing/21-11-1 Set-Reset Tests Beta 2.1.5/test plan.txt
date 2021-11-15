@@ -1,0 +1,3 @@
+2021-11-01_15-56-24_data
+-Long test at 50 SPS.  Lowered sampling rate due to missed packet issues when using the set/reset functions, although internal bus DMA clock has been noted to be located on the wrong pin which may have caused the uptick in dropped packets.
+ 
