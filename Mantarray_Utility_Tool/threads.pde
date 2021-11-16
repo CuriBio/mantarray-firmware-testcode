@@ -155,17 +155,17 @@ List <Byte> performReading(List <Byte> aggregate){
   return aggregate;
 }
 
-void LoadFirmware(File firmwareFile) {
+void LoadChannelFirmware(File firmwareFile) {
   try {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
     long fileSize = firmwareFile.length(); //<>// //<>// //<>//
-    int numFullPackets = (int)fileSize / 65532;
-    int remainderBytes = (int)fileSize % 65532;
+    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
+    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
     
     for (int i = 0; i < numFullPackets; i++){
-      byte[] buffer = new byte[65532];
+      byte[] buffer = new byte[MAX_DATA_SIZE];
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
@@ -175,27 +175,84 @@ void LoadFirmware(File firmwareFile) {
     firmwareBytes.add(buffer);
     
     fileReader.close();
-    logDisplay.append("Firmware loaded successfully\n");
-    logLog.println("Firmware loaded successfully");
-    
-    logDisplay.append("Beginning firmware update\n");
-    logLog.println("Beginning firmware update");    
+    logDisplay.append("Channel firmware file opened successfully\n");
+    logLog.println("Channel firmware file opened successfully");
+  
     Packet packetBegin = new Packet();
-    packetBegin.ChannelFirmwareUpdateBegin((int)fileSize);
+    packetBegin.FirmwareUpdateBegin((int)fileSize, 1);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
+    logDisplay.append("Beginning channel firmware update\n");
+    logLog.println("Beginning channel firmware update");  
     
     for (int i = 0; i < firmwareBytes.size(); i++){
       Packet data = new Packet();
-      data.ChannelFirmwareUpdate(firmwareBytes.get(i), i);
+      data.FirmwareUpdate(firmwareBytes.get(i), i);
       byte[] thisPacketConverted = data.toByte();
       serialPort.write(thisPacketConverted);
+      logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      logLog.println(String.format("Firmware packet %d sent", i+1));    
+      delay(2000);
     }
     
     Packet packetEnd = new Packet();
-    packetEnd.ChannelFirmwareUpdateEnd(123123123);
+    packetEnd.FirmwareUpdateEnd(123123123);
     byte[] packetEndConverted = packetEnd.toByte();
     serialPort.write(packetEndConverted);
+    logDisplay.append("New channel firmware finished sending to Mantarray\n");
+    logLog.println("New channel firmware finished sending to Mantarray");  
+    
+  } catch (Exception e){
+    println("File Not Found");
+  }
+}
+
+void LoadMainFirmware(File firmwareFile) {
+  try {
+    InputStream fileReader = new FileInputStream(firmwareFile);
+    List<byte[]> firmwareBytes = new ArrayList<byte[]>();
+    
+    long fileSize = firmwareFile.length(); //<>// //<>//
+    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
+    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
+    
+    for (int i = 0; i < numFullPackets; i++){
+      byte[] buffer = new byte[MAX_DATA_SIZE];
+      fileReader.read(buffer);
+      firmwareBytes.add(buffer);
+    }
+    
+    byte[] buffer = new byte[remainderBytes];
+    fileReader.read(buffer);
+    firmwareBytes.add(buffer);
+    
+    fileReader.close();
+    logDisplay.append("Main firmware file opened successfully\n");
+    logLog.println("Main firmware file opened successfully");
+  
+    Packet packetBegin = new Packet();
+    packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
+    byte[] packetBeginConverted = packetBegin.toByte();
+    serialPort.write(packetBeginConverted);
+    logDisplay.append("Beginning main firmware update\n");
+    logLog.println("Beginning main firmware update");  
+    
+    for (int i = 0; i < firmwareBytes.size(); i++){
+      Packet data = new Packet();
+      data.FirmwareUpdate(firmwareBytes.get(i), i);
+      byte[] thisPacketConverted = data.toByte();
+      serialPort.write(thisPacketConverted);
+      logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      logLog.println(String.format("Firmware packet %d sent", i+1));    
+      delay(25);
+    }
+    
+    Packet packetEnd = new Packet();
+    packetEnd.FirmwareUpdateEnd(123123123);
+    byte[] packetEndConverted = packetEnd.toByte();
+    serialPort.write(packetEndConverted);
+    logDisplay.append("New main firmware finished sending to Mantarray\n");
+    logLog.println("New main firmware finished sending to Mantarray");  
     
   } catch (Exception e){
     println("File Not Found");

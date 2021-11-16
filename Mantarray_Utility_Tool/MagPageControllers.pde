@@ -60,7 +60,7 @@ public class MagPageControllers implements ControlListener {
         .setColorBackground(color(255))
         .setColorForeground(color(0))
         .setAutoClear(false)
-        .setText(String.valueOf(1000))
+        .setText(String.valueOf(10))
         .moveTo(magnetometerSelector);
     samplingRate.getCaptionLabel().setText("Sampling Period (ms):").setColor(0).setFont(createFont("arial", magConfigBarBufferWidth)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-(int)(.8 * magConfigBarButtonWidth));
     

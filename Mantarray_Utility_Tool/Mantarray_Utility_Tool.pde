@@ -30,7 +30,7 @@ int BASE_PACKET_LENGTH = 10;
 int BASE_PACKET_LENGTH_PLUS_CRC = 14;
 int MIN_PACKET_LENGTH_MINUS_MAGIC_WORD = 16;
 int MIN_TOTAL_PACKET_LENGTH = 24;
-int MAX_DATA_SIZE = 65524;
+int MAX_DATA_SIZE = 65000;
 int MAX_PACKET_SIZE = 65546;
 int NUM_WELLS = 24;
 int NUM_SENSORS = 3;
@@ -70,7 +70,8 @@ int stop;
 //********************************************************************HOME PAGE DEFINES*******************************************************************************
 public ControlP5 cp5;
 ControlGroup homePage;
-Button loadFirmwareButton;
+Button loadMainFirmwareButton;
+Button loadChannelFirmwareButton;
 Button startButtonMags;
 Button stopButtonMags;
 Button startButtonStims;
@@ -132,59 +133,65 @@ public void setup() {
       .setBackgroundColor(color(255))
       .hideBar();
       
-  loadFirmwareButton = cp5.addButton("loadFirmwareButton")
-    .setPosition(75, 50)
-    .setSize(250, 50)
+  loadChannelFirmwareButton = cp5.addButton("loadChannelFirmwareButton")
+    .setPosition(75, 70)
+    .setSize(250, 30)
     .moveTo(homePage);
-  loadFirmwareButton.getCaptionLabel().setText("Load Firmware").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  loadChannelFirmwareButton.getCaptionLabel().setText("Load Channel Micro Firmware").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+  
+  loadMainFirmwareButton = cp5.addButton("loadMainFirmwareButton")
+    .setPosition(75, 110)
+    .setSize(250, 30)
+    .moveTo(homePage);
+  loadMainFirmwareButton.getCaptionLabel().setText("Load Main Micro Firmware").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   startButtonMags = cp5.addButton("startButtonMags")
-    .setPosition(75, 340)
-    .setSize(120, 20)
+    .setPosition(75, 330)
+    .setSize(120, 30)
     .moveTo(homePage);
-  startButtonMags.getCaptionLabel().setText("Start Mags").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  startButtonMags.getCaptionLabel().setText("Start Mags").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   stopButtonMags = cp5.addButton("stopButtonMags")
-    .setPosition(205, 340)
-    .setSize(120, 20)
+    .setPosition(205, 330)
+    .setSize(120, 30)
     .moveTo(homePage);
-  stopButtonMags.getCaptionLabel().setText("Stop Mags").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  stopButtonMags.getCaptionLabel().setText("Stop Mags").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   startButtonStims = cp5.addButton("startButtonStims")
     .setPosition(75, 370)
-    .setSize(120, 20)
+    .setSize(120, 30)
     .moveTo(homePage);
-  startButtonStims.getCaptionLabel().setText("Start Stims").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  startButtonStims.getCaptionLabel().setText("Start Stims").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   stopButtonStims = cp5.addButton("stopButtonStims")
     .setPosition(205, 370)
-    .setSize(120, 20)
+    .setSize(120, 30)
     .moveTo(homePage);
-  stopButtonStims.getCaptionLabel().setText("Stop Stims").setColor(255).setFont(createFont("arial", 15)).align(CENTER, CENTER).toUpperCase(false);
+  stopButtonStims.getCaptionLabel().setText("Stop Stims").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   setStimConfigButton = cp5.addButton("setStimConfigButton")
-    .setPosition(75, 130)
+    .setPosition(75, 150)
     .setSize(250, 50)
     .moveTo(homePage);
-  setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   setSensorConfigButton = cp5.addButton("setSensorConfigButton")
     .setPosition(75, 270)
     .setSize(250, 50)
     .moveTo(homePage);
-  setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   setBoardConfigButton = cp5.addButton("setBoardConfigButton")
-    .setPosition(75, 200)
+    .setPosition(75, 210)
     .setSize(250, 50)
     .moveTo(homePage);
-  setBoardConfigButton.getCaptionLabel().setText("Set Board Configuration").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  setBoardConfigButton.getCaptionLabel().setText("Set Board Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   saveAndQuitButton = cp5.addButton("saveAndQuitButton")
     .setPosition(75, 410)
     .setSize(250, 50)
     .moveTo(homePage);
-  saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   I2CAddressField = cp5.addTextfield("I2CAddressField")
     .setPosition(370, 120)
@@ -196,7 +203,7 @@ public void setup() {
     .setAutoClear(false)
     .setText(String.valueOf(100))
     .moveTo(homePage);
-  I2CAddressField.getCaptionLabel().setText("Address").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  I2CAddressField.getCaptionLabel().setText("Address").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
 
   I2CInputField = cp5.addTextfield("I2CInputField")
     .setPosition(480, 120)
@@ -208,13 +215,13 @@ public void setup() {
     .setAutoClear(false)
     .setText(String.valueOf(0))
     .moveTo(homePage);
-  I2CInputField.getCaptionLabel().setText("Command").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  I2CInputField.getCaptionLabel().setText("Command").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
   
   I2CSendCommand = cp5.addButton("I2CSendCommand")
     .setPosition(570, 120)
     .setSize(200, 50)
     .moveTo(homePage);
-  I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 20)).align(CENTER, CENTER).toUpperCase(false);
+  I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
   I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
     .setPosition(370, 200)
@@ -226,7 +233,7 @@ public void setup() {
     .setAutoClear(false)
     .setText(String.valueOf(1))
     .moveTo(homePage);
-  I2CSetAddressOld.getCaptionLabel().setText("Old Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  I2CSetAddressOld.getCaptionLabel().setText("Old Addr.").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
 
   I2CSetAddressNew = cp5.addTextfield("I2CSetAddressNew")
     .setPosition(480, 200)
@@ -238,15 +245,15 @@ public void setup() {
     .setAutoClear(false)
     .setText(String.valueOf(1))
     .moveTo(homePage);
-  I2CSetAddressNew.getCaptionLabel().setText("New Addr.").setColor(0).setFont(createFont("arial", 20)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
+  I2CSetAddressNew.getCaptionLabel().setText("New Addr.").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-40);
   
   I2CSetAddress = cp5.addButton("I2CSetAddress")
     .setPosition(570, 200)
     .setSize(200, 50)
     .moveTo(homePage);
-  I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 25)).align(CENTER, CENTER).toUpperCase(false);
+  I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
   
-  allStimulatorCurrentField = cp5.addTextfield("allStimulatorCurrentField")
+  /*allStimulatorCurrentField = cp5.addTextfield("allStimulatorCurrentField")
     .setPosition(370, 280)
     .setSize(150, 50)
     .setFont(createFont("arial", 20))
@@ -280,7 +287,7 @@ public void setup() {
     .setPosition(570, 360)
     .setSize(200, 50)
     .moveTo(homePage);
-  setAllStimulatorVoltage.getCaptionLabel().setText("Set Stimulator Voltage").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+  setAllStimulatorVoltage.getCaptionLabel().setText("Set Stimulator Voltage").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);*/
   
   logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(400, 420)
@@ -564,10 +571,11 @@ long byte2long(byte thisByte){
 public void controlEvent(ControlEvent theEvent) {
   String controllerName = theEvent.getName();
   if (theEvent.isAssignableFrom(Button.class)){
-    if (controllerName.equals("loadFirmwareButton")){
-      selectInput("Select a file to load as channel microcontroller firmware:", "LoadFirmware");
-      logDisplay.append("Loading Firmware\n");
-      logLog.println("Loading firmware");
+    if (controllerName.equals("loadChannelFirmwareButton")){
+      selectInput("Select a file to load as channel microcontroller firmware:", "LoadChannelFirmware");
+    }
+    else if (controllerName.equals("loadMainFirmwareButton")){
+      selectInput("Select a file to load as main microcontroller firmware:", "LoadMainFirmware");
     }
     if (controllerName.equals("startButtonMags")){
       if (boardConfigSet && !magCaptureInProgress){

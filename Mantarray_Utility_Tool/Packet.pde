@@ -26,20 +26,20 @@ class Packet{
     return this.toByte();
   }
   
-  void ChannelFirmwareUpdateBegin(int totalNumberOfBytes){
+  void FirmwareUpdateBegin(int totalNumberOfBytes, int whichFirmware){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 0;
     this.packetLength = 19;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(9);
-    this.data.add((byte)1);
+    this.data.add((byte)whichFirmware);
     for (int i = 0; i < 4; i++){
       this.data.add(uint2byte((int)(totalNumberOfBytes>>(8*i) & 0x000000ff)));
     }
   }
   
-  void ChannelFirmwareUpdate(byte[] firmware, int packetNum){
+  void FirmwareUpdate(byte[] firmware, int packetNum){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 1;
@@ -52,7 +52,7 @@ class Packet{
     }
   }
   
-  void ChannelFirmwareUpdateEnd(int firmwareCRC){
+  void FirmwareUpdateEnd(int firmwareCRC){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 2;
