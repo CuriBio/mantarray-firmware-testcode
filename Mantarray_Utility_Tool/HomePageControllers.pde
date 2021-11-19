@@ -362,9 +362,6 @@ public class HomePageControllers implements ControlListener {
           //logDisplay.append(String.format("Duration: %f, Delay: %f, Hold: %f, Num Iterations: %d\n", valueOfMagnetometerScheduleDuration, valueOfMagnetometerScheduleDelay, valueOfMagnetometerScheduleHold, totalNumberOfScheduledCaptures));
           logDisplay.append("Starting new magnetometer data capture schedule\n");
           logLog.println("Starting new magnetometer data capture schedule");
-          c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-          dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
-          dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
           MagnetometerScheduler(totalNumberOfScheduledCaptures, (int)valueOfMagnetometerScheduleHold, (int)valueOfMagnetometerScheduleDelay);
         }
         else {
@@ -405,10 +402,11 @@ public class HomePageControllers implements ControlListener {
           magnetometerTimer.cancel();
           logDisplay.append("Magnetometer data capture schedule complete\n");
           logLog.println("Magnetometer data capture schedule complete");
-          dataLog.flush();
-          dataLog.close();
         } else {
           if (!magCaptureInProgress){
+            c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+            dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+            dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
             magCaptureInProgress = true;
             Packet magStart = new Packet();
             byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
@@ -429,6 +427,8 @@ public class HomePageControllers implements ControlListener {
             magCaptureInProgress = false;
             logDisplay.append("Stopping Data Capture\n");
             logLog.println("Stopping data capture");
+            dataLog.flush();
+            dataLog.close();
           } else {
             logDisplay.append("No magnetometer data capture currently running to stop\n");
             logLog.println("No magnetometer data capture currently running to stop");
