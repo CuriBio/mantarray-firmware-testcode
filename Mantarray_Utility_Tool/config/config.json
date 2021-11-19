@@ -4,7 +4,7 @@
     "pulseLowAmp": -50,
     "pulseFreq": 6,
     "pulseHighDelay": 20,
-    "pulseHighAmp": 50,
+    "pulseHighAmp": 100,
     "pulseLowDelay": 20
   },
   "defaultConstantVoltage": false,

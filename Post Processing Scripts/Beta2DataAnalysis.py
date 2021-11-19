@@ -162,6 +162,9 @@ logFile.close()
 # bar, timediffLinspace = np.linspace(fullTimestamps[0,0,0], fullTimestamps[0,0,-1], numSamples, retstep=True)
 # print("They are the same")
 fullTimestampsLinear, timediffLinspace = np.linspace(fullTimestamps[:,:,0], fullTimestamps[:,:,-1], numSamples, retstep=True, axis = 2)
+
+#%%
+# RMS_data = {}
         
 #%% Simple FFT plotting function
 fourier_B = 2.0 / numSamples * np.abs(fft.rfft(fullData, axis=3))           #Should be the same length as the spectrum array
@@ -200,7 +203,7 @@ for wellNum in range(numWells):
     axs[row, col].tick_params(which = 'both', labelsize = 20)
     axs[row, col].grid(which='both')
     axs[row, col].legend(fontsize = 20)
-    #print(f'Well {wellNum} completed')
+    print(f'Well {wellNum} completed')
     
 fig.savefig(f"{filePath.parent.parent / 'plots'}\{dateName}_PSD", bbox_inches = 'tight')
 
@@ -210,6 +213,8 @@ logFile.write('RMS Measurements in nT measured from power spectrum of frequency 
 logFile.write(str(tabulate(shapedData, headers = 'keys', tablefmt = 'psql', stralign = 'center')))
 logFile.close()
 
+# RMS_data[f'{dateName}'] = RMSNoiseMatrix
+
 #%% OPTIONAL If you would like to center all the data around a 0 mean
 meanMatrix = np.mean(fullData, axis = 3)
 fullData = np.transpose(np.transpose(fullData, (3,0,1,2)) - meanMatrix, (1,2,3,0))
@@ -217,3 +222,25 @@ fullData = np.transpose(np.transpose(fullData, (3,0,1,2)) - meanMatrix, (1,2,3,0
 #%% Save certain potions of data arrays to separate file for visual inspection
 #np.savetxt('test.txt', fullData.reshape(-1, fullData.shape[-1])[:,5000:6000].transpose(), fmt='%.3f')
 #np.savetxt('testTime.txt', fullTimestamps.reshape(-1, fullTimestamps.shape[-1])[:,90000:100000].transpose(), fmt='%.5f')
+
+#%%
+# fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+fig, axs = plt.subplots(2,2, figsize=(20, 20))
+labels = sorted(RMS_data.keys())
+for wellNum in range(1):
+    row = int(wellNum / 6)
+    col = int(wellNum % 6)
+    np.zeros(())
+    for (sensorNum, axisNum), status in np.ndenumerate(config[wellNum]):
+        if status:
+            thisValues = []
+            for thisKey in enumerate(sorted(RMS_data.keys())):
+                thisValues.append(RMS_data[thisKey][wellNum, sensorNum, axisNum])
+            axs[row, col].bar(labels, thisValues)
+    # axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+    # axs[row, col].set_xlabel('Frequency (Hz)', fontsize = 30)
+    # axs[row, col].set_ylabel(r"Power Spectral Density $\left(\frac{nT}{\sqrt{Hz}}\right)$", fontsize = 20)
+    # axs[row, col].tick_params(which = 'both', labelsize = 20)
+    # axs[row, col].grid(which='both')
+    # axs[row, col].legend(fontsize = 20)
+    #print(f'Well {wellNum} completed')
