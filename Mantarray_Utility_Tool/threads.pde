@@ -113,13 +113,17 @@ void PrintDataToFile(List<Byte> thisPacketData){
                             (byte2uint(thisPacketData.get(packetScanner + 1))<<8) + 
                             (byte2uint(thisPacketData.get(packetScanner + 2))<<16) + 
                             (byte2uint(thisPacketData.get(packetScanner + 3))<<24) + 
-                            (byte2uint(thisPacketData.get(packetScanner + 4))<<32);
+                            (byte2uint(thisPacketData.get(packetScanner + 4))<<32) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 5))<<40) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 6))<<48) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 7))<<56);
     packetScanner+=8;
     List<Long> dataList = new ArrayList<Long>();
     for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++){
       for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
         if (magnetometerConfigurationArray.get(wellNum).get(sensorNum).contains(1))
         {
+          println((byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           dataList.add(initialTimestamp - (byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           packetScanner+=2;
           for (int axisNum = 0; axisNum < NUM_AXES; axisNum++){

@@ -180,7 +180,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(.05))
+      .setText(String.valueOf(15))
       .moveTo(homePage);
     magnetometerScheduleDelay.getCaptionLabel().setText("Magnetometer Schedule Duration Between Readings (mins)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
@@ -192,7 +192,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(1))
+      .setText(String.valueOf(300))
       .moveTo(homePage);
     magnetometerScheduleHold.getCaptionLabel().setText("Magnetometer Schedule Capture Duration (secs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
@@ -204,7 +204,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(.0027))
+      .setText(String.valueOf(1))
       .moveTo(homePage);
     magnetometerScheduleDuration.getCaptionLabel().setText("Magnetometer Schedule Total Duration (hrs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
@@ -362,6 +362,9 @@ public class HomePageControllers implements ControlListener {
           //logDisplay.append(String.format("Duration: %f, Delay: %f, Hold: %f, Num Iterations: %d\n", valueOfMagnetometerScheduleDuration, valueOfMagnetometerScheduleDelay, valueOfMagnetometerScheduleHold, totalNumberOfScheduledCaptures));
           logDisplay.append("Starting new magnetometer data capture schedule\n");
           logLog.println("Starting new magnetometer data capture schedule");
+          c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+          dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+          dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
           MagnetometerScheduler(totalNumberOfScheduledCaptures, (int)valueOfMagnetometerScheduleHold, (int)valueOfMagnetometerScheduleDelay);
         }
         else {
@@ -374,8 +377,16 @@ public class HomePageControllers implements ControlListener {
           magnetometerScheduleComplete = true;
           magnetometerScheduleIsRunning = false;
           magnetometerTimer.cancel();
+          magnetometerTimer.purge();
+          if (magCaptureInProgress){
+            Packet magStop = new Packet();
+            byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
+            serialPort.write(magStopConverted);
+          }
           logDisplay.append("Magnetometer data capture schedule ended prematurely\n");
           logLog.println("Magnetometer data capture schedule ended prematurely");
+          dataLog.flush();
+          dataLog.close();
         }
         else {
           logDisplay.append("No magnetometer schedule currently running\n");
@@ -394,6 +405,8 @@ public class HomePageControllers implements ControlListener {
           magnetometerTimer.cancel();
           logDisplay.append("Magnetometer data capture schedule complete\n");
           logLog.println("Magnetometer data capture schedule complete");
+          dataLog.flush();
+          dataLog.close();
         } else {
           if (!magCaptureInProgress){
             magCaptureInProgress = true;
