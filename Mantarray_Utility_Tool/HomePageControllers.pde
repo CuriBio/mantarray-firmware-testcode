@@ -180,7 +180,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(15))
+      .setText(String.valueOf(20))
       .moveTo(homePage);
     magnetometerScheduleDelay.getCaptionLabel().setText("Magnetometer Schedule Duration Between Readings (mins)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
@@ -192,7 +192,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(300))
+      .setText(String.valueOf(60))
       .moveTo(homePage);
     magnetometerScheduleHold.getCaptionLabel().setText("Magnetometer Schedule Capture Duration (secs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
@@ -204,7 +204,7 @@ public class HomePageControllers implements ControlListener {
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(1))
+      .setText(String.valueOf(48))
       .moveTo(homePage);
     magnetometerScheduleDuration.getCaptionLabel().setText("Magnetometer Schedule Total Duration (hrs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
