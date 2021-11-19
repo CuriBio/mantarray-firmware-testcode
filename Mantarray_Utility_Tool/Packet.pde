@@ -127,10 +127,10 @@ class Packet{
     this.moduleID = 0;
     this.packetType = 100;
     this.packetLength = 16;
-    this.CRC = 123123123; //<>//
+    this.CRC = 123123123; //<>// //<>//
     this.data = new ArrayList<Byte>();;
-    this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
-    this.data.add(1, uint2byte(Integer.valueOf(I2CInputField.getText())));
+    this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
+    this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));
     return this.toByte();
   }
   
@@ -141,34 +141,8 @@ class Packet{
     this.packetLength = 16;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();;
-    this.data.add(0, Byte.valueOf(I2CSetAddressOld.getText()));
-    this.data.add(1, Byte.valueOf(I2CSetAddressNew.getText()));
-    return this.toByte();
-  }
-  
-  byte[] SetStimulatorAtConstantCurrent(){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 103;
-    this.packetLength = 16;
-    this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*100;
-    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
-    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
-    return this.toByte();
-  }
-  
-  byte[] SetStimulatorAtConstantVoltage(){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 104;
-    this.packetLength = 16;
-    this.CRC = 123123123; //<>//
-    this.data = new ArrayList<Byte>();;
-    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*1000;
-    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
-    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
+    this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CSetAddressOld.getText()));
+    this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
   }
   
@@ -190,7 +164,7 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
-    this.packetLength = 41;
+    this.packetLength = 41; //<>//
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, (byte)16);

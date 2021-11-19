@@ -212,12 +212,12 @@ public class MagPageControllers implements ControlListener {
       }
       if (controllerName.equals("boardConfigurationSubmit")){
         magConfigurationByteArray = configDataGenerator();
-        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>//
-        homePage.show();
+        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>// //<>//
+        thisHomePageControllers.homePage.show();
         Packet magConfig = new Packet();
         byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
         serialPort.write(magConfigConverted);
-        logDisplay.append("Board Configuration Set\n");
+        thisHomePageControllers.logDisplay.append("Board Configuration Set\n");
         logLog.println("Board configuration set");
         boardConfigSet = true;
       }

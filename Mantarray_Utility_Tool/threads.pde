@@ -160,7 +160,7 @@ void LoadChannelFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
     int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
     
@@ -175,14 +175,14 @@ void LoadChannelFirmware(File firmwareFile) {
     firmwareBytes.add(buffer);
     
     fileReader.close();
-    logDisplay.append("Channel firmware file opened successfully\n");
+    thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
     logLog.println("Channel firmware file opened successfully");
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 1);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
-    logDisplay.append("Beginning channel firmware update\n");
+    thisHomePageControllers.logDisplay.append("Beginning channel firmware update\n");
     logLog.println("Beginning channel firmware update");  
     
     for (int i = 0; i < firmwareBytes.size(); i++){
@@ -190,7 +190,7 @@ void LoadChannelFirmware(File firmwareFile) {
       data.FirmwareUpdate(firmwareBytes.get(i), i);
       byte[] thisPacketConverted = data.toByte();
       serialPort.write(thisPacketConverted);
-      logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
       logLog.println(String.format("Firmware packet %d sent", i+1));    
       delay(2000);
     }
@@ -199,7 +199,7 @@ void LoadChannelFirmware(File firmwareFile) {
     packetEnd.FirmwareUpdateEnd(123123123);
     byte[] packetEndConverted = packetEnd.toByte();
     serialPort.write(packetEndConverted);
-    logDisplay.append("New channel firmware finished sending to Mantarray\n");
+    thisHomePageControllers.logDisplay.append("New channel firmware finished sending to Mantarray\n");
     logLog.println("New channel firmware finished sending to Mantarray");  
     
   } catch (Exception e){
@@ -227,14 +227,14 @@ void LoadMainFirmware(File firmwareFile) {
     firmwareBytes.add(buffer);
     
     fileReader.close();
-    logDisplay.append("Main firmware file opened successfully\n");
+    thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
     logLog.println("Main firmware file opened successfully");
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
-    logDisplay.append("Beginning main firmware update\n");
+    thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
     logLog.println("Beginning main firmware update");  
     
     for (int i = 0; i < firmwareBytes.size(); i++){
@@ -242,7 +242,7 @@ void LoadMainFirmware(File firmwareFile) {
       data.FirmwareUpdate(firmwareBytes.get(i), i);
       byte[] thisPacketConverted = data.toByte();
       serialPort.write(thisPacketConverted);
-      logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
       logLog.println(String.format("Firmware packet %d sent", i+1));    
       delay(25);
     }
@@ -251,7 +251,7 @@ void LoadMainFirmware(File firmwareFile) {
     packetEnd.FirmwareUpdateEnd(123123123);
     byte[] packetEndConverted = packetEnd.toByte();
     serialPort.write(packetEndConverted);
-    logDisplay.append("New main firmware finished sending to Mantarray\n");
+    thisHomePageControllers.logDisplay.append("New main firmware finished sending to Mantarray\n");
     logLog.println("New main firmware finished sending to Mantarray");  
     
   } catch (Exception e){
