@@ -23,6 +23,7 @@ void readPackets(){
       {
         //This is no good, it means there is either noise on the line or it dropped a packet because a byte that doesn't belong to a magic word has been detected
         //Either way, it means trouble.  Keep track of when this happens.
+        print(aggregate.subList(0,scanner+1));
         aggregate.subList(0,scanner+1).clear();
         magicWordContent = 0;
         scanner = 0;

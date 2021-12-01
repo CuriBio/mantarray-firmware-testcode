@@ -112,6 +112,26 @@ for wellNum in range(numWells):
     axs[row, col].legend(fontsize = 20)
     
 fig.savefig(f"{filePath.parent.parent / 'plots'}\{dateName}_transient", bbox_inches = 'tight')
+
+#%%
+fig, axs = plt.subplots(figsize=(10, 10))
+axs.plot(fullTimestamps[0, 0, :100], fullData[0, 0, 0, :100] * 1000, label=f'Sensor {1} Axis {axisMap[0]}')
+axs.set_title(f'Well {wellMap[0]}', fontsize = 60)
+axs.set_xlabel('Time (sec)', fontsize = 30)
+axs.set_ylabel('Magnitude (uT)', fontsize = 20)
+axs.tick_params(which = 'major', labelsize = 20)
+axs.minorticks_on()
+axs.grid(which='major', linewidth=1.5)
+axs.grid(which='minor', linewidth=.5)
+axs.legend(fontsize = 20)
+
+#%%
+a = np.diff(fullData[0, 0, 0, 1000:2000])
+a = set(abs(a))
+if 0 in a:
+  a.remove(0)
+lsb = min(a)
+print(lsb * (1/gauss2MilliTesla) / memsicFullScale * memsicMSB)
         
 #%% Quick and dirty noise metrics generator ***NOTE*** peak-to-peak is accurate, RMS is guesstimated (use integal of PSD for more accurate results), and I'm not sure if I'm doing SNR right 
 def CreateFancyDataFrame(thisData, floatNums = False):
