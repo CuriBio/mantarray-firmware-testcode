@@ -8,6 +8,7 @@ from tabulate import tabulate
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from pathlib import Path
+from scipy.signal import butter, lfilter, freqz
 
 #%% Load data
 root = Tk()
@@ -94,6 +95,26 @@ for (wellNum, sensorNum), isBroken in np.ndenumerate(abberantArray):
         print (f'Well {wellMap[wellNum]} sensor {sensorNum+1} has aberrant data, setting all aberrant data points to 0.  If you are running a frequency analysis, I recommend recapturing the data')
 fullData[fullData==-.8] = 0
 
+#%%
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
+
+order = 6
+fs = 100.0       # sample rate, Hz
+cutoff = 15  # desired cutoff frequency of the filter, Hz
+
+# Get the filter coefficients so we can check its frequency response.
+b, a = butter_lowpass(cutoff, fs, order)
+filteredData = butter_lowpass_filter(fullData, cutoff, fs, order)
+
 #%% Plot the subsequent transient after the broken and abberant sample compensations
 fig, axs = plt.subplots(4, 6, figsize=(100, 100))
 for wellNum in range(numWells):
@@ -101,7 +122,7 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for (sensorNum, axisNum), status in np.ndenumerate(config[wellNum]):
         if status:
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], filteredData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)
@@ -184,7 +205,16 @@ logFile.close()
 fullTimestampsLinear, timediffLinspace = np.linspace(fullTimestamps[:,:,0], fullTimestamps[:,:,-1], numSamples, retstep=True, axis = 2)
 
 #%%
-# RMS_data = {}
+# Plot the frequency response.
+w, h = freqz(b, a, worN=8000)
+plt.subplot(2, 1, 1)
+plt.plot(0.5*fs*w/np.pi, np.abs(h), 'b')
+plt.plot(cutoff, 0.5*np.sqrt(2), 'ko')
+plt.axvline(cutoff, color='k')
+plt.xlim(0, 0.5*fs)
+plt.title("Lowpass Filter Frequency Response")
+plt.xlabel('Frequency [Hz]')
+plt.grid()
         
 #%% Simple FFT plotting function
 fourier_B = 2.0 / numSamples * np.abs(fft.rfft(fullData, axis=3))           #Should be the same length as the spectrum array

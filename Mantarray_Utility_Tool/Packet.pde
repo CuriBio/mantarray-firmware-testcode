@@ -29,7 +29,7 @@ class Packet{
   void FirmwareUpdateBegin(int totalNumberOfBytes, int whichFirmware){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 0;
+    this.packetType = 70;
     this.packetLength = 19;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(9);
@@ -42,7 +42,7 @@ class Packet{
   void FirmwareUpdate(byte[] firmware, int packetNum){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 1;
+    this.packetType = 71;
     this.packetLength = firmware.length + 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(firmware.length + 5);
@@ -55,7 +55,7 @@ class Packet{
   void FirmwareUpdateEnd(int firmwareCRC){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 2;
+    this.packetType = 72;
     this.packetLength = 18;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(8);

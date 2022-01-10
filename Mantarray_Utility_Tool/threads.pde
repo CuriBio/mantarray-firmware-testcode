@@ -30,7 +30,11 @@ void readPackets(){
         println("Dropped bytes, there may be an issue");
       }
       if (magicWordContent==8){ //If an entire magic word has been detected, parse it
-        Parse(aggregate, scanner);
+        try{
+          Parse(aggregate, scanner);
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
         scanner = 0;
         magicWordContent = 0;
       } //if (magicWordContent==8)
@@ -38,11 +42,7 @@ void readPackets(){
   } //while(true)
 }
 
-void test(){
-  
-}
-
-void Parse (List <Byte> thisAggregate, int thisScanner)
+void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
 {
   int thisPacketLength = byte2uint(thisAggregate.get(thisScanner));
   //print( " ", byte2long(aggregate.get(index)));
@@ -78,12 +78,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   }
   packetList.add(newPacket);
 
-  if (newPacket.packetType==1)
-  {
+  if (newPacket.packetType==1){
     PrintDataToFile(newPacket.data);
-  }
-  else
-  {
+  } else {
     logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     logLog.print(newPacket.data);
@@ -99,6 +96,15 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
     case 4:
       //logDisplay.append("Command Response Recieved\n");
       logLog.println("Command Response Recieved");
+      break;
+    case 90:
+      byte[] arr = new byte[newPacket.data.size()];
+      for (int i = 0; i < newPacket.data.size(); i++){
+        arr[i] = newPacket.data.get(i);
+      }
+      String MantarrayID = new String(arr, "UTF-8");
+      logLog.println("Barcode " + MantarrayID + "Found");
+      thisHomePageControllers.logDisplay.append("Barcode " + MantarrayID + "Found\n");
       break;
     }
   }
@@ -124,7 +130,7 @@ void PrintDataToFile(List<Byte> thisPacketData){
       for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
         if (magnetometerConfigurationArray.get(wellNum).get(sensorNum).contains(1))
         {
-          println((byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
+          //println((byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           dataList.add(initialTimestamp - (byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           packetScanner+=2;
           for (int axisNum = 0; axisNum < NUM_AXES; axisNum++){

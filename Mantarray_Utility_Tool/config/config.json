@@ -1,7 +1,7 @@
 {
   "defaultPulseCurrent": {
     "pulseMidDelay": 10,
-    "pulseLowAmp": -50,
+    "pulseLowAmp": -100,
     "pulseFreq": 6,
     "pulseHighDelay": 20,
     "pulseHighAmp": 100,
