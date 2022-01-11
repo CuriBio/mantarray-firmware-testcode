@@ -30,10 +30,19 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 70;
-    this.packetLength = 19;
+    this.packetLength = 22;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>(9);
+    this.data = new ArrayList<Byte>(12);
     this.data.add((byte)whichFirmware);
+    if (whichFirmware == 0){
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainMajorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainMinorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainRevisionVersion.getText())));
+    } else {
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelMajorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelMinorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelRevisionVersion.getText())));
+    }
     for (int i = 0; i < 4; i++){
       this.data.add(uint2byte((int)(totalNumberOfBytes>>(8*i) & 0x000000ff)));
     }

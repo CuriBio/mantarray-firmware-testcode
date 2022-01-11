@@ -3,7 +3,13 @@ public class HomePageControllers implements ControlListener {
   private PApplet p;  /*!< The Processing applet that the controllers should be running on*/
   ControlGroup homePage;
   Button loadMainFirmwareButton;
+  Textfield mainMajorVersion;
+  Textfield mainMinorVersion;
+  Textfield mainRevisionVersion;
   Button loadChannelFirmwareButton;
+  Textfield channelMajorVersion;
+  Textfield channelMinorVersion;
+  Textfield channelRevisionVersion;
   Button startButtonMags;
   Button stopButtonMags;
   Button startButtonStims;
@@ -54,15 +60,87 @@ public class HomePageControllers implements ControlListener {
         
     loadChannelFirmwareButton = cp5.addButton("loadChannelFirmwareButton")
       .setPosition(75, 70)
-      .setSize(250, 30)
+      .setSize(125, 30)
       .moveTo(homePage);
-    loadChannelFirmwareButton.getCaptionLabel().setText("Load Channel Micro Firmware").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    loadChannelFirmwareButton.getCaptionLabel().setText("Load Channel").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    channelMajorVersion = cp5.addTextfield("channelMajorVersion")
+      .setPosition(220, 70)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(1))
+      .moveTo(homePage);
+    channelMajorVersion.getCaptionLabel().setText("v").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-12);
+    
+    channelMinorVersion = cp5.addTextfield("channelMinorVersion")
+      .setPosition(255, 70)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(0))
+      .moveTo(homePage);
+    channelMinorVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
+    
+    channelRevisionVersion = cp5.addTextfield("channelRevisionVersion")
+      .setPosition(290, 70)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(0))
+      .moveTo(homePage);
+    channelRevisionVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
     loadMainFirmwareButton = cp5.addButton("loadMainFirmwareButton")
       .setPosition(75, 110)
-      .setSize(250, 30)
+      .setSize(125, 30)
       .moveTo(homePage);
-    loadMainFirmwareButton.getCaptionLabel().setText("Load Main Micro Firmware").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    loadMainFirmwareButton.getCaptionLabel().setText("Load Main").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    mainMajorVersion = cp5.addTextfield("mainMajorVersion")
+      .setPosition(220, 110)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(1))
+      .moveTo(homePage);
+    mainMajorVersion.getCaptionLabel().setText("v").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-12);
+    
+    mainMinorVersion = cp5.addTextfield("mainMinorVersion")
+      .setPosition(255, 110)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(0))
+      .moveTo(homePage);
+    mainMinorVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
+    
+    mainRevisionVersion = cp5.addTextfield("mainRevisionVersion")
+      .setPosition(290, 110)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(0))
+      .moveTo(homePage);
+    mainRevisionVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
     startButtonMags = cp5.addButton("startButtonMags")
       .setPosition(75, 330)

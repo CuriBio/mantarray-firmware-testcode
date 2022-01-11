@@ -255,7 +255,7 @@ void LoadMainFirmware(File firmwareFile) {
       serialPort.write(thisPacketConverted);
       thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
       logLog.println(String.format("Firmware packet %d sent", i+1));    
-      delay(25);
+      delay(250);
     }
     
     Packet packetEnd = new Packet();
