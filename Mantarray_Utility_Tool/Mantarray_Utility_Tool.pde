@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.TimerTask;
 import java.util.Timer;
+import java.nio.charset.StandardCharsets;
 
 Serial serialPort;
 boolean noBeacon = false;
@@ -139,6 +140,9 @@ public void setup() {
     thisHomePageControllers.logDisplay.append("Connected to Mantarray\n");
     logLog.println("Connected to Mantarray");
     println("Connected to Mantarray");
+    Packet newFetchMetadataPacket = new Packet();
+    byte[] newFetchMetadataPacketConverted = newFetchMetadataPacket.FetchMetadata();
+    serialPort.write(newFetchMetadataPacketConverted);
   } else {
     noBeacon = true;
     thisHomePageControllers.logDisplay.append("No Mantarray Detected\n");

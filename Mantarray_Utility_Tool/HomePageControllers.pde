@@ -26,6 +26,11 @@ public class HomePageControllers implements ControlListener {
   Textfield I2CSetAddressNew;
   Button I2CSetAddress;
   
+  Textfield setDeviceSerialNumberField;
+  Button setDeviceSerialNumber;
+  Textfield setDeviceNicknameField;
+  Button setDeviceNickname;
+  
   Textfield magnetometerScheduleDelay;
   Textfield magnetometerScheduleHold;
   Textfield magnetometerScheduleDuration;
@@ -297,7 +302,41 @@ public class HomePageControllers implements ControlListener {
       .setSize(200, 30)
       .moveTo(homePage);
     stopMagnetometerSchedule.getCaptionLabel().setText("Stop Schedule").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+        
+    setDeviceSerialNumberField = cp5.addTextfield("setDeviceSerialNumberField")
+      .setPosition(370, 350)
+      .setSize(150, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText("MA2201300001")
+      .moveTo(homePage);
     
+    setDeviceSerialNumber = cp5.addButton("setDeviceSerialNumber")
+      .setPosition(550, 350)
+      .setSize(200, 25)
+      .moveTo(homePage);
+    setDeviceSerialNumber.getCaptionLabel().setText("Set Serial Number").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    setDeviceNicknameField = cp5.addTextfield("setDeviceNicknameField")
+      .setPosition(370, 380)
+      .setSize(150, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText("Mantarray2.2 ")
+      .moveTo(homePage);
+    
+    setDeviceNickname = cp5.addButton("setDeviceNickname")
+      .setPosition(550, 380)
+      .setSize(200, 25)
+      .moveTo(homePage);
+    setDeviceNickname.getCaptionLabel().setText("Set Device Nickname").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+      
     logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(400, 420)
       .setColorBackground(color(255))
@@ -467,6 +506,22 @@ public class HomePageControllers implements ControlListener {
           logDisplay.append("No magnetometer schedule currently running\n");
           logLog.println("No magnetometer schedule currently running");
         }
+      }
+      
+      if (controllerName.equals("setDeviceSerialNumber")){
+        Packet newDeviceSerialNumberPacket = new Packet();
+        byte[] newDeviceSerialNumberPacketConverted = newDeviceSerialNumberPacket.SetSerialNumber();
+        serialPort.write(newDeviceSerialNumberPacketConverted);
+        logDisplay.append("New device serial number sent\n");
+        logLog.println("New device serial number sent");
+      }
+
+      if (controllerName.equals("setDeviceNickname")){
+        Packet newDeviceNicknamePacket = new Packet();
+        byte[] newDeviceNicknamePacketConverted = newDeviceNicknamePacket.SetNickname();
+        serialPort.write(newDeviceNicknamePacketConverted);
+        logDisplay.append("New device nickname sent\n");
+        logLog.println("New device nickname sent");
       }
     }
   }

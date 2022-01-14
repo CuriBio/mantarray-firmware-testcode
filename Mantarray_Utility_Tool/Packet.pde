@@ -173,12 +173,49 @@ class Packet{
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
     this.packetType = 3;
-    this.packetLength = 41; //<>//
+    this.packetLength = 41;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, (byte)16);
     this.data.add(1, (byte)0);
     this.data.add(2, stimulationMode);
+    return this.toByte();
+  }
+  
+  byte[] FetchMetadata(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 60;
+    this.packetLength = 14;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] SetSerialNumber(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 61;
+    this.packetLength = 26;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    String thisString = thisHomePageControllers.setDeviceSerialNumberField.getText();
+    byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
+    List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
+    this.data.addAll(thisByteArrayList);
+    return this.toByte();
+  }
+  
+  byte[] SetNickname(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 62;
+    this.packetLength = 27;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    String thisString = thisHomePageControllers.setDeviceNicknameField.getText();
+    byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
+    List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
+    this.data.addAll(thisByteArrayList);
     return this.toByte();
   }
     

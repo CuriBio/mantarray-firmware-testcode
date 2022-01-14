@@ -52,7 +52,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
   thisScanner++;
   while (thisAggregate.size() < thisPacketLength + PRE_PACKET_LENGTH){ //Wait around until the rest of the bytes show up
     thisAggregate = performReading(thisAggregate);
-  }        
+  }    
   
   Packet newPacket = new Packet();
   newPacket.timeStamp = 0;
@@ -108,7 +108,6 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       break;
     }
   }
-  
   thisAggregate.subList(0,thisScanner).clear();
 }
 
