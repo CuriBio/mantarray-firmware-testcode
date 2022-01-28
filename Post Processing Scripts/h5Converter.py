@@ -7,7 +7,7 @@ from scipy import signal as sig
 from pathlib import Path
 from pandas import DataFrame as df
 from tabulate import tabulate
-
+from scipy.signal import butter, lfilter
 from tkinter import Tk
 from tkinter.filedialog import askdirectory 
 
@@ -72,10 +72,29 @@ for file in os.listdir(targetDataPath):
     for sensorNum in range(numSensors):
         fullTimestamps[wellNum, sensorNum] = (rawTimeIndices + rawTimeOffsets[sensorNum]) / 1e6
         for axisNum in range(numAxes):
-            fullData[wellNum, sensorNum, axisNum] = (rawData[sensorNum * numSensors + axisNum] - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
+            fullData[wellNum, sensorNum, axisNum] = (rawData[sensorNum * numSensors + axisNum].astype('float64') - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
 
     wellNum+=1
 
+#%%
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
+
+order = 4
+fs = 100.0       # sample rate, Hz
+cutoff = 30  # desired cutoff frequency of the filter, Hz
+
+# Get the filter coefficients so we can check its frequency response.
+b, a = butter_lowpass(cutoff, fs, order)
+fullData = butter_lowpass_filter(fullData, cutoff, fs, order)
 
 #%%
 fig, axs = plt.subplots(4, 6, figsize=(100, 100))
@@ -148,7 +167,7 @@ logFile.close()
 
 #%%
 fig, axs = plt.subplots(figsize=(10, 10))
-axs.plot(fullTimestamps[4, 1, 800:900], fullData[4, 1, 0, 800:900] * 1000, label=f'Sensor {2} Axis {axisMap[0]}')
+axs.plot(fullTimestamps[4, 1, 770:1000], fullData[4, 1, 0, 770:1000] * 1000, label=f'Sensor {2} Axis {axisMap[0]}')
 axs.set_title(f'Well {wellMap[4]}', fontsize = 60)
 axs.set_xlabel('Time (sec)', fontsize = 30)
 axs.set_ylabel('Magnitude (uT)', fontsize = 20)
