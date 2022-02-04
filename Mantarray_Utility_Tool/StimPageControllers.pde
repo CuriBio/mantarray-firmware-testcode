@@ -338,6 +338,79 @@ public class StimPageControllers implements ControlListener {
     cp5.addListener(this);
   }
   
+  public void PulsePlotter(List<Float> pulse, StimPageControllers thisStimPageControllers) {
+    int graphWidth = thisStimPageControllers.stimWindowWidth;
+    int graphHeight = thisStimPageControllers.stimWindowHeight;
+    int graphX = thisStimPageControllers.stimWindowX;
+    int graphY = thisStimPageControllers.stimWindowY;
+    //Calculates the height and width of the axes in pixels
+    int pulseYAxisHeight = (3*graphHeight)/8;
+    int pulseXAxisLength = (5*graphWidth)/6;
+    //The beginning and end of the pulse are always 1/8 of the axes lengths
+    int beginningAndEndLength = thisStimPageControllers.pulseXLim/8;
+    //Figure out conversion ratio between axes limits and pixels
+    float pulseScaleHeight = 1.0*pulseYAxisHeight/thisStimPageControllers.pulseYLim;
+    float pulseScaleWidth = 1.0*pulseXAxisLength/thisStimPageControllers.pulseXLim;
+    //Black medium thickness lines.  Draw axes
+    stroke(0); 
+    strokeWeight(2);
+    pushMatrix();
+    //Begin drawing at upper left point of graph starting point
+    translate(graphX, graphY);
+    translate(graphWidth/12, graphHeight/8);
+    line(0, 0, 0, (6*graphHeight)/8);
+    line(0, 0, 10, 10);
+    line(0, 0, -10, 10);
+    translate(0, (6*graphHeight)/8);
+    line(0, 0, 10, -10);
+    line(0, 0, -10, -10);
+    translate((10*graphWidth)/12, -(3*graphHeight)/8);
+    line(0, 0, -(10*graphWidth)/12, 0);
+    line(0, 0, -10, 10);
+    line(0, 0, -10, -10);
+    popMatrix();
+  
+    pushMatrix();
+    //Begin drawing at upper left point of graph starting point
+    translate(graphX, graphY);
+    translate(graphWidth/12, graphHeight/2);
+  
+    //Check whether to draw constant current or constant voltage colors
+    if (thisStimPageControllers.isConstantCurrent)
+      stroke(thisStimPageControllers.constantCurrentColor);
+    else
+      stroke(thisStimPageControllers.constantVoltageColor);
+  
+    //double the line thickness and draw the pulse
+    strokeWeight(4);
+    line(0, 0, beginningAndEndLength*pulseScaleWidth, 0);
+    translate(beginningAndEndLength*pulseScaleWidth, 0);
+  
+    line(0, 0, 0, -pulse.get(1)*pulseScaleHeight);
+    translate(0, -pulse.get(1)*pulseScaleHeight);
+  
+    line(0, 0, pulse.get(2)*pulseScaleWidth, 0);
+    translate(pulse.get(2)*pulseScaleWidth, 0);
+  
+    line(0, 0, 0, pulse.get(1)*pulseScaleHeight);
+    translate(0, pulse.get(1)*pulseScaleHeight);
+  
+    line(0, 0, pulse.get(3)*pulseScaleWidth, 0);
+    translate(pulse.get(3)*pulseScaleWidth, 0);
+  
+    line(0, 0, 0, -pulse.get(4)*pulseScaleHeight);
+    translate(0, -pulse.get(4)*pulseScaleHeight);
+  
+    line(0, 0, pulse.get(5)*pulseScaleWidth, 0);
+    translate(pulse.get(5)*pulseScaleWidth, 0);
+  
+    line(0, 0, 0, pulse.get(4)*pulseScaleHeight);
+    translate(0, pulse.get(4)*pulseScaleHeight);
+  
+    line(0, 0, beginningAndEndLength*pulseScaleWidth, 0);
+    popMatrix();
+  }
+  
   /*!
   Handles all of the events passing through the stimulator page and forwards them to the main Processing applet.  Figures out the
   name of the controller that was activated by the user and passes it though a series of if statements to determine which action to take
@@ -349,63 +422,63 @@ public class StimPageControllers implements ControlListener {
         float numValue = Float.parseFloat(theEvent.getStringValue());          
         if (controllerName.equals("pulseXLimIn")){
           if (pulseHighDelayText + pulseLowDelayText + pulseMidDelayText + numValue/4 > numValue) {
-            logDisplay.append("Input is too small for set values\n");
+            thisHomePageControllers.logDisplay.append("Input is too small for set values\n");
             pulseXLimIn.setText(String.valueOf(pulseXLim));
           }
           pulseXLim = (int)numValue;
         }
         else if (controllerName.equals("pulseYLimIn")){
           if (Math.max(pulseHighAmpText, pulseLowAmpText) > numValue) {
-            logDisplay.append("Input is too small for set values\n");
+            thisHomePageControllers.logDisplay.append("Input is too small for set values\n");
             pulseYLimIn.setText(String.valueOf(pulseYLim));
           }
           pulseYLim = (int)numValue;
         }
         else if (controllerName.equals("pulseFreq")){
-          if (6 < numValue) {
-            logDisplay.append("That's way too high, are you crazy???\n");
+          if (200 < numValue) {
+            thisHomePageControllers.logDisplay.append("That's way too high, are you crazy???\n");
             pulseFreq.setText(String.format ("%.1f", pulseFreqText));
           } else
             pulseFreqText = numValue;
         }
         else if (controllerName.equals("pulseHighAmp")){
           if (pulseYLim < numValue) {
-            logDisplay.append("Input is too large for scale");
+            thisHomePageControllers.logDisplay.append("Input is too large for scale");
             pulseHighAmp.setText(String.format ("%.3f", pulseHighAmpText));
           } else
             pulseHighAmpText = numValue;
         }
         else if (controllerName.equals("pulseHighDelay")){
           if (numValue + pulseLowDelayText + pulseMidDelayText > (3*pulseXLim)/4) {
-            logDisplay.append("Input is too large for scale");
+            thisHomePageControllers.logDisplay.append("Input is too large for scale");
             pulseHighDelay.setText(String.format ("%.3f", pulseHighDelayText));
           } else
             pulseHighDelayText = numValue;
         }
         else if (controllerName.equals("pulseMidDelay")){
           if (pulseHighDelayText + pulseLowDelayText + numValue > (3*pulseXLim)/4) {
-            logDisplay.append("Input is too large for scale");
+            thisHomePageControllers.logDisplay.append("Input is too large for scale");
             pulseMidDelay.setText(String.format ("%.3f", pulseMidDelayText));
           } else
             pulseMidDelayText = numValue;
         }
         else if (controllerName.equals("pulseLowAmp")){
           if (pulseYLim < numValue) {
-            logDisplay.append("Input is too large for scale");
+            thisHomePageControllers.logDisplay.append("Input is too large for scale");
             pulseLowAmp.setText(String.format ("%.3f", pulseLowAmpText));
           } else
             pulseLowAmpText = numValue;
         }
         else if (controllerName.equals("pulseLowDelay")){
           if (pulseHighDelayText + pulseMidDelayText + numValue > (3*pulseXLim)/4) {
-            logDisplay.append("Input is too large for scale");
+            thisHomePageControllers.logDisplay.append("Input is too large for scale");
             pulseLowDelay.setText(String.format ("%.3f", pulseLowDelayText));
           } else
             pulseLowDelayText = numValue;
         }
         resetStimControllerPositions();
       } catch (Exception e){
-        logDisplay.append("Error Reading Input Number");
+        thisHomePageControllers.logDisplay.append("Error Reading Input Number");
       }
     } else if (theEvent.isAssignableFrom(Button.class)){
       if (controllerName.equals("constantSelector")){
@@ -443,7 +516,7 @@ public class StimPageControllers implements ControlListener {
       }
       else if (controllerName.equals("stimWindowBack")){
         stimWindow.hide();
-        homePage.show();
+        thisHomePageControllers.homePage.show();
       } else if (controllerName.equals("stimWindowReset")){
         List<Float> thisDefaultPulse = CheckDefaultPulse();
         SetPulseAsDefault(thisDefaultPulse);
@@ -520,7 +593,7 @@ public class StimPageControllers implements ControlListener {
         
         stimConfigSet = true;
         stimWindow.hide();
-        homePage.show();
+        thisHomePageControllers.homePage.show();
       } else if (controllerName.equals("pulseFreqUp")){
         if (pulseFreqText + .1<=6) {
           pulseFreqText += .1;

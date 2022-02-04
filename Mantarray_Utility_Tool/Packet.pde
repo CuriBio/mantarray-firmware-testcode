@@ -26,23 +26,32 @@ class Packet{
     return this.toByte();
   }
   
-  void ChannelFirmwareUpdateBegin(int totalNumberOfBytes){
+  void FirmwareUpdateBegin(int totalNumberOfBytes, int whichFirmware){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 0;
-    this.packetLength = 19;
+    this.packetType = 70;
+    this.packetLength = 22;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>(9);
-    this.data.add((byte)1);
+    this.data = new ArrayList<Byte>(12);
+    this.data.add((byte)whichFirmware);
+    if (whichFirmware == 0){
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainMajorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainMinorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.mainRevisionVersion.getText())));
+    } else {
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelMajorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelMinorVersion.getText())));
+      this.data.add((byte)uint2byte(Integer.valueOf(thisHomePageControllers.channelRevisionVersion.getText())));
+    }
     for (int i = 0; i < 4; i++){
       this.data.add(uint2byte((int)(totalNumberOfBytes>>(8*i) & 0x000000ff)));
     }
   }
   
-  void ChannelFirmwareUpdate(byte[] firmware, int packetNum){
+  void FirmwareUpdate(byte[] firmware, int packetNum){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 1;
+    this.packetType = 71;
     this.packetLength = firmware.length + 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(firmware.length + 5);
@@ -52,10 +61,10 @@ class Packet{
     }
   }
   
-  void ChannelFirmwareUpdateEnd(int firmwareCRC){
+  void FirmwareUpdateEnd(int firmwareCRC){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.moduleID = 0;
-    this.packetType = 2;
+    this.packetType = 72;
     this.packetLength = 18;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(8);
@@ -127,10 +136,10 @@ class Packet{
     this.moduleID = 0;
     this.packetType = 100;
     this.packetLength = 16;
-    this.CRC = 123123123; //<>//
+    this.CRC = 123123123; //<>// //<>//
     this.data = new ArrayList<Byte>();;
-    this.data.add(0, Byte.valueOf(I2CAddressField.getText()));
-    this.data.add(1, uint2byte(Integer.valueOf(I2CInputField.getText())));
+    this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
+    this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));
     return this.toByte();
   }
   
@@ -141,34 +150,8 @@ class Packet{
     this.packetLength = 16;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();;
-    this.data.add(0, Byte.valueOf(I2CSetAddressOld.getText()));
-    this.data.add(1, Byte.valueOf(I2CSetAddressNew.getText()));
-    return this.toByte();
-  }
-  
-  byte[] SetStimulatorAtConstantCurrent(){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 103;
-    this.packetLength = 16;
-    this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*100;
-    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
-    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
-    return this.toByte();
-  }
-  
-  byte[] SetStimulatorAtConstantVoltage(){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 104;
-    this.packetLength = 16;
-    this.CRC = 123123123; //<>//
-    this.data = new ArrayList<Byte>();;
-    int thisAmplitude = Integer.valueOf(allStimulatorCurrentField.getText())*1000;
-    this.data.add(0, uint2byte(thisAmplitude & 0x000000ff));
-    this.data.add(1, uint2byte((thisAmplitude>>8) & 0x000000ff));
+    this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CSetAddressOld.getText()));
+    this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
   }
   
@@ -196,6 +179,43 @@ class Packet{
     this.data.add(0, (byte)16);
     this.data.add(1, (byte)0);
     this.data.add(2, stimulationMode);
+    return this.toByte();
+  }
+  
+  byte[] FetchMetadata(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 60;
+    this.packetLength = 14;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] SetSerialNumber(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 61;
+    this.packetLength = 26;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    String thisString = thisHomePageControllers.setDeviceSerialNumberField.getText();
+    byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
+    List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
+    this.data.addAll(thisByteArrayList);
+    return this.toByte();
+  }
+  
+  byte[] SetNickname(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.moduleID = 0;
+    this.packetType = 62;
+    this.packetLength = 27;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    String thisString = thisHomePageControllers.setDeviceNicknameField.getText();
+    byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
+    List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
+    this.data.addAll(thisByteArrayList);
     return this.toByte();
   }
     

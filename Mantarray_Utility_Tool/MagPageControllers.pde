@@ -60,7 +60,7 @@ public class MagPageControllers implements ControlListener {
         .setColorBackground(color(255))
         .setColorForeground(color(0))
         .setAutoClear(false)
-        .setText(String.valueOf(1000))
+        .setText(String.valueOf(10))
         .moveTo(magnetometerSelector);
     samplingRate.getCaptionLabel().setText("Sampling Period (ms):").setColor(0).setFont(createFont("arial", magConfigBarBufferWidth)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginLeft(-(int)(.8 * magConfigBarButtonWidth));
     
@@ -212,12 +212,12 @@ public class MagPageControllers implements ControlListener {
       }
       if (controllerName.equals("boardConfigurationSubmit")){
         magConfigurationByteArray = configDataGenerator();
-        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>//
-        homePage.show();
+        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>// //<>//
+        thisHomePageControllers.homePage.show();
         Packet magConfig = new Packet();
         byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
         serialPort.write(magConfigConverted);
-        logDisplay.append("Board Configuration Set\n");
+        thisHomePageControllers.logDisplay.append("Board Configuration Set\n");
         logLog.println("Board configuration set");
         boardConfigSet = true;
       }
