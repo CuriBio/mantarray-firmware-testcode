@@ -7,7 +7,7 @@ from scipy import signal as sig
 from pathlib import Path
 from pandas import DataFrame as df
 from tabulate import tabulate
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, freqz
 from tkinter import Tk
 from tkinter.filedialog import askdirectory 
 
@@ -97,7 +97,19 @@ b, a = butter_lowpass(cutoff, fs, order)
 fullData = butter_lowpass_filter(fullData, cutoff, fs, order)
 
 #%%
-fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+w, h = freqz(b, a, worN=8000)
+plt.subplots(1, 1, figsize=(10, 5))
+plt.plot(0.5*fs*w/np.pi, np.abs(h))
+plt.xlim(0, 0.5*fs)
+plt.title("4th Order Butterworth Filter Frequency Response with 30 Hz Cutoff", fontsize = 15)
+plt.xlabel('Frequency [Hz]', fontsize = 15)
+plt.tick_params(which = 'major', labelsize = 12)
+plt.minorticks_on()
+plt.grid(which='major', linewidth=1.5)
+plt.grid(which='minor', linewidth=.5)
+
+#%%
+fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey=True)
 for wellNum in range(numWells):
     row = int(wellNum / 6)
     col = int(wellNum % 6)
@@ -166,13 +178,17 @@ logFile.write(str(tabulate(shapedData, headers = 'keys', tablefmt = 'psql', stra
 logFile.close() 
 
 #%%
+begin = 5700
+end = 6200
 fig, axs = plt.subplots(figsize=(10, 10))
-axs.plot(fullTimestamps[4, 1, 770:1000], fullData[4, 1, 0, 770:1000] * 1000, label=f'Sensor {2} Axis {axisMap[0]}')
-axs.set_title(f'Well {wellMap[4]}', fontsize = 60)
+axs.plot(fullTimestamps[4, 1, begin:end], fullData[0, 0, 0, begin:end] * 1000, label=f'Sensor {2} Axis {axisMap[0]}')
+axs.set_title(f'Well {wellMap[0]}', fontsize = 60)
 axs.set_xlabel('Time (sec)', fontsize = 30)
 axs.set_ylabel('Magnitude (uT)', fontsize = 20)
 axs.tick_params(which = 'major', labelsize = 20)
 axs.minorticks_on()
 axs.grid(which='major', linewidth=1.5)
 axs.grid(which='minor', linewidth=.5)
-axs.legend(fontsize = 20)           
+axs.legend(fontsize = 20)   
+
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')        
