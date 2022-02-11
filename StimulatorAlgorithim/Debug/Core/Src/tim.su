@@ -1,0 +1,7 @@
+tim.c:33:6:MX_TIM6_Init	16	static
+tim.c:71:6:MX_TIM21_Init	32	static
+tim.c:113:6:MX_TIM22_Init	32	static
+tim.c:159:7:GetTimerPeriod_uS	48	static
+tim.c:177:10:GetPclk	24	static
+tim.c:190:6:SetTimerPeriod	32	static
+tim.c:198:6:LoadTimerDac	24	static

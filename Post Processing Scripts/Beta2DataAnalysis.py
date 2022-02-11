@@ -23,10 +23,10 @@ numWells = 24
 numSensors = 3
 numAxes = 3
 axisMap = ['X', 'Y', 'Z']
-wellMap = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 
-           'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 
-           'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 
-           'D1', 'D2', 'D3', 'D4', 'D5', 'D6']
+wellMap = ['A1', 'B1', 'C1', 'D1', 'A2', 'B2', # New Beta 2.2 Well Mapping
+           'C2', 'D2', 'A3', 'B3', 'C3', 'D3', 
+           'A4', 'B4', 'C4', 'D4', 'A5', 'B5', 
+           'C5', 'D5', 'A6', 'B6', 'C6', 'D6']
 memsicCenterOffset = 2**15
 memsicMSB = 2**16
 memsicFullScale = 16
@@ -122,7 +122,7 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for (sensorNum, axisNum), status in np.ndenumerate(config[wellNum]):
         if status:
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], filteredData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)

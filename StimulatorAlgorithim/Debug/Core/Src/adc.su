@@ -1,0 +1,2 @@
+adc.c:36:6:MX_ADC_Init	16	static
+adc.c:106:6:ADC_CalibrateStimulator	48	static

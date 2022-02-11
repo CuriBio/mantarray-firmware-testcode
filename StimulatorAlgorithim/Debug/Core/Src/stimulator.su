@@ -1,0 +1,6 @@
+main.h:57:24:BIT_SET	16	static
+main.h:62:24:BIT_CLR	16	static
+stimulator.c:15:14:stimulator_create	3200	static
+stimulator.c:37:6:stimulator_destroy	16	static
+stimulator.c:42:6:stimulator_state_machine	72	static
+stimulator.c:117:6:stimulator_generate_wave_lut	96	static

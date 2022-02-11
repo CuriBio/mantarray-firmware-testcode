@@ -1,0 +1,2 @@
+i2c_network_interface.c:4:9:I2C_interface_create	24	static
+i2c_network_interface.c:28:6:I2C2_IRQHandler	8	static
