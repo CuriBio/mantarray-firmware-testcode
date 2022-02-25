@@ -1,5 +1,0 @@
-core_cm0plus.h:777:22:__NVIC_DisableIRQ	16	static,ignoring_inline_asm
-main.h:62:24:BIT_CLR	16	static
-main.h:67:24:IS_BIT_SET	16	static
-system.c:8:6:module_system_init	3184	static
-system.c:32:6:state_machine	232	static
