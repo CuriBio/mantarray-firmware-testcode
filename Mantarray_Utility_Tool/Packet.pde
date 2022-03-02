@@ -136,7 +136,7 @@ class Packet{
     this.moduleID = 0;
     this.packetType = 100;
     this.packetLength = 16;
-    this.CRC = 123123123; //<>// //<>//
+    this.CRC = 123123123; //<>//
     this.data = new ArrayList<Byte>();;
     this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
     this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));

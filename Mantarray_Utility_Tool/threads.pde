@@ -139,6 +139,8 @@ void PrintDataToFile(List<Byte> thisPacketData){
               packetScanner+=2;
             }
           }
+          dataList.add((long)(byte2uint(thisPacketData.get(packetScanner))));
+          packetScanner++;
         }
       }
     }
@@ -170,7 +172,7 @@ void LoadChannelFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
     int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
     
@@ -222,7 +224,7 @@ void LoadMainFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
     int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
     
