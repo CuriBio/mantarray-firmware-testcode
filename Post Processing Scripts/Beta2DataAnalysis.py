@@ -23,13 +23,16 @@ numWells = 24
 numSensors = 3
 numAxes = 3
 axisMap = ['X', 'Y', 'Z']
-wellMap = ['A1', 'B1', 'C1', 'D1', 'A2', 'B2', # New Beta 2.2 Well Mapping
-           'C2', 'D2', 'A3', 'B3', 'C3', 'D3', 
-           'A4', 'B4', 'C4', 'D4', 'A5', 'B5', 
-           'C5', 'D5', 'A6', 'B6', 'C6', 'D6']
+wellMap = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 
+           'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 
+           'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 
+           'D1', 'D2', 'D3', 'D4', 'D5', 'D6']
 memsicCenterOffset = 2**15
+temperatureOffset = 75
 memsicMSB = 2**16
+temperatureMSB = 2**8
 memsicFullScale = 16
+temperatureFullScale = 200
 gauss2MilliTesla = .1
 
 totDataPoints = numWells * numSensors * numAxes
@@ -40,19 +43,23 @@ activeSensors = np.any(config, axis = 2)
 spacerCounter = 1
 timestampSpacer = [0]
 dataSpacer = []
+temperatureSpacer = []
 for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
     if status:
         numActiveAxes = np.count_nonzero(config[wellNum,sensorNum])
         for numAxis in range(1, numActiveAxes + 1):
             dataSpacer.append(timestampSpacer[spacerCounter - 1] + numAxis)
-        timestampSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
+        temperatureSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
+        timestampSpacer.append(temperatureSpacer[spacerCounter - 1] + 1)
         spacerCounter+=1
         
 timestamps = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(timestampSpacer[:-1])) / 1000000
 data = (np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(dataSpacer)) - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
+temperature = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(temperatureSpacer)) * temperatureFullScale / temperatureMSB - temperatureOffset
 numSamples = timestamps.shape[0] - 2
 fullData = np.zeros((numWells, numSensors, numAxes, numSamples))
 fullTimestamps = np.zeros((numWells, numSensors, numSamples))
+fullTemperature = np.zeros((numWells, numSensors, numSamples))
 
 dataCounter = 0
 for (wellNum, sensorNum, axisNum), status in np.ndenumerate(config):
@@ -65,6 +72,12 @@ for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
     if status:
         fullTimestamps[wellNum, sensorNum] = timestamps[2:, timestampCounter]
         timestampCounter+=1
+		
+temperatureCounter = 0
+for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
+    if status:
+        fullTemperature[wellNum, sensorNum] = temperature[2:, temperatureCounter]
+        temperatureCounter+=1
         
 #%% Check if any data is coming from broken sensors, or if there are bad samples in the data capture
 brokenArray = np.any(np.any((fullData==.7999755859375001), axis = 3), axis = 2)
@@ -113,19 +126,28 @@ cutoff = 15  # desired cutoff frequency of the filter, Hz
 
 # Get the filter coefficients so we can check its frequency response.
 b, a = butter_lowpass(cutoff, fs, order)
-filteredData = butter_lowpass_filter(fullData, cutoff, fs, order)
+fullData = butter_lowpass_filter(fullData, cutoff, fs, order)
 
 #%% Plot the subsequent transient after the broken and abberant sample compensations
 fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+referenceAxis = axs[0, 0].twinx()
 for wellNum in range(numWells):
     row = int(wellNum / 6)
     col = int(wellNum % 6)
-    for (sensorNum, axisNum), status in np.ndenumerate(config[wellNum]):
-        if status:
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+    rightAxis = axs[row, col].twinx() if wellNum != 0 else referenceAxis
+    rightAxis.get_shared_y_axes().join(rightAxis, referenceAxis)
+    
+    for sensorNum, axesStatuses in enumerate(config[wellNum]):
+        if np.any(axesStatuses):
+            for axisNum, status in enumerate(axesStatuses):
+                if status:
+                    axs[row, col].plot(fullTimestamps[wellNum, sensorNum, 100:-1], fullData[wellNum, sensorNum, axisNum, 100:-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            rightAxis.plot(fullTimestamps[wellNum, sensorNum, :-1], fullTemperature[wellNum, sensorNum, :-1], label = f'Sensor {sensorNum + 1} Temperature', linewidth=7.0, color='red')
+    
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)
+    rightAxis.set_ylabel('Temperature (°C)', fontsize = 20)
     axs[row, col].tick_params(which = 'major', labelsize = 20)
     axs[row, col].minorticks_on()
     axs[row, col].grid(which='major', linewidth=1.5)
@@ -136,7 +158,7 @@ fig.savefig(f"{filePath.parent.parent / 'plots'}\{dateName}_transient", bbox_inc
 
 #%%
 fig, axs = plt.subplots(figsize=(10, 10))
-axs.plot(fullTimestamps[0, 0, :100], fullData[0, 0, 0, :100] * 1000, label=f'Sensor {1} Axis {axisMap[0]}')
+axs.plot(fullTimestamps[0, 0, :100], fullData[0, 0, 0, :100] * 1000, label=f'Sensor 1 Axis {axisMap[0]}')
 axs.set_title(f'Well {wellMap[0]}', fontsize = 60)
 axs.set_xlabel('Time (sec)', fontsize = 30)
 axs.set_ylabel('Magnitude (uT)', fontsize = 20)
@@ -145,14 +167,6 @@ axs.minorticks_on()
 axs.grid(which='major', linewidth=1.5)
 axs.grid(which='minor', linewidth=.5)
 axs.legend(fontsize = 20)
-
-#%%
-a = np.diff(fullData[0, 0, 0, 1000:2000])
-a = set(abs(a))
-if 0 in a:
-  a.remove(0)
-lsb = min(a)
-print(lsb * (1/gauss2MilliTesla) / memsicFullScale * memsicMSB)
         
 #%% Quick and dirty noise metrics generator ***NOTE*** peak-to-peak is accurate, RMS is guesstimated (use integal of PSD for more accurate results), and I'm not sure if I'm doing SNR right 
 def CreateFancyDataFrame(thisData, floatNums = False):
