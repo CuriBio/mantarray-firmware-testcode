@@ -1,7 +1,6 @@
 class Packet{
   byte[] MAGIC_WORD = new byte[]{67, 85, 82, 73, 32, 66, 73, 79};
   long timeStamp;
-  int moduleID;
   int packetType;
   int packetLength;
   long CRC;
@@ -19,18 +18,16 @@ class Packet{
 
   byte[] IAmHere(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 4;
-    this.packetLength = 14;
+    this.packetLength = 13;
     this.CRC = 123123123;
     return this.toByte();
   }
   
   void FirmwareUpdateBegin(int totalNumberOfBytes, int whichFirmware){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 70;
-    this.packetLength = 22;
+    this.packetLength = 21;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(12);
     this.data.add((byte)whichFirmware);
@@ -50,9 +47,8 @@ class Packet{
   
   void FirmwareUpdate(byte[] firmware, int packetNum){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 71;
-    this.packetLength = firmware.length + 15;
+    this.packetLength = firmware.length + 14;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(firmware.length + 5);
     this.data.add((byte) packetNum);
@@ -63,9 +59,8 @@ class Packet{
   
   void FirmwareUpdateEnd(int firmwareCRC){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 72;
-    this.packetLength = 18;
+    this.packetLength = 17;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(8);
     for (int i = 0; i < 4; i++){
@@ -75,12 +70,11 @@ class Packet{
   
   byte[] MagnetometerConfiguration(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
+    this.packetType = 50;
     //HARDWARE TEST uncomment this line if you want to use set/reset commands
     //Make sure the configuration generator is changed in MagPageControllers.pde and the input parser is updated in Communicator.c
     //this.packetLength = 90;
-    this.packetLength = 89;
+    this.packetLength = 15;
     this.CRC = 123123123;
     this.data = magConfigurationByteArray;
     this.data.add(0, (byte)1);
@@ -89,55 +83,42 @@ class Packet{
   
   byte[] MagnetometerDataCaptureBegin(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 15;
+    this.packetType = 52;
+    this.packetLength = 13;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>(1);
-    this.data.add((byte)2);
     return this.toByte();
   }
   
   byte[] MagnetometerDataCaptureEnd(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 15;
+    this.packetType = 53;
+    this.packetLength = 13;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>(1);
-    this.data.add((byte)3);
     return this.toByte();
   }
   
   byte[] StimulatorBegin(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 15;
+    this.packetType = 25;
+    this.packetLength = 13;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    this.data.add((byte)17);
     return this.toByte();
   }
   
   byte[] StimulatorEnd(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 15;
+    this.packetType = 26;
+    this.packetLength = 13;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    this.data.add((byte)18);
     return this.toByte();
   }
   
   byte[] I2CCommand(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 100;
-    this.packetLength = 16;
+    this.packetLength = 15;
     this.CRC = 123123123; //<>// //<>//
-    this.data = new ArrayList<Byte>();;
+    this.data = new ArrayList<Byte>();
     this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
     this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));
     return this.toByte();
@@ -145,11 +126,10 @@ class Packet{
   
   byte[] I2CAddressNew(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 101;
-    this.packetLength = 16;
+    this.packetLength = 15;
     this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();;
+    this.data = new ArrayList<Byte>();
     this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CSetAddressOld.getText()));
     this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
@@ -157,9 +137,8 @@ class Packet{
   
   byte[] sensorConfig(JSONObject settingsJSON){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 102;
-    this.packetLength = 18;
+    this.packetLength = 17;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();
     this.data.add(0, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_0"), 2)));
@@ -171,31 +150,26 @@ class Packet{
   
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 41;
+    this.packetType = 24;
+    this.packetLength = 39;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
-    this.data.add(0, (byte)16);
-    this.data.add(1, (byte)0);
-    this.data.add(2, stimulationMode);
+    this.data.add(0, stimulationMode);
     return this.toByte();
   }
   
   byte[] FetchMetadata(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 60;
-    this.packetLength = 14;
+    this.packetLength = 13;
     this.CRC = 123123123;
     return this.toByte();
   }
   
   byte[] SetSerialNumber(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 61;
-    this.packetLength = 26;
+    this.packetLength = 25;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();
     String thisString = thisHomePageControllers.setDeviceSerialNumberField.getText();
@@ -207,26 +181,14 @@ class Packet{
   
   byte[] SetNickname(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
     this.packetType = 62;
-    this.packetLength = 27;
+    this.packetLength = 26;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>();
     String thisString = thisHomePageControllers.setDeviceNicknameField.getText();
     byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
     List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
     this.data.addAll(thisByteArrayList);
-    return this.toByte();
-  }
-    
-  byte[] testPacket(int i){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.moduleID = 0;
-    this.packetType = 3;
-    this.packetLength = 15;
-    this.CRC = 123123123;
-    this.data = magConfigurationByteArray;
-    this.data.add(0, (byte)i);
     return this.toByte();
   }
   
@@ -248,8 +210,6 @@ class Packet{
       thisByteArray[byteArrayIndex] = uint2byte(thisByte);
       byteArrayIndex++;
     }
-    thisByteArray[byteArrayIndex] = uint2byte(this.moduleID);
-    byteArrayIndex++;
     thisByteArray[byteArrayIndex] = uint2byte(this.packetType);
     byteArrayIndex++;
     for (int i = 0; i < packetLength - 14; i++){

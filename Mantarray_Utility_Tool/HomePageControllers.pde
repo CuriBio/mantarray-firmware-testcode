@@ -15,7 +15,8 @@ public class HomePageControllers implements ControlListener {
   Button startButtonStims;
   Button stopButtonStims;
   Button setStimConfigButton;
-  Button setBoardConfigButton;
+  Textfield setSensorRateField;
+  Button setSensorRateButton;
   Button setSensorConfigButton;
   Button saveAndQuitButton;
   Textarea logDisplay;
@@ -177,18 +178,29 @@ public class HomePageControllers implements ControlListener {
       .moveTo(homePage);
     setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    setSensorConfigButton = cp5.addButton("setSensorConfigButton")
+    /*setSensorConfigButton = cp5.addButton("setSensorConfigButton")
       .setPosition(75, 270)
       .setSize(250, 50)
       .moveTo(homePage);
-    setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);*/
     
-    setBoardConfigButton = cp5.addButton("setBoardConfigButton")
-      .setPosition(75, 210)
-      .setSize(250, 50)
+    setSensorRateField = cp5.addTextfield("setSensorRateField")
+      .setPosition(75, 222)
+      .setSize(25, 25)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText("10")
       .moveTo(homePage);
-    setBoardConfigButton.getCaptionLabel().setText("Set Board Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
+    setSensorRateButton = cp5.addButton("setSensorRateButton")
+      .setPosition(110, 210)
+      .setSize(220, 50)
+      .moveTo(homePage);
+    setSensorRateButton.getCaptionLabel().setText("Set Sensor Sampling Rate").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+ 
     saveAndQuitButton = cp5.addButton("saveAndQuitButton")
       .setPosition(75, 410)
       .setSize(250, 50)

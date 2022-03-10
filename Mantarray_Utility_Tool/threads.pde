@@ -62,9 +62,6 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
     thisScanner++;
   }
   newPacket.packetLength = thisPacketLength;
-  newPacket.moduleID = byte2uint(thisAggregate.get(thisScanner));
-  //print( " ", byte2long(aggregate.get(index)));
-  thisScanner++;
   newPacket.packetType = byte2uint(thisAggregate.get(thisScanner));
   //print( " ", byte2long(aggregate.get(index)));
   thisScanner++;
@@ -81,8 +78,8 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
   if (newPacket.packetType==1){
     PrintDataToFile(newPacket.data);
   } else {
-    logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
-    print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
+    logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.packetType));
+    print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.packetType));
     logLog.print(newPacket.data);
     print(newPacket.data);
     logLog.println();
