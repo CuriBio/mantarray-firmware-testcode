@@ -437,10 +437,18 @@ public class HomePageControllers implements ControlListener {
           logLog.println("No stimulation process currently running to stop");
         }
       }
-      if (controllerName.equals("setBoardConfigButton")){
+      if (controllerName.equals("setSensorRateButton")){
+        Packet magConfig = new Packet();
+        byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
+        serialPort.write(magConfigConverted);
+        thisHomePageControllers.logDisplay.append("Board Configuration Set\n");
+        logLog.println("Board configuration set");
+        boardConfigSet = true;
+      }
+      /*if (controllerName.equals("setBoardConfigButton")){
         thisMagPageControllers.magnetometerSelector.show();
         homePage.hide();
-      }
+      }*/
       if (controllerName.equals("setSensorConfigButton")){
         thisSensorPageControllers.magnetometerRegisterConfigurator.show();
         homePage.hide();
