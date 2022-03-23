@@ -136,7 +136,7 @@ class Packet{
     return this.toByte();
   }
   
-  byte[] sensorConfig(JSONObject settingsJSON){
+  byte[] sensorConfig(JSONObject settingsJSON){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 102;
     this.packetLength = 17;
@@ -213,7 +213,7 @@ class Packet{
     }
     thisByteArray[byteArrayIndex] = uint2byte(this.packetType);
     byteArrayIndex++;
-    for (int i = 0; i < packetLength - 14; i++){
+    for (int i = 0; i < packetLength - 13; i++){
       thisByteArray[byteArrayIndex] = this.data.get(i);
       byteArrayIndex++;
     }

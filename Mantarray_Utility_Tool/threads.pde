@@ -168,11 +168,11 @@ void LoadChannelFirmware(File firmwareFile) {
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
     long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>//
-    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
-    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
+    int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
+    int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     
     for (int i = 0; i < numFullPackets; i++){
-      byte[] buffer = new byte[MAX_DATA_SIZE];
+      byte[] buffer = new byte[MAX_FIRMWARE_DATA_IN_SINGLE_PACKET];
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
@@ -220,11 +220,11 @@ void LoadMainFirmware(File firmwareFile) {
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
     long fileSize = firmwareFile.length(); //<>// //<>// //<>//
-    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
-    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
-    
+    int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
+    int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
+     //<>//
     for (int i = 0; i < numFullPackets; i++){
-      byte[] buffer = new byte[MAX_DATA_SIZE];
+      byte[] buffer = new byte[MAX_FIRMWARE_DATA_IN_SINGLE_PACKET];
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
