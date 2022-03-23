@@ -1,0 +1,14 @@
+An explanation of the data logs is as follows:
+
+2021-09-21_17-48-45_data – initial warm up, TEC remained off
+
+2021-09-21_18-09-38_data – appx 15 mins of steady state data, TEC was off
+
+2021-09-21_18-24-41_data – an additional 20 mins of data taken while setting up the TEC. TEC was still off.
+
+2021-09-21_18-49-12_data – the real test, consisting of:
+~2 mins of steady state before TEC was turned on
+~3 mins of TEC at 50% power
+~3 mins of TEC set to control temperature back to ambient
+~3 mins of TEC mostly turned off, but with some manual blips of turning on and off at various settings
+~15 mins of TEC fully off to allow system to equilibrate and cool down a bit.

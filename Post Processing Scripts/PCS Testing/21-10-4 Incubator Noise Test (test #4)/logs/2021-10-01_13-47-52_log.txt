@@ -1,0 +1,1184 @@
+Testing serial device COM3
+Beginning to read from serial port
+COM3 failed
+Testing serial device COM6
+Beginning to read from serial port
+18 83498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+Connected to Mantarray
+Setup Complete
+26 83917936 0 4 [-126, -116, -103, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 88498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 88949341 0 4 [-104, -8, -27, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+23 93205262 0 4 [-49, -106, 38, 1, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 93498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 93975439 0 4 [-121, 72, 50, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+Board configuration set
+23 96287940 0 4 [-12, 98, 85, 1, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 98498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 99017380 0 4 [-100, -45, 126, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 103498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 104059452 0 4 [-18, 97, -53, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 108498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 109102792 0 4 [79, -17, 23, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 113498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 114129722 0 4 [-125, 63, 100, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 118498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 119171885 0 4 [-33, -53, -80, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 123498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 124216558 0 4 [-34, 86, -3, 2, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 128498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 129246817 0 4 [74, -92, 73, 3, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 133498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 134276265 0 4 [42, -13, -107, 3, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 138498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 139321398 0 4 [57, -127, -30, 3, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 143498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 144367591 0 4 [51, 17, 47, 4, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 148498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 149396272 0 4 [-104, 92, 123, 4, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 153498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 154424763 0 4 [-85, -88, -57, 4, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 158498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 159471362 0 4 [-6, 57, 20, 5, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 163498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 164517756 0 4 [36, -60, 96, 5, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 168498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 169563061 0 4 [74, 79, -83, 5, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 173498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 174593085 0 4 [40, -101, -7, 5, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 178498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 179622035 0 4 [-69, -24, 69, 6, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 183498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 184649925 0 4 [72, 55, -110, 6, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 188498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 189695620 0 4 [14, -59, -34, 6, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 193498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 194727477 0 4 [-127, 21, 43, 7, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 198498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 199774057 0 4 [48, -96, 119, 7, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 203498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 204802774 0 4 [-26, -21, -61, 7, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 208498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 209849567 0 4 [-65, 121, 16, 8, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 213498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 214895296 0 4 [110, 7, 93, 8, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 218498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 219940049 0 4 [-87, -112, -87, 8, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 223498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 224968522 0 4 [8, -31, -11, 8, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 228498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 230002953 0 4 [88, 71, 66, 9, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 233498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 235032008 0 4 [-25, -109, -114, 9, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 238498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 240078433 0 4 [62, 32, -37, 9, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 243498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 245110628 0 4 [95, 110, 39, 10, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 248498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 250143801 0 4 [-110, -65, 115, 10, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 253498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 255189499 0 4 [-48, 72, -64, 10, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 258498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 260220096 0 4 [-7, -105, 12, 11, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 263498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 265266403 0 4 [-28, 33, 89, 11, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 268498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 270296703 0 4 [-52, 111, -91, 11, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 273498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 275327472 0 4 [52, -67, -15, 11, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 278498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 280356760 0 4 [-35, 11, 62, 12, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 283498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 285384665 0 4 [-120, 87, -118, 12, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 288498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 290414478 0 4 [-125, -91, -42, 12, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 293498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 295458575 0 4 [27, 50, 35, 13, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 298498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 300488653 0 4 [101, -128, 111, 13, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 303498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 305532751 0 4 [-56, 11, -68, 13, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 308498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 310577328 0 4 [7, -102, 8, 14, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 313498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 315605502 0 4 [-44, -27, 84, 14, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 318498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 320635293 0 4 [101, 50, -95, 14, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 323498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 325665362 0 4 [55, -128, -19, 14, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 328498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 330700217 0 4 [18, -38, 57, 15, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 333498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 335730354 0 4 [67, 38, -122, 15, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 338498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 340760955 0 4 [76, 115, -46, 15, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 343498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 345792526 0 4 [84, -63, 30, 16, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 348498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 350841479 0 4 [-82, 79, 107, 16, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 353498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 355888404 0 4 [73, -40, -73, 16, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 358498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 360920358 0 4 [-5, 39, 4, 17, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 363498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 365968473 0 4 [109, -74, 80, 17, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 368498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 371015900 0 4 [-128, 63, -99, 17, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 373498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 376048161 0 4 [57, -111, -23, 17, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 378498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 381093392 0 4 [-114, 26, 54, 18, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 383498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 386125357 0 4 [-115, 103, -126, 18, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 388498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 391158213 0 4 [72, -73, -50, 18, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 393498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 396206101 0 4 [-17, 66, 27, 19, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 398498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 401241574 0 4 [-22, -110, 103, 19, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 403498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 406293643 0 4 [75, 30, -76, 19, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 408498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 411329015 0 4 [-47, 108, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 413498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 416364078 0 4 [108, -72, 76, 20, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 418498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 421399870 0 4 [118, 6, -103, 20, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 423498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 426435009 0 4 [-44, 85, -27, 20, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 428498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 431468162 0 4 [-17, -95, 49, 21, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 433498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 436517028 0 4 [119, 45, 126, 21, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 438498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 441550425 0 4 [-119, 122, -54, 21, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 443498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 446582799 0 4 [-45, -58, 22, 22, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 448498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 451615000 0 4 [42, 18, 99, 22, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+Starting data capture
+100 452626123 0 4 [109, 102, 114, 22, 0, 0, 0, 0, 0, 10, 0, 1, -1, 1, 2, -1, 1, 3, -1, 1, 4, -1, 1, 5, -1, 1, 6, -1, 1, 7, -1, 1, 8, -1, 1, 9, -1, 1, 10, -1, 1, 11, -1, 1, 12, -1, 1, 13, -1, 1, 14, -1, 1, 15, -1, 1, 16, -1, 1, 17, -1, 1, 18, -1, 1, 19, -1, 1, 20, -1, 1, 21, -1, 1, 22, -1, 1, 23, -1, 1, 24, -1, 1, 25, 0, 0]
+Command Response Recieved
+18 453498991 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 456647711 0 4 [-98, 95, -81, 22, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 458498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 461681452 0 4 [-89, -81, -5, 22, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 463498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 466729526 0 4 [-80, 53, 72, 23, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 468498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 471765297 0 4 [-15, -124, -108, 23, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 473498994 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 476805850 0 4 [48, -28, -32, 23, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 478498995 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 481841982 0 4 [109, 51, 45, 24, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 483498991 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 486876422 0 4 [106, -127, 121, 24, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 488498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 491910625 0 4 [66, -48, -59, 24, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 493498992 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 496957340 0 4 [-52, 86, 18, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 498498993 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 501990640 0 4 [126, -88, 94, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 503498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 507020624 0 4 [-44, -13, -86, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 508498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 512050624 0 4 [33, 66, -9, 25, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 513498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 517082625 0 4 [30, -110, 67, 26, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 518498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 522113199 0 4 [46, -32, -113, 26, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 523498990 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 527160624 0 4 [68, 101, -36, 26, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 528498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 532193084 0 4 [-113, -74, 40, 27, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 533499000 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 537238882 0 4 [18, 64, 117, 27, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 538498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 542270625 0 4 [-76, -116, -63, 27, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 543498989 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 547300624 0 4 [98, -39, 13, 28, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 548498992 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 552330624 0 4 [-103, 42, 90, 28, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 553498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 557374618 0 4 [94, -78, -90, 28, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 558498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 562405234 0 4 [16, -1, -14, 28, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 563498990 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 567438386 0 4 [98, 77, 63, 29, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 568498995 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 572467443 0 4 [10, -101, -117, 29, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 573498988 0 0 [0, 0, 0, 0]
+Beacon Recieved
+Stopping data capture
+23 574764761 0 4 [85, 116, -82, 29, 0, 0, 0, 0, 0]
+Command Response Recieved
+26 577497787 0 4 [88, -25, -41, 29, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 578498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 582527940 0 4 [10, 51, 36, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 583498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 587574046 0 4 [45, -65, 112, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 588498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 592604309 0 4 [62, 12, -67, 30, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 593498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 597636564 0 4 [46, 90, 9, 31, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 598498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 602684366 0 4 [121, -25, 85, 31, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 603498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 607730645 0 4 [-99, 116, -94, 31, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 608498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 612778731 0 4 [-52, 2, -17, 31, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 613498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 617813585 0 4 [-75, 84, 59, 32, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 618498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 622861528 0 4 [25, -35, -121, 32, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 623498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 627896875 0 4 [15, 45, -44, 32, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 628498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 632947565 0 4 [81, -72, 32, 33, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 633498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 637982241 0 4 [-28, 7, 109, 33, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 638498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 643032036 0 4 [80, -109, -71, 33, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 643498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 648080216 0 4 [51, 30, 6, 34, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 648498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 653113527 0 4 [85, 112, 82, 34, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 653498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 658146878 0 4 [94, -65, -98, 34, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 658498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 663194919 0 4 [-13, 74, -21, 34, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 663498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 668242525 0 4 [-126, -44, 55, 35, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 668498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 673276243 0 4 [30, 37, -124, 35, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 673498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 678324846 0 4 [72, -80, -48, 35, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 678498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 683358491 0 4 [-4, -2, 28, 36, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 683498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 688391727 0 4 [111, 74, 105, 36, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 688498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 693440522 0 4 [95, -40, -75, 36, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 693498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 698489419 0 4 [93, 102, 2, 37, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 698498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+18 703498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 703539384 0 4 [44, -13, 78, 37, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 708498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 708573879 0 4 [-94, 63, -101, 37, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 713498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 713609222 0 4 [-67, -115, -25, 37, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 718498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 718641908 0 4 [-58, -39, 51, 38, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 723498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 723691546 0 4 [-113, 103, -128, 38, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 728498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 728744104 0 4 [64, -10, -52, 38, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 733498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 733796548 0 4 [-86, -128, 25, 39, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 738498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 738834518 0 4 [12, -46, 101, 39, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 743498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 743885551 0 4 [-39, 93, -78, 39, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 748498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 748935974 0 4 [96, -22, -2, 39, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 753498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 753969482 0 4 [79, 61, 75, 40, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 758498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 759016411 0 4 [120, -59, -105, 40, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 763498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 764046836 0 4 [-67, 17, -28, 40, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 768498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 769077451 0 4 [-109, 95, 48, 41, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 773498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 774108091 0 4 [-22, -84, 124, 41, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 778498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 779158319 0 4 [19, 59, -55, 41, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 783498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 784205209 0 4 [-33, -60, 21, 42, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 788498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 789238622 0 4 [-28, 22, 98, 42, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 793498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 794286859 0 4 [83, -95, -82, 42, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 798498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 799335634 0 4 [-43, 46, -5, 42, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 803498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 804384465 0 4 [-70, -69, 71, 43, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 808498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 809418109 0 4 [91, 10, -108, 43, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 813498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 814465626 0 4 [-2, -108, -32, 43, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 818498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 819497072 0 4 [5, -31, 44, 44, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 823498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 824531067 0 4 [-84, 50, 121, 44, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 828498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 829563278 0 4 [-14, 126, -59, 44, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 833498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 834610978 0 4 [-72, 10, 18, 45, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 838498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 839658789 0 4 [64, -103, 94, 45, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 843498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 844690159 0 4 [-105, -26, -86, 45, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 848498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 849722430 0 4 [38, 51, -9, 45, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 853498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 854752445 0 4 [-97, 127, 67, 46, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 858498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 859798041 0 4 [8, 9, -112, 46, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 863498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 864829127 0 4 [46, 92, -36, 46, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 868498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 869876718 0 4 [98, -27, 40, 47, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 873498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 874907256 0 4 [31, 51, 117, 47, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 878498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 879937617 0 4 [84, -128, -63, 47, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 883498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 884967329 0 4 [-31, -52, 13, 48, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 888498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 889995716 0 4 [-59, 24, 90, 48, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 893498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 895026556 0 4 [-107, 102, -90, 48, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 898498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 900073063 0 4 [55, -13, -14, 48, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 903498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 905102766 0 4 [-19, 63, 63, 49, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 908498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 910135516 0 4 [75, -113, -117, 49, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 913498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 915182722 0 4 [-99, 24, -40, 49, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 918498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 920212698 0 4 [11, 101, 36, 50, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 923498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 925243576 0 4 [-26, -78, 112, 50, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 928498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 930274417 0 4 [71, 1, -67, 50, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 933498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 935306073 0 4 [-7, 76, 9, 51, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 938498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 940337925 0 4 [-14, -102, 85, 51, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 943498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 945385972 0 4 [115, 39, -94, 51, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 948498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 950434790 0 4 [-92, -76, -18, 51, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 953498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 955466752 0 4 [-58, 1, 59, 52, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 958498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 960499144 0 4 [-37, 77, -121, 52, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 963498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 965531812 0 4 [-77, -101, -45, 52, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 968498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 970563207 0 4 [-43, -25, 31, 53, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 973498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 975598065 0 4 [-20, 55, 108, 53, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 978498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 980631599 0 4 [88, -124, -72, 53, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 983498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 985678325 0 4 [-109, 12, 5, 54, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 988498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 990715338 0 4 [-40, 94, 81, 54, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 993498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 995767690 0 4 [65, -24, -99, 54, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 998498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1000802969 0 4 [17, 53, -22, 54, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1003498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1005839752 0 4 [104, -125, 54, 55, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1008498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1010873452 0 4 [-59, -50, -126, 55, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1013498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1015909702 0 4 [-109, 28, -49, 55, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1018498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1020944830 0 4 [-74, 104, 27, 56, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1023498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1025997662 0 4 [-107, -8, 103, 56, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1028498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1031048358 0 4 [-63, -127, -76, 56, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1033498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1036086048 0 4 [13, -46, 0, 57, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1038498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1041120732 0 4 [-97, 31, 77, 57, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1043498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1046161208 0 4 [12, 123, -103, 57, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1048498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1051199311 0 4 [-86, -52, -27, 57, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1053498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1056250562 0 4 [-90, 85, 50, 58, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1058498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1061303098 0 4 [84, -29, 126, 58, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1063498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1066338144 0 4 [-86, 47, -53, 58, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1068498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1071392232 0 4 [93, -68, 23, 59, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1073498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1076431343 0 4 [54, 13, 100, 59, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1078498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1081486206 0 4 [79, -106, -80, 59, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1083498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1086540523 0 4 [110, 36, -3, 59, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1088498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1091576533 0 4 [97, 114, 73, 60, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1093498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1096631776 0 4 [-51, 0, -106, 60, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1098498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1101669736 0 4 [-113, 78, -30, 60, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1103498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1106723071 0 4 [-104, -40, 46, 61, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1108498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1111756982 0 4 [123, 36, 123, 61, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1113498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1116791656 0 4 [-89, 115, -57, 61, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1118498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1121840273 0 4 [-36, -1, 19, 62, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1123498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1126889395 0 4 [-3, -119, 96, 62, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1128498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1131924094 0 4 [-69, -43, -84, 62, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1133498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1136956684 0 4 [72, 34, -7, 62, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1138498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1141987797 0 4 [-49, 109, 69, 63, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1143498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1147020548 0 4 [-77, -69, -111, 63, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1148498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1152067128 0 4 [8, 73, -34, 63, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1153498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1157113214 0 4 [-42, -48, 42, 64, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1158498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1162146929 0 4 [112, 30, 119, 64, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1163498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1167196911 0 4 [23, -84, -61, 64, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1168498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1172246833 0 4 [-60, 54, 16, 65, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1173498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1177291351 0 4 [-27, -79, 92, 65, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1178498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1182340361 0 4 [66, 64, -87, 65, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1183498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1187388718 0 4 [29, -52, -11, 65, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1188498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1192433952 0 4 [-63, 88, 66, 66, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1193498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1197463479 0 4 [-28, -91, -114, 66, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1198498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1202511942 0 4 [-34, 49, -37, 66, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1203498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1207558211 0 4 [55, -68, 39, 67, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1208498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1212595271 0 4 [-116, 26, 116, 67, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1213498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1217644815 0 4 [15, -88, -64, 67, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1218498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1222692221 0 4 [57, 51, 13, 68, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1223498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1227737504 0 4 [74, -65, 89, 68, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1228498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1232768527 0 4 [22, 11, -90, 68, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1233498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1237799825 0 4 [31, 87, -14, 68, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1238498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1242848970 0 4 [-121, -28, 62, 69, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1243498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1247896077 0 4 [79, 109, -117, 69, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1248498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1252927230 0 4 [48, -71, -41, 69, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1253498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1257959248 0 4 [-8, 4, 36, 70, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1258498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1262993644 0 4 [-55, 80, 112, 70, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1263498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1268026394 0 4 [-95, -98, -68, 70, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1268498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1273074350 0 4 [82, 42, 9, 71, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1273498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1278107350 0 4 [-105, 119, 85, 71, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1278498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1283155771 0 4 [18, -2, -95, 71, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1283498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1288190738 0 4 [111, 73, -18, 71, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1288498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1293226189 0 4 [5, -104, 58, 72, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1293498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1298259452 0 4 [14, -28, -122, 72, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1298498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1303293321 0 4 [-20, 47, -45, 72, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1303498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1308325107 0 4 [13, 124, 31, 73, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1308498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1313369856 0 4 [-100, -3, 107, 73, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1313498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+Starting data capture
+100 1315449875 0 4 [106, -119, -117, 73, 0, 0, 0, 0, 0, 10, 0, 1, -1, 1, 2, -1, 1, 3, -1, 1, 4, -1, 1, 5, -1, 1, 6, -1, 1, 7, -1, 1, 8, -1, 1, 9, -1, 1, 10, -1, 1, 11, -1, 1, 12, -1, 1, 13, -1, 1, 14, -1, 1, 15, -1, 1, 16, -1, 1, 17, -1, 1, 18, -1, 1, 19, -1, 1, 20, -1, 1, 21, -1, 1, 22, -1, 1, 23, -1, 1, 24, -1, 1, 25, 0, 0]
+Command Response Recieved
+26 1318417697 0 4 [-124, -120, -72, 73, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1318498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1323467075 0 4 [-114, 23, 5, 74, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1323498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+18 1328498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1328514625 0 4 [-28, -99, 81, 74, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1333498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1333557485 0 4 [-82, 19, -98, 74, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1338498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1338605518 0 4 [4, -97, -22, 74, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1343498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1343637986 0 4 [-51, -16, 54, 75, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1348498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1348686093 0 4 [-60, 124, -125, 75, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1353498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1353734625 0 4 [21, 6, -48, 75, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1358498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1358766456 0 4 [0, 85, 28, 76, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1363498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1363815663 0 4 [76, -35, 104, 76, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1368498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1368865375 0 4 [-95, 104, -75, 76, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1373498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1373899738 0 4 [-51, -75, 1, 77, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1378498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1378951336 0 4 [112, 64, 78, 77, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1383498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1384002227 0 4 [122, -54, -102, 77, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1388498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1389034625 0 4 [-34, 24, -25, 77, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1393498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1394065543 0 4 [66, 102, 51, 78, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1398498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1399112628 0 4 [-127, -15, 127, 78, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1403498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1404158582 0 4 [-10, 121, -52, 78, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1408498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1409192912 0 4 [-74, -58, 24, 79, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1413498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1414227037 0 4 [85, 24, 101, 79, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1418498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1419275464 0 4 [-14, -99, -79, 79, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1423498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1424308528 0 4 [49, -22, -3, 79, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1428498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1429342495 0 4 [-71, 55, 74, 80, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1433498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1434394615 0 4 [103, -58, -106, 80, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1438498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1439440811 0 4 [-63, 75, -29, 80, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1443498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1444474625 0 4 [83, -102, 47, 81, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1448498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1449514625 0 4 [-88, 0, 124, 81, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1453498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1454550128 0 4 [40, 93, -56, 81, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1458498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1459598891 0 4 [-56, -22, 20, 82, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1463498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1464647853 0 4 [-101, 122, 97, 82, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1468498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1469694625 0 4 [16, 1, -82, 82, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1473498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1474726983 0 4 [-74, 81, -6, 82, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1478498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1479777943 0 4 [18, -37, 70, 83, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1483498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1484812101 0 4 [-52, 38, -109, 83, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1488498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1489860816 0 4 [-31, -78, -33, 83, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1493498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1494894625 0 4 [106, -2, 43, 84, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1498498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1499927724 0 4 [-104, 77, 120, 84, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+Stopping data capture
+23 1502375556 0 4 [103, 105, -99, 84, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1503498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1504976575 0 4 [-16, -42, -60, 84, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1508498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1510026709 0 4 [-92, 96, 17, 85, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1513498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1515061635 0 4 [59, -79, 93, 85, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1518498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1520112375 0 4 [-116, 58, -86, 85, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1523498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1525146435 0 4 [-43, -121, -10, 85, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1528498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1530180599 0 4 [-100, -43, 66, 86, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved
+18 1533498984 0 0 [0, 0, 0, 0]
+Beacon Recieved
+26 1535228775 0 4 [17, 92, -113, 86, 0, 0, 0, 0, 0, 0, 0, 0]
+Command Response Recieved

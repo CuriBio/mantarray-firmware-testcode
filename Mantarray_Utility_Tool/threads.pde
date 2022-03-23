@@ -23,13 +23,18 @@ void readPackets(){
       {
         //This is no good, it means there is either noise on the line or it dropped a packet because a byte that doesn't belong to a magic word has been detected
         //Either way, it means trouble.  Keep track of when this happens.
+        print(aggregate.subList(0,scanner+1));
         aggregate.subList(0,scanner+1).clear();
         magicWordContent = 0;
         scanner = 0;
         println("Dropped bytes, there may be an issue");
       }
       if (magicWordContent==8){ //If an entire magic word has been detected, parse it
-        Parse(aggregate, scanner);
+        try{
+          Parse(aggregate, scanner);
+        } catch (IOException ie) {
+            ie.printStackTrace();
+        }
         scanner = 0;
         magicWordContent = 0;
       } //if (magicWordContent==8)
@@ -37,11 +42,7 @@ void readPackets(){
   } //while(true)
 }
 
-void test(){
-  
-}
-
-void Parse (List <Byte> thisAggregate, int thisScanner)
+void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
 {
   int thisPacketLength = byte2uint(thisAggregate.get(thisScanner));
   //print( " ", byte2long(aggregate.get(index)));
@@ -51,7 +52,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   thisScanner++;
   while (thisAggregate.size() < thisPacketLength + PRE_PACKET_LENGTH){ //Wait around until the rest of the bytes show up
     thisAggregate = performReading(thisAggregate);
-  }        
+  }    
   
   Packet newPacket = new Packet();
   newPacket.timeStamp = 0;
@@ -77,12 +78,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
   }
   packetList.add(newPacket);
 
-  if (newPacket.packetType==1)
-  {
+  if (newPacket.packetType==1){
     PrintDataToFile(newPacket.data);
-  }
-  else
-  {
+  } else {
     logLog.print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     print(String.format("%d %d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.moduleID, newPacket.packetType));
     logLog.print(newPacket.data);
@@ -99,9 +97,17 @@ void Parse (List <Byte> thisAggregate, int thisScanner)
       //logDisplay.append("Command Response Recieved\n");
       logLog.println("Command Response Recieved");
       break;
+    case 90:
+      byte[] arr = new byte[newPacket.data.size()];
+      for (int i = 0; i < newPacket.data.size(); i++){
+        arr[i] = newPacket.data.get(i);
+      }
+      String MantarrayID = new String(arr, "UTF-8");
+      logLog.println("Barcode " + MantarrayID + "Found");
+      thisHomePageControllers.logDisplay.append("Barcode " + MantarrayID + "Found\n");
+      break;
     }
   }
-  
   thisAggregate.subList(0,thisScanner).clear();
 }
 
@@ -113,13 +119,17 @@ void PrintDataToFile(List<Byte> thisPacketData){
                             (byte2uint(thisPacketData.get(packetScanner + 1))<<8) + 
                             (byte2uint(thisPacketData.get(packetScanner + 2))<<16) + 
                             (byte2uint(thisPacketData.get(packetScanner + 3))<<24) + 
-                            (byte2uint(thisPacketData.get(packetScanner + 4))<<32);
-    packetScanner+=5;
+                            (byte2uint(thisPacketData.get(packetScanner + 4))<<32) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 5))<<40) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 6))<<48) + 
+                            (byte2uint(thisPacketData.get(packetScanner + 7))<<56);
+    packetScanner+=8;
     List<Long> dataList = new ArrayList<Long>();
     for (int wellNum = 0; wellNum < NUM_WELLS; wellNum++){
       for (int sensorNum = 0; sensorNum < NUM_SENSORS; sensorNum++){
         if (magnetometerConfigurationArray.get(wellNum).get(sensorNum).contains(1))
         {
+          //println((byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           dataList.add(initialTimestamp - (byte2uint(thisPacketData.get(packetScanner)) + (byte2uint(thisPacketData.get(packetScanner + 1))<<8)));
           packetScanner+=2;
           for (int axisNum = 0; axisNum < NUM_AXES; axisNum++){
@@ -155,17 +165,17 @@ List <Byte> performReading(List <Byte> aggregate){
   return aggregate;
 }
 
-void LoadFirmware(File firmwareFile) {
+void LoadChannelFirmware(File firmwareFile) {
   try {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>//
-    int numFullPackets = (int)fileSize / 65532;
-    int remainderBytes = (int)fileSize % 65532;
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
+    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
+    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
     
     for (int i = 0; i < numFullPackets; i++){
-      byte[] buffer = new byte[65532];
+      byte[] buffer = new byte[MAX_DATA_SIZE];
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
@@ -175,27 +185,84 @@ void LoadFirmware(File firmwareFile) {
     firmwareBytes.add(buffer);
     
     fileReader.close();
-    logDisplay.append("Firmware loaded successfully\n");
-    logLog.println("Firmware loaded successfully");
-    
-    logDisplay.append("Beginning firmware update\n");
-    logLog.println("Beginning firmware update");    
+    thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
+    logLog.println("Channel firmware file opened successfully");
+  
     Packet packetBegin = new Packet();
-    packetBegin.ChannelFirmwareUpdateBegin((int)fileSize);
+    packetBegin.FirmwareUpdateBegin((int)fileSize, 1);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
+    thisHomePageControllers.logDisplay.append("Beginning channel firmware update\n");
+    logLog.println("Beginning channel firmware update");  
     
     for (int i = 0; i < firmwareBytes.size(); i++){
       Packet data = new Packet();
-      data.ChannelFirmwareUpdate(firmwareBytes.get(i), i);
+      data.FirmwareUpdate(firmwareBytes.get(i), i);
       byte[] thisPacketConverted = data.toByte();
       serialPort.write(thisPacketConverted);
+      thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      logLog.println(String.format("Firmware packet %d sent", i+1));    
+      delay(2000);
     }
     
     Packet packetEnd = new Packet();
-    packetEnd.ChannelFirmwareUpdateEnd(123123123);
+    packetEnd.FirmwareUpdateEnd(123123123);
     byte[] packetEndConverted = packetEnd.toByte();
     serialPort.write(packetEndConverted);
+    thisHomePageControllers.logDisplay.append("New channel firmware finished sending to Mantarray\n");
+    logLog.println("New channel firmware finished sending to Mantarray");  
+    
+  } catch (Exception e){
+    println("File Not Found");
+  }
+}
+
+void LoadMainFirmware(File firmwareFile) {
+  try {
+    InputStream fileReader = new FileInputStream(firmwareFile);
+    List<byte[]> firmwareBytes = new ArrayList<byte[]>();
+    
+    long fileSize = firmwareFile.length(); //<>// //<>//
+    int numFullPackets = (int)fileSize / MAX_DATA_SIZE;
+    int remainderBytes = (int)fileSize % MAX_DATA_SIZE;
+    
+    for (int i = 0; i < numFullPackets; i++){
+      byte[] buffer = new byte[MAX_DATA_SIZE];
+      fileReader.read(buffer);
+      firmwareBytes.add(buffer);
+    }
+    
+    byte[] buffer = new byte[remainderBytes];
+    fileReader.read(buffer);
+    firmwareBytes.add(buffer);
+    
+    fileReader.close();
+    thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
+    logLog.println("Main firmware file opened successfully");
+  
+    Packet packetBegin = new Packet();
+    packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
+    byte[] packetBeginConverted = packetBegin.toByte();
+    serialPort.write(packetBeginConverted);
+    thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
+    logLog.println("Beginning main firmware update");  
+    
+    for (int i = 0; i < firmwareBytes.size(); i++){
+      Packet data = new Packet();
+      data.FirmwareUpdate(firmwareBytes.get(i), i);
+      byte[] thisPacketConverted = data.toByte();
+      serialPort.write(thisPacketConverted);
+      thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
+      logLog.println(String.format("Firmware packet %d sent", i+1));    
+      delay(250);
+    }
+    
+    Packet packetEnd = new Packet();
+    packetEnd.FirmwareUpdateEnd(123123123);
+    byte[] packetEndConverted = packetEnd.toByte();
+    serialPort.write(packetEndConverted);
+    thisHomePageControllers.logDisplay.append("New main firmware finished sending to Mantarray\n");
+    logLog.println("New main firmware finished sending to Mantarray");  
     
   } catch (Exception e){
     println("File Not Found");

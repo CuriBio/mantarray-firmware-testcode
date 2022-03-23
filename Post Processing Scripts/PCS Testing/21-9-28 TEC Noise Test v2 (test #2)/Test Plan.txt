@@ -1,0 +1,11 @@
+The data files are as follows:
+
+2021-9-27_18-6-10_data: ~5 minutes of warm up recording, with TEC module completely unplugged
+
+2021-9-27_18-16-27_data: ~5 minutes of steady state recording, with TEC module plugged in and disabled in the control software
+
+2021-9-27_18-23-14_data:
+~2 mins of steady state with TEC module plugged in and disabled in the control software
+~2 mins at a constant current of 2 A, stopping at a heat sink temperature of 52.5 C
+~10 mins of cool down time with the TEC module plugged in and disabled in the control software
+~2 mins of cool down time with the TEC module completely unplugged
