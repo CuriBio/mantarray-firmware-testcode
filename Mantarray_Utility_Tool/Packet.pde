@@ -153,7 +153,7 @@ class Packet{
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 24;
-    this.packetLength = 39;
+    this.packetLength = 38;
     this.CRC = 123123123;
     this.data = timeAmplitudePairs;
     this.data.add(0, stimulationMode);
