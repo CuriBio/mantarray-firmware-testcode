@@ -77,8 +77,9 @@ class Packet{
     this.packetLength = 15;
     this.CRC = 123123123;
     this.data = new ArrayList<Byte>(6);
-    this.data.add(0, (byte)10);
-    this.data.add(0, (byte)0);
+    int samplingRate = (Integer.valueOf(thisHomePageControllers.setSensorRateField.getText()))*1000;
+    this.data.add(0, uint2byte((samplingRate>>8) & 0x000000ff));
+    this.data.add(0, uint2byte(samplingRate & 0x000000ff));
     return this.toByte();
   }
   
@@ -135,7 +136,7 @@ class Packet{
     this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
   }
-  
+   //<>//
   byte[] sensorConfig(JSONObject settingsJSON){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 102;
