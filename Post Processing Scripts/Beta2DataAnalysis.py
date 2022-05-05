@@ -27,6 +27,14 @@ wellMap = ['A1', 'A2', 'A3', 'A4', 'A5', 'A6',
            'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 
            'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 
            'D1', 'D2', 'D3', 'D4', 'D5', 'D6']
+# sensorReMap = [0, 4, 8, 12, 16, 20,
+#                1, 5, 9, 13, 17, 21,
+#                2, 6, 10, 14, 18, 22,
+#                3, 7, 11, 15, 19, 23]
+sensorReMap = [3, 7, 11, 15, 19, 23,
+               2, 6, 10, 14, 18, 22,
+               1, 5, 9, 13, 17, 21,
+               0, 4, 8, 12, 16, 20]
 memsicCenterOffset = 2**15
 temperatureOffset = 75
 memsicMSB = 2**16
@@ -43,23 +51,24 @@ activeSensors = np.any(config, axis = 2)
 spacerCounter = 1
 timestampSpacer = [0]
 dataSpacer = []
-temperatureSpacer = []
+# temperatureSpacer = [0]
 for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
     if status:
         numActiveAxes = np.count_nonzero(config[wellNum,sensorNum])
         for numAxis in range(1, numActiveAxes + 1):
             dataSpacer.append(timestampSpacer[spacerCounter - 1] + numAxis)
-        temperatureSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
-        timestampSpacer.append(temperatureSpacer[spacerCounter - 1] + 1)
+        # temperatureSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
+        # timestampSpacer.append(temperatureSpacer[spacerCounter - 1] + 1)
+        timestampSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
         spacerCounter+=1
         
 timestamps = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(timestampSpacer[:-1])) / 1000000
 data = (np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(dataSpacer)) - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
-temperature = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(temperatureSpacer)) * temperatureFullScale / temperatureMSB - temperatureOffset
+# temperature = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(temperatureSpacer)) * temperatureFullScale / temperatureMSB - temperatureOffset
 numSamples = timestamps.shape[0] - 2
 fullData = np.zeros((numWells, numSensors, numAxes, numSamples))
 fullTimestamps = np.zeros((numWells, numSensors, numSamples))
-fullTemperature = np.zeros((numWells, numSensors, numSamples))
+# fullTemperature = np.zeros((numWells, numSensors, numSamples))
 
 dataCounter = 0
 for (wellNum, sensorNum, axisNum), status in np.ndenumerate(config):
@@ -73,11 +82,20 @@ for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
         fullTimestamps[wellNum, sensorNum] = timestamps[2:, timestampCounter]
         timestampCounter+=1
 		
-temperatureCounter = 0
-for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
-    if status:
-        fullTemperature[wellNum, sensorNum] = temperature[2:, temperatureCounter]
-        temperatureCounter+=1
+# temperatureCounter = 0
+# for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
+#     if status:
+#         fullTemperature[wellNum, sensorNum] = temperature[2:, temperatureCounter]
+#         temperatureCounter+=1
+
+#%% Rearrange the channel numbers to correspond to the new well mapping
+newFullData = np.zeros((numWells, numSensors, numAxes, numSamples))
+newTimestampArray = np.zeros((numWells, numSensors, numSamples))
+for wellNum in range(numWells):
+    newFullData[wellNum] = fullData[sensorReMap[wellNum]]
+    newTimestampArray[wellNum] = fullTimestamps[sensorReMap[wellNum]]
+fullData = newFullData
+fullTimestamps = newTimestampArray
         
 #%% Check if any data is coming from broken sensors, or if there are bad samples in the data capture
 brokenArray = np.any(np.any((fullData==.7999755859375001), axis = 3), axis = 2)
@@ -142,7 +160,7 @@ for wellNum in range(numWells):
             for axisNum, status in enumerate(axesStatuses):
                 if status:
                     axs[row, col].plot(fullTimestamps[wellNum, sensorNum, 100:-1], fullData[wellNum, sensorNum, axisNum, 100:-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
-            rightAxis.plot(fullTimestamps[wellNum, sensorNum, :-1], fullTemperature[wellNum, sensorNum, :-1], label = f'Sensor {sensorNum + 1} Temperature', linewidth=7.0, color='red')
+            # rightAxis.plot(fullTimestamps[wellNum, sensorNum, :-1], fullTemperature[wellNum, sensorNum, :-1], label = f'Sensor {sensorNum + 1} Temperature', linewidth=7.0, color='red')
     
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
