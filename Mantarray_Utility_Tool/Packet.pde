@@ -136,6 +136,15 @@ class Packet{
     //this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
   }
+  
+  byte[] StartBarcodeTune(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 91;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    return this.toByte();
+  }
    //<>// //<>//
   byte[] sensorConfig(JSONObject settingsJSON){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;

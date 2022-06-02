@@ -26,6 +26,7 @@ public class HomePageControllers implements ControlListener {
   Textfield I2CSetAddressOld;
   Textfield I2CSetAddressNew;
   Button I2CSetAddress;
+  Button StartBarcodeTune;
   
   Textfield setDeviceSerialNumberField;
   Button setDeviceSerialNumber;
@@ -237,7 +238,13 @@ public class HomePageControllers implements ControlListener {
       .moveTo(homePage);
     I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
+    StartBarcodeTune = cp5.addButton("StartBarcodeTune")
+      .setPosition(370, 135)
+      .setSize(400, 25)
+      .moveTo(homePage);
+    StartBarcodeTune.getCaptionLabel().setText("Start Barcode Tuning Sequence").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    /*I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
       .setPosition(370, 135)
       .setSize(50, 25)
       .setFont(createFont("arial", 20))
@@ -265,7 +272,7 @@ public class HomePageControllers implements ControlListener {
       .setPosition(570, 135)
       .setSize(200, 25)
       .moveTo(homePage);
-    I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);*/
     
     magnetometerScheduleDelay = cp5.addTextfield("magnetometerScheduleDelay")
       .setPosition(370, 200)
@@ -488,6 +495,13 @@ public class HomePageControllers implements ControlListener {
         serialPort.write(I2CNewAddressPacketConverted);
         logDisplay.append("New I2C address set\n");
         logLog.println("New I2C address set");
+      }
+      if (controllerName.equals("Start Barcode Tune")){
+        Packet StartBarcodeTunePacket = new Packet();
+        byte[] StartBarcodeTunePacketConverted = StartBarcodeTunePacket.StartBarcodeTune();
+        serialPort.write(StartBarcodeTunePacketConverted);
+        logDisplay.append("Barcode tuning sequence begun\n");
+        logLog.println("Barcode tuning sequence begun");
       }
       if (controllerName.equals("startMagnetometerSchedule")){
         if (magnetometerScheduleComplete == false){
