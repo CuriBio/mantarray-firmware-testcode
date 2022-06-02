@@ -94,6 +94,14 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       //logDisplay.append("Command Response Recieved\n");
       logLog.println("Command Response Recieved");
       break;
+    case 73:
+      //logDisplay.append("Command Response Recieved\n");
+      thisHomePageControllers.logDisplay.append("Channel Microcontroller Firmware Update Complete\n");
+      break;
+    case 74:
+      //logDisplay.append("Command Response Recieved\n");
+      thisHomePageControllers.logDisplay.append("Main Microcontroller Firmware Update Complete\n");
+      break;
     case 90:
       byte[] arr = new byte[newPacket.data.size()];
       for (int i = 0; i < newPacket.data.size(); i++){
