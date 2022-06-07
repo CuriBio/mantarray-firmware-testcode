@@ -496,7 +496,7 @@ public class HomePageControllers implements ControlListener {
         logDisplay.append("New I2C address set\n");
         logLog.println("New I2C address set");
       }
-      if (controllerName.equals("Start Barcode Tune")){
+      if (controllerName.equals("StartBarcodeTune")){
         Packet StartBarcodeTunePacket = new Packet();
         byte[] StartBarcodeTunePacketConverted = StartBarcodeTunePacket.StartBarcodeTune();
         serialPort.write(StartBarcodeTunePacketConverted);

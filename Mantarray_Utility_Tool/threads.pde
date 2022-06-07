@@ -111,10 +111,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       logLog.println("Barcode " + MantarrayID + "Found");
       thisHomePageControllers.logDisplay.append("Barcode " + MantarrayID + "Found\n");
       break;
-    }
     case 91:
-      boolean status = newPacket.data.get(i);
-      if (status){
+      byte status = newPacket.data.get(0);
+      if (status == 1){
         logLog.println("Tuning Success");
         thisHomePageControllers.logDisplay.append("Tuning Success\n");
       }
