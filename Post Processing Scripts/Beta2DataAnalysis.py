@@ -146,6 +146,30 @@ cutoff = 15  # desired cutoff frequency of the filter, Hz
 b, a = butter_lowpass(cutoff, fs, order)
 fullData = butter_lowpass_filter(fullData, cutoff, fs, order)
 
+#%%
+timestampVerificationArray = np.zeros((24 ,8))
+for wellNum in range(numWells):
+    for sensorNum in range(numSensors):
+        thisData = fullTimestamps[wellNum, sensorNum].astype('uint64')
+        for byteNum in range(2):
+            byteData = np.right_shift(thisData, (8*byteNum)).astype('uint8')
+            separatedByteData = np.unpackbits(byteData).reshape((thisData.shape[0], 8))
+            for bitNum in range(8):
+                if np.argwhere(separatedByteData[:,bitNum] == 1).shape[0] != 0:
+                    timestampVerificationArray[wellNum, bitNum] = 1
+                    
+dataVerificationArray = np.zeros((24, 3, 8))
+for wellNum in range(numWells):
+    for sensorNum in range(numSensors):
+        for axisNum in range(numAxes):
+            thisData = fullData[wellNum, sensorNum, axisNum].astype('uint64')
+            for byteNum in range(2):
+                byteData = np.right_shift(thisData, (8*byteNum)).astype('uint8')
+                separatedByteData = np.unpackbits(byteData).reshape((thisData.shape[0], 8))
+                for bitNum in range(8):
+                    if np.argwhere(separatedByteData[:,bitNum] == 1).shape[0] != 0:
+                        dataVerificationArray[wellNum, sensorNum, bitNum] = 1
+                    
 #%% Plot the subsequent transient after the broken and abberant sample compensations
 fig, axs = plt.subplots(4, 6, figsize=(100, 100))
 referenceAxis = axs[0, 0].twinx()
