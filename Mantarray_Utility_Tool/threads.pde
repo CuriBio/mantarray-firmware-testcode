@@ -5,10 +5,27 @@ void readPackets(){
   int magicWordContent = 0;
   int scanner = 0;
   serialPort.readBytes();
+  int last = millis();
   while(runReadThread){
     while (aggregate.size() < BASE_PACKET_LENGTH){ //There is a slight delay built into this loop so that it can operate in a psuedo-sleep mode so this thread will not take up resources when not needed
-      aggregate = performReading(aggregate);
+      try{
+        aggregate = performReading(aggregate);
+      } catch (Exception e) {
+        int now = millis();
+        print(e); //<>//
+        println(now - last);
+      }
     }
+    
+    int now = millis();
+    if (now - last > 15){
+      //println(now - last + ", ");
+    }
+    /*if (now - last == 0){
+      int testpoint = 0;
+      int test2 = testpoint;
+    }*/
+    last = now;
     
     scanner = 0;
     magicWordContent = 0;
@@ -159,8 +176,12 @@ void PrintDataToFile(List<Byte> thisPacketData){
         }
       }
     }
-    dataLog.print(Arrays.toString(dataList.toArray()).replace("[", "").replace("]", ""));
-    dataLog.println();
+    try{
+      dataLog.print(Arrays.toString(dataList.toArray()).replace("[", "").replace("]", ""));
+      dataLog.println();
+    } catch (Exception e) {
+      
+    }
     //print(thisPacketData);
     //println();
   }
