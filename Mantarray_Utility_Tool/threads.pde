@@ -282,8 +282,9 @@ void LoadMainFirmware(File firmwareFile) {
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
-    thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
-    logLog.println("Beginning main firmware update");  
+    thisHomePageControllers.logDisplay.append("Begining main firmware update\n");
+    logLog.println("Begining main firmware update"); 
+    delay(5000);
     
     for (int i = 0; i < firmwareBytes.size(); i++){
       Packet data = new Packet();
@@ -292,7 +293,7 @@ void LoadMainFirmware(File firmwareFile) {
       serialPort.write(thisPacketConverted);
       thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
       logLog.println(String.format("Firmware packet %d sent", i+1));    
-      delay(250);
+      delay(1000);
     }
     
     Packet packetEnd = new Packet();
