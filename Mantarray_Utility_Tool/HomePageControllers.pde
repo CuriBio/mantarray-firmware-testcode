@@ -17,7 +17,7 @@ public class HomePageControllers implements ControlListener {
   Button setStimConfigButton;
   Textfield setSensorRateField;
   Button setSensorRateButton;
-  Button setSensorConfigButton;
+  Button setInitialPositions;
   Button saveAndQuitButton;
   Textarea logDisplay;
   Textfield I2CAddressField;
@@ -179,11 +179,11 @@ public class HomePageControllers implements ControlListener {
       .moveTo(homePage);
     setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    /*setSensorConfigButton = cp5.addButton("setSensorConfigButton")
+    setInitialPositions = cp5.addButton("setInitialPositions")
       .setPosition(75, 270)
       .setSize(250, 50)
       .moveTo(homePage);
-    setSensorConfigButton.getCaptionLabel().setText("Set Sensor Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);*/
+    setInitialPositions.getCaptionLabel().setText("Set Pulse3D Initial Positions").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     setSensorRateField = cp5.addTextfield("setSensorRateField")
       .setPosition(75, 222)
@@ -456,8 +456,8 @@ public class HomePageControllers implements ControlListener {
         thisMagPageControllers.magnetometerSelector.show();
         homePage.hide();
       }*/
-      if (controllerName.equals("setSensorConfigButton")){
-        thisSensorPageControllers.magnetometerRegisterConfigurator.show();
+      if (controllerName.equals("setInitialPositions")){
+        thisSensorPageControllers.initialPositionsConfigurator.show();
         homePage.hide();
       }
       if (controllerName.equals("setStimConfigButton")){

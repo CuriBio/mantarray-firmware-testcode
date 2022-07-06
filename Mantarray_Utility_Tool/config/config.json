@@ -1,13 +1,17 @@
 {
+  "Initial_Remnance": "1200",
   "defaultPulseCurrent": {
     "pulseMidDelay": 0,
-    "pulseLowAmp": -100,
-    "pulseFreq": 1,
+    "pulseLowAmp": -10,
+    "pulseFreq": 5,
     "pulseHighDelay": 25,
-    "pulseHighAmp": 100,
+    "pulseHighAmp": 10,
     "pulseLowDelay": 25
   },
+  "Initial_Y": "2",
+  "Initial_Z": "-5",
   "defaultConstantVoltage": false,
+  "Initial_X": "0",
   "Internal_Control_2": "00000000",
   "Internal_Control_3": "00000000",
   "defaultConstantCurrent": true,

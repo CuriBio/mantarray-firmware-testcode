@@ -5,27 +5,14 @@ void readPackets(){
   int magicWordContent = 0;
   int scanner = 0;
   serialPort.readBytes();
-  int last = millis();
   while(runReadThread){
     while (aggregate.size() < BASE_PACKET_LENGTH){ //There is a slight delay built into this loop so that it can operate in a psuedo-sleep mode so this thread will not take up resources when not needed
       try{
         aggregate = performReading(aggregate);
       } catch (Exception e) {
-        int now = millis();
         print(e); //<>//
-        println(now - last);
       }
-    }
-    
-    int now = millis();
-    if (now - last > 15){
-      //println(now - last + ", ");
-    }
-    /*if (now - last == 0){
-      int testpoint = 0;
-      int test2 = testpoint;
-    }*/
-    last = now;
+    } //<>//
     
     scanner = 0;
     magicWordContent = 0;
@@ -221,7 +208,7 @@ void LoadChannelFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-    
+     //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
     logLog.println("Channel firmware file opened successfully");
@@ -273,17 +260,22 @@ void LoadMainFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-    
+     //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
-    logLog.println("Main firmware file opened successfully");
+    logLog.println("Main firmware file opened successfully"); //<>//
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
+<<<<<<< HEAD
     thisHomePageControllers.logDisplay.append("Begining main firmware update\n");
     logLog.println("Begining main firmware update"); 
+=======
+    thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
+    logLog.println("Beginning main firmware update");
+>>>>>>> ad65caa... Added the ability to set the initial positions in the mantarray's metadata
     delay(5000);
     
     for (int i = 0; i < firmwareBytes.size(); i++){

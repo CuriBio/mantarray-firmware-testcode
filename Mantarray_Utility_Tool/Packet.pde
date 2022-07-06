@@ -118,21 +118,9 @@ class Packet{
   byte[] I2CCommand(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 100;
-    this.packetLength = 15; //<>//
-    this.CRC = 123123123; //<>// //<>//
+    this.packetLength = 15; //<>// //<>//
+    this.CRC = 123123123; //<>// //<>// //<>//
     this.data = new ArrayList<Byte>(24);
-    /*for (int i = 0; i < 24; i++){
-      if (i == 0){
-        this.data.add(i, (byte)1);
-      } else {
-        this.data.add(i, (byte)0);
-      }
-      if (i % 3 < 3){
-        this.data.add(i, (byte)1);
-      } else {
-        this.data.add(i, (byte)0);
-      }
-    }*/
     this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
     this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));
     return this.toByte();
@@ -157,21 +145,8 @@ class Packet{
     this.data = new ArrayList<Byte>();
     return this.toByte();
   }
-   //<>// //<>//
-  byte[] sensorConfig(JSONObject settingsJSON){ //<>//
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.packetType = 102;
-    this.packetLength = 17;
-    this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    this.data.add(0, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_0"), 2)));
-    this.data.add(1, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_1"), 2)));
-    this.data.add(2, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_2"), 2)));
-    this.data.add(3, uint2byte(Integer.valueOf(settingsJSON.getString("Internal_Control_3"), 2)));
-    return this.toByte();
-  }
-  
-  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){
+   //<>//
+  byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 24;
     this.packetLength = 38;
@@ -212,6 +187,20 @@ class Packet{
     byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
     List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
     this.data.addAll(thisByteArrayList);
+    return this.toByte();
+  }
+  
+  byte[] initialPositionConfig(JSONObject settingsJSON){ //<>//
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 63;
+    this.packetLength = 18;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>();
+    this.data.add(0, uint2byte(settingsJSON.getInt("Initial_X")));
+    this.data.add(1, uint2byte(settingsJSON.getInt("Initial_Y")));
+    this.data.add(2, uint2byte(settingsJSON.getInt("Initial_Z")));
+    this.data.add(3, uint2byte(settingsJSON.getInt("Initial_Remnance")));
+    this.data.add(4, uint2byte(settingsJSON.getInt("Initial_Remnance")>>8));
     return this.toByte();
   }
   
