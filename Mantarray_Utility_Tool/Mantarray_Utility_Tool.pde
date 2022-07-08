@@ -35,13 +35,13 @@ int MIN_PACKET_LENGTH_MINUS_MAGIC_WORD = 15;
 int MIN_TOTAL_PACKET_LENGTH = 23;
 int MAX_FIRMWARE_DATA_IN_SINGLE_PACKET = 19995;
 int MAX_PACKET_SIZE = 20019;
-int NUM_WELLS = 24;
+int NUM_WELLS = 26;
 int NUM_SENSORS = 3;
 int NUM_AXES = 3;
 String[] wellNames = {"A1", "A2", "A3", "A4", "A5", "A6", 
   "B1", "B2", "B3", "B4", "B5", "B6", 
   "C1", "C2", "C3", "C4", "C5", "C6", 
-  "D1", "D2", "D3", "D4", "D5", "D6"};
+  "D1", "D2", "D3", "D4", "D5", "D6", "Ref1", "Ref2"};
 String[] sensorNames = {"S1", "S2", "S3"};
 String[] axesNames = {"X", "Y", "Z"};
 

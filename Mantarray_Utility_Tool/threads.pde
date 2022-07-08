@@ -10,9 +10,9 @@ void readPackets(){
       try{
         aggregate = performReading(aggregate);
       } catch (Exception e) {
-        print(e); //<>//
+        print(e);  //<>//
       }
-    } //<>//
+    }  //<>//
     
     scanner = 0;
     magicWordContent = 0;
@@ -195,7 +195,7 @@ void LoadChannelFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>//
+    long fileSize = firmwareFile.length();      //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     
@@ -208,7 +208,7 @@ void LoadChannelFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-     //<>//
+      //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
     logLog.println("Channel firmware file opened successfully");
@@ -247,10 +247,10 @@ void LoadMainFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>//
+    long fileSize = firmwareFile.length();    //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
-     //<>//
+      //<>//
     for (int i = 0; i < numFullPackets; i++){
       byte[] buffer = new byte[MAX_FIRMWARE_DATA_IN_SINGLE_PACKET];
       fileReader.read(buffer);
@@ -260,22 +260,17 @@ void LoadMainFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-     //<>//
+      //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
-    logLog.println("Main firmware file opened successfully"); //<>//
+    logLog.println("Main firmware file opened successfully");  //<>//
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
-<<<<<<< HEAD
     thisHomePageControllers.logDisplay.append("Begining main firmware update\n");
     logLog.println("Begining main firmware update"); 
-=======
-    thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
-    logLog.println("Beginning main firmware update");
->>>>>>> ad65caa... Added the ability to set the initial positions in the mantarray's metadata
     delay(5000);
     
     for (int i = 0; i < firmwareBytes.size(); i++){
@@ -285,7 +280,7 @@ void LoadMainFirmware(File firmwareFile) {
       serialPort.write(thisPacketConverted);
       thisHomePageControllers.logDisplay.append(String.format("Firmware packet %d sent\n", i+1));
       logLog.println(String.format("Firmware packet %d sent", i+1));    
-      delay(1000);
+      delay(200);
     }
     
     Packet packetEnd = new Packet();
