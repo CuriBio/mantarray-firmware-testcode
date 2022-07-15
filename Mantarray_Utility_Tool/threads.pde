@@ -269,13 +269,8 @@ void LoadMainFirmware(File firmwareFile) {
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
     byte[] packetBeginConverted = packetBegin.toByte();
     serialPort.write(packetBeginConverted);
-<<<<<<< HEAD
-    thisHomePageControllers.logDisplay.append("Begining main firmware update\n");
-    logLog.println("Begining main firmware update"); 
-=======
     thisHomePageControllers.logDisplay.append("Beginning main firmware update\n");
     logLog.println("Beginning main firmware update");
->>>>>>> ad65caa... Added the ability to set the initial positions in the mantarray's metadata
     delay(5000);
     
     for (int i = 0; i < firmwareBytes.size(); i++){
