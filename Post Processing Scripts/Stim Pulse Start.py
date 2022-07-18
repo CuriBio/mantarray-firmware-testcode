@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename, askdirectory
+from scipy.signal import find_peaks, peak_prominences
 import json
 
 axisMap = ['X', 'Y', 'Z']
@@ -153,9 +154,64 @@ for wellNum in range(numWells):
     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')
 
+#%% Peak finding algorithms
+# Select only sensor 1 axis Z
+peakedData = fullData[:,0,2,:]
+peakedTimestamps = fullTimestamps[:,0,:]
+fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+for wellNum in range(numWells):
+# for wellNum in range(1):
+    row = int(wellNum / 6)
+    col = int(wellNum % 6)
+    # Find the peaks on sensor 1 axis Z
+    peaks = find_peaks(peakedData[wellNum])[0]
+    # Find the prominence of each peak
+    prominences = peak_prominences(peakedData[wellNum], peaks)[0]
+    # Filter the peaks so that we are only paying attention to those that have a significant prominence
+    filteredPeaks = find_peaks(peakedData[wellNum], prominence = np.amax(prominences)/4)[0]
+    
+    for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
+        # If we are looking at a null subprotocol, ignore it
+        if subprotocolIndex != 255:
+            # Find the beginning timestamp of the subprotocol
+            beginning = fullStimData[wellNum, 0, subprotocolNumber]
+            # If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
+            if beginning < 0:
+                beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
+            # Find the index in the timestamp array that this beginning starts at
+            timestampIndexAtBeginning = np.argmin(np.abs(peakedTimestamps[wellNum] - beginning))
+            # Find the ending timestamp of the subprotocol
+            ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
+            # Find the index in the timestamp array that this ending ends at
+            timestampIndexAtEnding = np.argmin(np.abs(peakedTimestamps[wellNum] - ending))
+            # Interpolate a time index series from the beginning to the end of the subprotocol stimulation to overlay on the magnetometer data
+            pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
+            
+            # Find the index in the interpolated pulse array that matches up to the index at the beginning of the timestamp array for this subprotocol
+            firstPulseIndex = np.argmin(np.abs(pulseStarts - peakedTimestamps[wellNum, timestampIndexAtBeginning]))
+            # Find the index in the interpolated pulse array that matches up to the index at the ending of the timestamp array for this subprotocol
+            lastPulseIndex = np.argmin(np.abs(pulseStarts - peakedTimestamps[wellNum, timestampIndexAtEnding]))
+            # If there are more or less pulses in the pulse array then peaks in the data, then there is a good chance you aren't capturing tissue and I can't help ya bud
+            if (lastPulseIndex - firstPulseIndex) == peakedTimestamps[wellNum, filteredPeaks].shape[0]:
+                # Derive a delay array from when the pulses started compared to their corresponding peaks
+                delays = peakedTimestamps[wellNum, filteredPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
+                # Plot the delay array
+                axs[row, col].plot(np.arange(delays.shape[0]), delays, label=f'Subprotocol Number {subprotocolNumber}')
+    
+    axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+    axs[row, col].set_xlabel('Pulse Number', fontsize = 30)
+    axs[row, col].set_ylabel('Twitch Delay (sec)', fontsize = 20)
+    axs[row, col].tick_params(which = 'major', labelsize = 20)
+    axs[row, col].minorticks_on()
+    axs[row, col].grid(which='major', linewidth=1.5)
+    axs[row, col].grid(which='minor', linewidth=.5)
+    axs[row, col].legend(fontsize = 20)
+    
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_subprotocolDelays", bbox_inches = 'tight')
+
 #%%
 fig, axs = plt.subplots(figsize=(50, 50))
-wellNum = 2
+wellNum = 22
 for sensorNum in range(numSensors):
     for axisNum in range(numAxes):
         axs.plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
@@ -184,5 +240,5 @@ for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
         pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
         axs.vlines(pulseStarts, graphBottom, graphTop, linewidths = .5, colors = "red")
     
-fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient_zoomed", bbox_inches = 'tight')
 		
