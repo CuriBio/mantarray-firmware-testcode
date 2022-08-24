@@ -172,7 +172,7 @@ for wellNum in range(numWells):
     # Find the prominence of each peak
     prominences = peak_prominences(thisData, peaks)[0]
     # Filter the peaks so that we are only paying attention to those that have a significant prominence
-    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/4)[0]
+    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/2)[0]
     
     twitchDelays.insert(wellNum, np.mean(np.diff(thisTimestamps[filteredPeaks])))
     
@@ -198,7 +198,19 @@ for wellNum in range(numWells):
             # Find the index in the interpolated pulse array that matches up to the index at the ending of the timestamp array for this subprotocol
             lastPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtEnding]))
             # If there are more or less pulses in the pulse array then peaks in the data, then there is a good chance you aren't capturing tissue and I can't help ya bud
-            if (lastPulseIndex - firstPulseIndex) == thisTimestamps[filteredPeaks].shape[0]:
+            if ((lastPulseIndex) - firstPulseIndex) != thisTimestamps[filteredPeaks].shape[0]:
+                #If you are really close to the correct number, then we are just going to do a bit of filtering
+                if (filteredPeaks.shape[0] - (lastPulseIndex - firstPulseIndex)) < ((lastPulseIndex - firstPulseIndex)/3):
+                    sampleDelays = np.diff(filteredPeaks)
+                    avgSampleDelay = np.mean(sampleDelays)
+                    indicesToDelete = []
+                    for index, delay in enumerate(sampleDelays):
+                        if (delay < avgSampleDelay/2):
+                            beforePeakIndex = filteredPeaks[index]
+                            afterPeakIndex = filteredPeaks[index + 1]
+                            indicesToDelete.append(index if thisData[afterPeakIndex] > thisData[beforePeakIndex] else (index+1))
+                    filteredPeaks = np.delete(filteredPeaks, indicesToDelete)
+            if ((lastPulseIndex) - firstPulseIndex) == thisTimestamps[filteredPeaks].shape[0]:
                 # Derive a delay array from when the pulses started compared to their corresponding peaks
                 delays = thisTimestamps[filteredPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
                 # Plot the delay array

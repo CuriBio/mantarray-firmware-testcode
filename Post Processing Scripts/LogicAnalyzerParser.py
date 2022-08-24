@@ -54,11 +54,11 @@ fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_test", bbox_inches 
 #%%
 fig, axs = plt.subplots(numChannels, figsize=(80, 40), sharey = True)
 for channelNum in range(numChannels):
-    timingDifferences = np.diff(timestamps[risingEdgeIndices[channelNum]])
+    timingDifferences = np.diff(timestamps[risingEdgeIndices[channelNum]]) * 1000
     axs[channelNum].plot(np.arange(timingDifferences.shape[0]), timingDifferences)
     axs[channelNum].set_title(f'Well {wellMap[channelNum]}', fontsize = 60)
     axs[channelNum].set_xlabel('Pulse Number', fontsize = 30)
-    axs[channelNum].set_ylabel('Twitch Delay (sec)', fontsize = 20)
+    axs[channelNum].set_ylabel('Pulse Interval (ms)', fontsize = 20)
     axs[channelNum].tick_params(which = 'major', labelsize = 20)
     axs[channelNum].minorticks_on()
     axs[channelNum].grid(which='major', linewidth=1.5)
