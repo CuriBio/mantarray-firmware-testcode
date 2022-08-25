@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename, askdirectory
-from scipy.signal import find_peaks, peak_prominences
+from scipy.signal import find_peaks, peak_prominences, butter, lfilter
 import json
 
 axisMap = ['X', 'Y', 'Z']
@@ -260,3 +260,47 @@ for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient_zoomed", bbox_inches = 'tight')
 		
+
+#%% Zoomed in Transient on only the sensing axis
+
+#Build the filter
+order = 4
+fs = 100.0       # sample rate, Hz
+cutoff = 10  # desired cutoff frequency of the filter, Hz
+nyq = 0.5 * fs
+normal_cutoff = cutoff / nyq
+b, a = butter(order, normal_cutoff, btype='low', analog=False)
+
+wellNums = [0,6]
+sensingAxisData = fullData[:,0,2,:]
+sensingAxisTimestamps = fullTimestamps[:,0,:]
+fig, axs = plt.subplots(len(wellNums), figsize=(80, 40))
+for idx, wellNum in enumerate(wellNums):
+    thisData = lfilter(b, a, sensingAxisData[wellNum, :1000])
+    thisTimestamps = sensingAxisTimestamps[wellNum, :1000]
+    axs[idx].plot(thisTimestamps[100:], thisData[100:] * 1000, linewidth = 2, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+    axs[idx].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+    axs[idx].set_xlabel('Time (sec)', fontsize = 30)
+    axs[idx].set_ylabel('Magnitude (uT)', fontsize = 20)
+    axs[idx].tick_params(which = 'major', labelsize = 20)
+    axs[idx].minorticks_on()
+    axs[idx].grid(which='major', linewidth=1.5)
+    axs[idx].grid(which='minor', linewidth=.5)
+    axs[idx].legend(fontsize = 20)
+
+    graphTop = axs[idx].get_ylim()[1]
+    graphBottom = axs[idx].get_ylim()[0]
+    graphRight = np.max(thisTimestamps)
+    graphLeft = np.min(thisTimestamps)
+    
+    for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
+        if subprotocolIndex != 255:
+            beginning = fullStimData[wellNum, 0, subprotocolNumber]
+            #If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
+            if beginning < 0:
+                beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
+            ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
+            pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
+            axs[idx].vlines(pulseStarts, graphBottom, graphTop, linewidths = 1, colors = "red")
+    
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient_zoomed", bbox_inches = 'tight')
