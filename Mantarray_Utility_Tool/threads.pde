@@ -10,9 +10,9 @@ void readPackets(){
       try{
         aggregate = performReading(aggregate);
       } catch (Exception e) {
-        print(e); //<>//
+        print(e); //<>// //<>//
       }
-    } //<>//
+    }
     
     scanner = 0;
     magicWordContent = 0;
@@ -195,7 +195,7 @@ void LoadChannelFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     
@@ -208,7 +208,7 @@ void LoadChannelFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-     //<>//
+     //<>// //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
     logLog.println("Channel firmware file opened successfully");
@@ -247,10 +247,10 @@ void LoadMainFirmware(File firmwareFile) {
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
-     //<>//
+     //<>// //<>//
     for (int i = 0; i < numFullPackets; i++){
       byte[] buffer = new byte[MAX_FIRMWARE_DATA_IN_SINGLE_PACKET];
       fileReader.read(buffer);
@@ -260,10 +260,10 @@ void LoadMainFirmware(File firmwareFile) {
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-     //<>//
+     //<>// //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
-    logLog.println("Main firmware file opened successfully"); //<>//
+    logLog.println("Main firmware file opened successfully"); //<>// //<>//
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);

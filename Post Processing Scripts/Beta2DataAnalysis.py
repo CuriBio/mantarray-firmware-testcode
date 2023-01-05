@@ -1,4 +1,5 @@
 #%% Import Libraries
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import fft
@@ -6,18 +7,9 @@ from scipy import signal as sig
 from pandas import DataFrame as df
 from tabulate import tabulate
 from tkinter import Tk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, askdirectory
 from pathlib import Path
 from scipy.signal import butter, lfilter, freqz
-
-#%% Load data
-root = Tk()
-root.wm_attributes('-topmost', 1)
-fileName = askopenfilename()
-root.destroy()
-
-filePath = Path(fileName)
-dateName = Path(fileName).stem[:-5]
 
 numWells = 24
 numSensors = 3
@@ -42,8 +34,16 @@ temperatureMSB = 2**8
 memsicFullScale = 16
 temperatureFullScale = 200
 gauss2MilliTesla = .1
-
 totDataPoints = numWells * numSensors * numAxes
+
+#%% Load data
+root = Tk()
+root.wm_attributes('-topmost', 1)
+fileName = askopenfilename()
+root.destroy()
+
+filePath = Path(fileName)
+dateName = Path(fileName).stem[:-5]
 
 config = np.loadtxt(fileName, max_rows = 1, delimiter = ', ').reshape((numWells,numSensors,numAxes))
 
@@ -224,10 +224,10 @@ def CreateFancyDataFrame(thisData, floatNums = False):
         noiseMetricsAsDFList.append(sensorList)
         
     noiseDataFrame = df(noiseMetricsAsDFList, range(1,25), ('Sensor 1', 'Sensor 2', 'Sensor 3'))
-    print(tabulate(noiseDataFrame, headers = 'keys', tablefmt = 'psql', stralign = 'center'))
+    # print(tabulate(noiseDataFrame, headers = 'keys', tablefmt = 'psql', stralign = 'center'))
     return noiseDataFrame
     
-
+#%%
 logFile = open(f"{filePath.parent.parent / 'plots'}\{dateName}_noise_metrics.txt", 'w')
 
 print("Peak-to-peak data")
@@ -350,3 +350,107 @@ for wellNum in range(1):
     # axs[row, col].grid(which='both')
     # axs[row, col].legend(fontsize = 20)
     #print(f'Well {wellNum} completed')
+    
+#%%
+root = Tk()
+root.wm_attributes('-topmost', 1)
+targetDataDirectory = askdirectory ()
+targetDataPath = Path(targetDataDirectory)
+root.destroy()
+
+targetDataFolderName = targetDataPath.name
+targetPlotsBasePath = f'{targetDataPath.parent.parent}/plots'
+targetPlotsFolderName = f'{targetPlotsBasePath}/{targetDataFolderName}_plots'
+
+if (os.path.exists(targetPlotsBasePath) == False): 
+    os.mkdir(targetPlotsBasePath)
+    
+if (os.path.exists(targetPlotsFolderName) == False): 
+    os.mkdir(targetPlotsFolderName)
+
+#%% Processing every data file in a folder
+os.chdir(targetDataPath)
+fullTimestamps = None
+fullData = None
+
+numFiles = len(os.listdir(targetDataPath))
+RMSArray = np.zeros((numFiles,numWells,numSensors,numAxes))
+
+for fileNum, fileName in enumerate(os.listdir(targetDataPath)):   
+    filePath = Path(f'{targetDataPath}/{fileName}')
+    dateName = Path(fileName).stem[:-5]
+
+    config = np.loadtxt(fileName, max_rows = 1, delimiter = ', ').reshape((numWells,numSensors,numAxes))
+
+    activeSensors = np.any(config, axis = 2)
+    spacerCounter = 1
+    timestampSpacer = [0]
+    dataSpacer = []
+    for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
+        if status:
+            numActiveAxes = np.count_nonzero(config[wellNum,sensorNum])
+            for numAxis in range(1, numActiveAxes + 1):
+                dataSpacer.append(timestampSpacer[spacerCounter - 1] + numAxis)
+            timestampSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
+            spacerCounter+=1
+            
+    timestamps = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(timestampSpacer[:-1])) / 1000000
+    data = (np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(dataSpacer)) - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
+    numSamples = timestamps.shape[0] - 2
+    fullData = np.zeros((numWells, numSensors, numAxes, numSamples))
+    fullTimestamps = np.zeros((numWells, numSensors, numSamples))
+
+    dataCounter = 0
+    for (wellNum, sensorNum, axisNum), status in np.ndenumerate(config):
+        if status:
+            fullData[wellNum, sensorNum, axisNum] = data[2:, dataCounter]
+            dataCounter+=1
+           
+    timestampCounter = 0
+    for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
+        if status:
+            fullTimestamps[wellNum, sensorNum] = timestamps[2:, timestampCounter]
+            timestampCounter+=1
+            
+    fullTimestampsLinear, timediffLinspace = np.linspace(fullTimestamps[:,:,0], fullTimestamps[:,:,-1], numSamples, retstep=True, axis = 2)
+
+    fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+    RMSNoiseMatrix = np.zeros((24,3,3))
+    for wellNum in range(numWells):
+        row = int(wellNum / 6)
+        col = int(wellNum % 6)
+        for (sensorNum, axisNum), status in np.ndenumerate(config[wellNum]):
+            if status:
+                PSDFrequencies, PSDValues = sig.periodogram(fullData[wellNum, sensorNum, axisNum], 1//timediffLinspace[wellNum, sensorNum], scaling = 'density')
+                axs[row, col].semilogy(PSDFrequencies[1:], np.sqrt(PSDValues)[1:] * 1e6, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+                PSDFrequencies, PSDValues = sig.periodogram(fullData[wellNum, sensorNum, axisNum], 1//timediffLinspace[wellNum, sensorNum], scaling = 'spectrum')
+                RMSNoiseMatrix[wellNum, sensorNum, axisNum] = np.sqrt(np.sum(PSDValues[1:])) * 1e6
+        axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+        axs[row, col].set_xlabel('Frequency (Hz)', fontsize = 30)
+        axs[row, col].set_ylabel(r"Power Spectral Density $\left(\frac{nT}{\sqrt{Hz}}\right)$", fontsize = 20)
+        axs[row, col].tick_params(which = 'both', labelsize = 20)
+        axs[row, col].grid(which='both')
+        axs[row, col].legend(fontsize = 20)
+        # print(f'Well {wellNum} completed')
+        
+    fig.savefig(f"{targetPlotsFolderName}\{dateName}_PSD", bbox_inches = 'tight')
+    plt.close(fig)
+
+    RMSArray[fileNum + 47] = RMSNoiseMatrix
+    shapedData = CreateFancyDataFrame(RMSNoiseMatrix, floatNums = True)
+    logFile = open(f"{targetPlotsFolderName}\{dateName}_power_spectrum_RMS.txt", 'w')
+    logFile.write('RMS Measurements in nT measured from power spectrum of frequency response \nDatasheet states an RMS of .4 mG or 40 nT\n')
+    logFile.write(str(tabulate(shapedData, headers = 'keys', tablefmt = 'psql', stralign = 'center')))
+    logFile.close()
+        
+    print(f'Finished {fileNum} of {numFiles}: {dateName}')
+    
+RMSMean = np.mean(RMSArray, axis = 0)
+shapedData = CreateFancyDataFrame(RMSMean, floatNums = True)
+logFile = open(f"{targetPlotsFolderName}\\average_power_spectrum_RMS.txt", 'w')
+logFile.write('RMS Measurements in nT measured from power spectrum of frequency response \nDatasheet states an RMS of .4 mG or 40 nT\n')
+logFile.write(str(tabulate(shapedData, headers = 'keys', tablefmt = 'psql', stralign = 'center')))
+logFile.close()
+
+#%%
+np.savetxt(f"{targetPlotsFolderName}\\average_RMS.csv", np.reshape(RMSMean, (24, 9)), delimiter=",", fmt="%.2f")

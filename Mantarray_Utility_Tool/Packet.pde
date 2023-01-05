@@ -122,10 +122,11 @@ class Packet{
     this.CRC = 123123123; //<>// //<>// //<>//
     this.data = new ArrayList<Byte>(24);
     for (int i = 0; i < 24; i++){
-      //if (i == 3){//|| i ==5 || i==17 || i==23){
-        //this.data.add(i, (byte)1);
-      //} else {
+      //if ((i%6 != 0) && (i%6 != 1)){
+      //if (i == 2){//|| i ==5 || i==17 || i==23){
         this.data.add(i, (byte)1);
+      //} else {
+        //this.data.add(i, (byte)0);
       //}
     }
     //this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));

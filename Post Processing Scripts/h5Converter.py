@@ -46,7 +46,7 @@ if (os.path.exists(targetPlotsBasePath) == False):
 if (os.path.exists(targetPlotsFolderName) == False): 
     os.mkdir(targetPlotsFolderName)
 
-#%%
+#%% Importing normal data
 os.chdir(targetDataPath)
 wellNum = 0
 fullTimestamps = None
@@ -75,6 +75,35 @@ for file in os.listdir(targetDataPath):
             fullData[wellNum, sensorNum, axisNum] = (rawData[sensorNum * numSensors + axisNum].astype('float64') - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
 
     wellNum+=1
+    
+#%% Importing calibration data
+os.chdir(targetDataPath)
+wellNum = 0
+fullTimestamps = None
+fullData = None
+
+for file in os.listdir(targetDataPath):
+    if file.endswith('.h5') and file.startswith('Calibration'):
+        wellID = file[file.rfind('_')+1:-3]
+        if wellMap[wellNum] != wellID:
+            print("Error!!")
+        
+        dataFile =  h5py.File(file, 'r')      
+        rawTimeOffsets = np.array(dataFile[offsetName])
+        rawTimeIndices = np.array(dataFile[indexName])
+        rawData = np.array(dataFile[dataName])
+        
+        if (wellNum == 0):
+            numSamples = rawTimeIndices.size
+            fullTimestamps = np.zeros((numWells, numSensors, numSamples))
+            fullData = np.zeros((numWells, numSensors, numAxes, numSamples))
+    
+        for sensorNum in range(numSensors):
+            fullTimestamps[wellNum, sensorNum] = (rawTimeIndices + rawTimeOffsets[sensorNum]) / 1e6
+            for axisNum in range(numAxes):
+                fullData[wellNum, sensorNum, axisNum] = (rawData[sensorNum * numSensors + axisNum].astype('float64') - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
+    
+        wellNum+=1
 
 #%%
 def butter_lowpass(cutoff, fs, order=5):
@@ -110,12 +139,14 @@ plt.grid(which='minor', linewidth=.5)
 
 #%%
 fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey=True)
+# fig, axs = plt.subplots(4, 6, figsize=(100, 100))
 for wellNum in range(numWells):
     row = int(wellNum / 6)
     col = int(wellNum % 6)
     for sensorNum in range(numSensors):
         for axisNum in range(numAxes):
             axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+    # axs[row, col].plot(fullTimestamps[wellNum, 0, :-1], fullData[wellNum, 0, 2, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)
@@ -142,7 +173,7 @@ for wellNum in range(numWells):
     for sensorNum in range(numSensors):
         for axisNum in range(numAxes):
             PSDFrequencies, PSDValues = sig.periodogram(fullData[wellNum, sensorNum, axisNum], 1//timediffLinspace[wellNum, sensorNum], scaling = 'density')
-            axs[row, col].semilogy(PSDFrequencies[1:], np.sqrt(PSDValues)[1:] * 1e6, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].semilogy(PSDFrequencies[1:-1], np.sqrt(PSDValues)[1:-1] * 1e6, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
             PSDFrequencies, PSDValues = sig.periodogram(fullData[wellNum, sensorNum, axisNum], 1//timediffLinspace[wellNum, sensorNum], scaling = 'spectrum')
             RMSNoiseMatrix[wellNum, sensorNum, axisNum] = np.sqrt(np.sum(PSDValues[1:])) * 1e6
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
@@ -176,6 +207,25 @@ logFile = open(f"{targetPlotsFolderName}\{targetDataFolderName}__power_spectrum_
 logFile.write('RMS Measurements in nT measured from power spectrum of frequency response \nDatasheet states an RMS of .4 mG or 40 nT\n')
 logFile.write(str(tabulate(shapedData, headers = 'keys', tablefmt = 'psql', stralign = 'center')))
 logFile.close() 
+
+#%% Simple FFT plotting function
+fourier_B = 2.0 / numSamples * np.abs(fft.rfft(fullData, axis=3))           #Should be the same length as the spectrum array
+fig, axs = plt.subplots(4, 6, figsize=(100, 100))
+for wellNum in range(numWells):
+    row = int(wellNum / 6)
+    col = int(wellNum % 6)
+    for sensorNum in range(numSensors):
+        for axisNum in range(numAxes):
+            spectrum_f = fft.rfftfreq(numSamples, d=(timediffLinspace[wellNum, sensorNum]))
+            axs[row, col].semilogy(spectrum_f[1:], fourier_B[wellNum, sensorNum, axisNum, 1:], label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+    axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+    axs[row, col].set_xlabel('Frequency (Hz)', fontsize = 30)
+    axs[row, col].set_ylabel('Magnitude (mT)', fontsize = 20)
+    axs[row, col].tick_params(which = 'both', labelsize = 20)
+    axs[row, col].grid(which='both')
+    axs[row, col].legend(fontsize = 20)
+    
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}__FFT", bbox_inches = 'tight')
 
 #%%
 begin = 5700
