@@ -20,12 +20,7 @@ public class HomePageControllers implements ControlListener {
   Button setInitialPositions;
   Button saveAndQuitButton;
   Textarea logDisplay;
-  Textfield I2CAddressField;
-  Textfield I2CInputField;
-  Button I2CSendCommand;
-  Textfield I2CSetAddressOld;
-  Textfield I2CSetAddressNew;
-  Button I2CSetAddress;
+  Button runStimCheck;
   Button StartBarcodeTune;
   
   Textfield setDeviceSerialNumberField;
@@ -208,71 +203,17 @@ public class HomePageControllers implements ControlListener {
       .moveTo(homePage);
     saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    I2CAddressField = cp5.addTextfield("I2CAddressField")
+    runStimCheck = cp5.addButton("runStimCheck")
       .setPosition(370, 80)
-      .setSize(50, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText(String.valueOf(100))
+      .setSize(400, 25)
       .moveTo(homePage);
-    I2CAddressField.getCaptionLabel().setText("Address").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-25);
-  
-    I2CInputField = cp5.addTextfield("I2CInputField")
-      .setPosition(480, 80)
-      .setSize(50, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText(String.valueOf(0))
-      .moveTo(homePage);
-    I2CInputField.getCaptionLabel().setText("Command").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-25);
-    
-    I2CSendCommand = cp5.addButton("I2CSendCommand")
-      .setPosition(570, 80)
-      .setSize(200, 25)
-      .moveTo(homePage);
-    I2CSendCommand.getCaptionLabel().setText("Send I2C Command").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    runStimCheck.getCaptionLabel().setText("Run Stim Check").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     StartBarcodeTune = cp5.addButton("StartBarcodeTune")
       .setPosition(370, 135)
       .setSize(400, 25)
       .moveTo(homePage);
     StartBarcodeTune.getCaptionLabel().setText("Start Barcode Tuning Sequence").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    /*I2CSetAddressOld = cp5.addTextfield("I2CSetAddressOld")
-      .setPosition(370, 135)
-      .setSize(50, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText(String.valueOf(1))
-      .moveTo(homePage);
-    I2CSetAddressOld.getCaptionLabel().setText("Old Addr.").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-25);
-  
-    I2CSetAddressNew = cp5.addTextfield("I2CSetAddressNew")
-      .setPosition(480, 135)
-      .setSize(50, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText(String.valueOf(1))
-      .moveTo(homePage);
-    I2CSetAddressNew.getCaptionLabel().setText("New Addr.").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(CENTER, CENTER).getStyle().setMarginTop(-25);
-    
-    I2CSetAddress = cp5.addButton("I2CSetAddress")
-      .setPosition(570, 135)
-      .setSize(200, 25)
-      .moveTo(homePage);
-    I2CSetAddress.getCaptionLabel().setText("Set New Address").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);*/
     
     magnetometerScheduleDelay = cp5.addTextfield("magnetometerScheduleDelay")
       .setPosition(370, 200)
@@ -482,19 +423,12 @@ public class HomePageControllers implements ControlListener {
         exit();
       }
       
-      if (controllerName.equals("I2CSendCommand")){
-        Packet I2CCommandPacket = new Packet();
-        byte[] I2CCommandPacketConverted = I2CCommandPacket.I2CCommand();
-        serialPort.write(I2CCommandPacketConverted);
-        logDisplay.append("I2C Command Sent\n");
-        logLog.println("I2C command sent");
-      }
-      if (controllerName.equals("I2CSetAddress")){
-        Packet I2CNewAddressPacket = new Packet();
-        byte[] I2CNewAddressPacketConverted = I2CNewAddressPacket.I2CAddressNew();
-        serialPort.write(I2CNewAddressPacketConverted);
-        logDisplay.append("New I2C address set\n");
-        logLog.println("New I2C address set");
+      if (controllerName.equals("runStimCheck")){
+        Packet BeginStimCheckPacket = new Packet();
+        byte[] BeginStimCheckPacketConverted = BeginStimCheckPacket.BeginStimCheck();
+        serialPort.write(BeginStimCheckPacketConverted);
+        logDisplay.append("Stim Check Beginning\n");
+        logLog.println("Stim Check Beginning");
       }
       if (controllerName.equals("StartBarcodeTune")){
         Packet StartBarcodeTunePacket = new Packet();

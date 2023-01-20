@@ -44,6 +44,7 @@ String[] wellNames = {"A1", "A2", "A3", "A4", "A5", "A6",
   "D1", "D2", "D3", "D4", "D5", "D6"};
 String[] sensorNames = {"S1", "S2", "S3"};
 String[] axesNames = {"X", "Y", "Z"};
+String[] statusConversions = {"Good", "Open", "Error"};
 
 int MIN_PACKET_LENGTH = 16;
 byte[] MAGIC_WORD = new byte[]{67, 85, 82, 73, 32, 66, 73, 79};

@@ -98,6 +98,61 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       //logDisplay.append("Command Response Recieved\n");
       logLog.println("Command Response Recieved");
       break;
+    case 27:
+      for (int wellCounter = 0; wellCounter < NUM_WELLS; wellCounter++){
+        int ADC8 = byte2uint(newPacket.data.get(wellCounter*5)) + (byte2uint(newPacket.data.get(wellCounter*5 + 1))<<8);
+        int ADC9 = byte2uint(newPacket.data.get(wellCounter*5 + 2)) + (byte2uint(newPacket.data.get(wellCounter*5 + 3))<<8);
+        int status = byte2uint(newPacket.data.get(wellCounter*5 + 4));
+        String toDisplay = "";
+        if (status < 3){
+          toDisplay = String.format("Channel %d: ADC8 - %d   ADC9 - %d   status - " + statusConversions[status] + "\n", wellCounter+1, ADC8, ADC9);
+        } else {
+          toDisplay = String.format("Channel %d: ADC8 - %d   ADC9 - %d   status - %d\n", wellCounter+1, ADC8, ADC9, status);
+        }
+        print(toDisplay);
+        thisHomePageControllers.logDisplay.append(toDisplay);
+        logLog.print(toDisplay);
+      }
+      break;
+    case 60:
+      String[] stringsToDisplay = new String[5];
+      //Skip the boot flags
+      int dataScanner = 1;
+      //Retrieve nickname
+      byte[] nickname = new byte[13];
+      for (int i = 0; i < 13; i++){
+        nickname[i] = newPacket.data.get(dataScanner + i);
+      }
+      dataScanner+=13; //<>//
+      String nicknameString = new String(nickname, "UTF-8");
+      stringsToDisplay[0] = "Nickname: " + nicknameString + "\n";
+      //Retrieve serial number
+      byte[] serialNumber = new byte[12];
+      for (int i = 0; i < 12; i++){
+        serialNumber[i] = newPacket.data.get(dataScanner + i);
+      }
+      dataScanner+=12;
+      String serialNumberString = new String(serialNumber, "UTF-8");
+      stringsToDisplay[1] = "Serial Number: " + serialNumberString + "\n";
+      //Main firmware version
+      stringsToDisplay[2] = String.format("Main Microcontroller Firmware Version: %d.%d.%d\n", newPacket.data.get(dataScanner + 0), newPacket.data.get(dataScanner + 1), newPacket.data.get(dataScanner + 2));
+      dataScanner+=3;
+      //Channel firmware version
+      stringsToDisplay[3] = String.format("Channel Microcontroller Firmware Version: %d.%d.%d\n", newPacket.data.get(dataScanner + 0), newPacket.data.get(dataScanner + 1), newPacket.data.get(dataScanner + 2));
+      dataScanner+=3;
+      //Skip prior status codes
+      dataScanner+=26;
+      //Initial Pulse3D guess
+      stringsToDisplay[4] = String.format("X:%d   Y:%d   Z:%d   Rem:%d\n", newPacket.data.get(dataScanner + 0), 
+                                                                           newPacket.data.get(dataScanner + 1), 
+                                                                           newPacket.data.get(dataScanner + 2), 
+                                                                           byte2uint(newPacket.data.get(dataScanner + 3)) + (newPacket.data.get(dataScanner + 4)<<8));
+      for (int i = 0; i < 5; i++){
+        print(stringsToDisplay[i]);
+        thisHomePageControllers.logDisplay.append(stringsToDisplay[i]);
+        logLog.print(stringsToDisplay[i]);
+      }
+      break;
     case 73:
       //logDisplay.append("Command Response Recieved\n");
       thisHomePageControllers.logDisplay.append("Channel Microcontroller Firmware Update Complete\n");

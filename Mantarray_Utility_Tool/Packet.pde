@@ -115,33 +115,15 @@ class Packet{
     return this.toByte();
   }
   
-  byte[] I2CCommand(){
+  byte[] BeginStimCheck(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 27;
     this.packetLength = 37; //<>// //<>//
     this.CRC = 123123123; //<>// //<>// //<>//
     this.data = new ArrayList<Byte>(24);
     for (int i = 0; i < 24; i++){
-      //if ((i%6 != 0) && (i%6 != 1)){
-      //if (i == 2){//|| i ==5 || i==17 || i==23){
         this.data.add(i, (byte)1);
-      //} else {
-        //this.data.add(i, (byte)0);
-      //}
     }
-    //this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CAddressField.getText()));
-    //this.data.add(1, uint2byte(Integer.valueOf(thisHomePageControllers.I2CInputField.getText())));
-    return this.toByte();
-  }
-  
-  byte[] I2CAddressNew(){
-    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
-    this.packetType = 27;
-    this.packetLength = 13;
-    this.CRC = 123123123;
-    this.data = new ArrayList<Byte>();
-    //this.data.add(0, Byte.valueOf(thisHomePageControllers.I2CSetAddressOld.getText()));
-    //this.data.add(1, Byte.valueOf(thisHomePageControllers.I2CSetAddressNew.getText()));
     return this.toByte();
   }
   
