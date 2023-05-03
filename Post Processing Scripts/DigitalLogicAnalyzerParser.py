@@ -113,3 +113,17 @@ axs.grid(which='minor', linewidth=.5)
 axs.legend(fontsize = 20)
     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_differences", bbox_inches = 'tight')
+
+#%%
+fig, axs = plt.subplots(figsize=(20, 20), sharey = True)
+axs.plot(delaysAverage * 1000, label='Average-Based Interpolation')
+axs.set_title('Interpolation Accuracies', fontsize = 60)
+axs.set_xlabel('Pulse Number', fontsize = 30)
+axs.set_ylabel('Delay Between Expected and Measured Pulse (ms)', fontsize = 20)
+axs.tick_params(which = 'major', labelsize = 20)
+axs.minorticks_on()
+axs.grid(which='major', linewidth=1.5)
+axs.grid(which='minor', linewidth=.5)
+axs.legend(fontsize = 20)
+    
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_differences", bbox_inches = 'tight')

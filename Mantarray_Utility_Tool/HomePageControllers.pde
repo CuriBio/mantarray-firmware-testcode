@@ -22,11 +22,14 @@ public class HomePageControllers implements ControlListener {
   Textarea logDisplay;
   Button runStimCheck;
   Button StartBarcodeTune;
+  Button StimLoopTest;
   
   Textfield setDeviceSerialNumberField;
   Button setDeviceSerialNumber;
   Textfield setDeviceNicknameField;
   Button setDeviceNickname;
+  Button isMantarray;
+  Button isStingray;
   
   Textfield magnetometerScheduleDelay;
   Textfield magnetometerScheduleHold;
@@ -210,10 +213,16 @@ public class HomePageControllers implements ControlListener {
     runStimCheck.getCaptionLabel().setText("Run Stim Check").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     StartBarcodeTune = cp5.addButton("StartBarcodeTune")
-      .setPosition(370, 135)
+      .setPosition(370, 120)
       .setSize(400, 25)
       .moveTo(homePage);
     StartBarcodeTune.getCaptionLabel().setText("Start Barcode Tuning Sequence").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    StimLoopTest = cp5.addButton("StimLoopTest")
+      .setPosition(370, 160)
+      .setSize(400, 25)
+      .moveTo(homePage);
+    StimLoopTest.getCaptionLabel().setText("Perform Stim Loop Test").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     magnetometerScheduleDelay = cp5.addTextfield("magnetometerScheduleDelay")
       .setPosition(370, 200)
@@ -296,6 +305,18 @@ public class HomePageControllers implements ControlListener {
       .setSize(200, 25)
       .moveTo(homePage);
     setDeviceNickname.getCaptionLabel().setText("Set Device Nickname").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    isMantarray = cp5.addButton("isMantarray")
+      .setPosition(770, 350)
+      .setSize(150, 25)
+      .moveTo(homePage);
+    isMantarray.getCaptionLabel().setText("Set as Mantarray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    isStingray = cp5.addButton("isStingray")
+      .setPosition(770, 380)
+      .setSize(150, 25)
+      .moveTo(homePage);
+    isStingray.getCaptionLabel().setText("Set as Stingray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
       
     logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(400, 420)
@@ -437,6 +458,22 @@ public class HomePageControllers implements ControlListener {
         logDisplay.append("Barcode tuning sequence begun\n");
         logLog.println("Barcode tuning sequence begun");
       }
+      if (controllerName.equals("StimLoopTest")){
+        //selectInput("Select a file to load as channel microcontroller firmware:", "PerformStimTest");
+        int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
+        List<Byte> this_config_Byte = new ArrayList<Byte>();
+        for (int i = 0; i < this_config.length; i++){
+          this_config_Byte.add(uint2byte(this_config[i]));
+        }
+        Packet stimConfig = new Packet();
+        byte[] stimConfigConverted = stimConfig.TrueStimulatorConfiguration(this_config_Byte);
+        serialPort.write(stimConfigConverted);
+        logDisplay.append("Sending stimulation schedule\n");
+        logLog.println("Sending stimulation schedule");
+        Packet stimBegin = new Packet();
+        byte[] stimBeginConverted = stimBegin.TrueStimulatorBegin();
+        serialPort.write(stimBeginConverted);
+      }
       if (controllerName.equals("startMagnetometerSchedule")){
         if (magnetometerScheduleComplete == false){
           magnetometerScheduleIsRunning = true;
@@ -490,6 +527,22 @@ public class HomePageControllers implements ControlListener {
         serialPort.write(newDeviceNicknamePacketConverted);
         logDisplay.append("New device nickname sent\n");
         logLog.println("New device nickname sent");
+      }
+      
+      if (controllerName.equals("isMantarray")){
+        Packet setDeviceTypePacket = new Packet();
+        byte[] setDeviceTypePacketConverted = setDeviceTypePacket.SetDeviceType(1);
+        serialPort.write(setDeviceTypePacketConverted);
+        logDisplay.append("Device Type Set as Mantarray\n");
+        logLog.println("Device Type Set as Mantarray");
+      }
+      
+      if (controllerName.equals("isStingray")){
+        Packet setDeviceTypePacket = new Packet();
+        byte[] setDeviceTypePacketConverted = setDeviceTypePacket.SetDeviceType(1);
+        serialPort.write(setDeviceTypePacketConverted);
+        logDisplay.append("Device Type Set as Stingray\n");
+        logLog.println("Device Type Set as Stingray");
       }
     }
   }

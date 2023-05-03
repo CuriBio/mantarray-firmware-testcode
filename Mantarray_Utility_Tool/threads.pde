@@ -349,3 +349,17 @@ void LoadMainFirmware(File firmwareFile) {
     println("File Not Found");
   }
 }
+
+void PerformStimTest(File stimFile) {
+  try {
+    Scanner scanner = new Scanner(stimFile);
+    ArrayList thisArray = new ArrayList <Integer>();
+    while(scanner.hasNextInt()){
+       thisArray.add(scanner.nextInt());
+    }
+    scanner.close();
+    print(thisArray);
+  } catch (Exception e){
+    println("File Not Found");
+  }
+}

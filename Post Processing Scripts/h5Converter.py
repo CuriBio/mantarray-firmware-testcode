@@ -1,6 +1,7 @@
 import os
 import h5py
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import fft
 from scipy import signal as sig
@@ -119,7 +120,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 
 order = 4
 fs = 100.0       # sample rate, Hz
-cutoff = 30  # desired cutoff frequency of the filter, Hz
+cutoff = 10  # desired cutoff frequency of the filter, Hz
 
 # Get the filter coefficients so we can check its frequency response.
 b, a = butter_lowpass(cutoff, fs, order)
@@ -156,7 +157,7 @@ for wellNum in range(numWells):
     axs[row, col].grid(which='minor', linewidth=.5)
     axs[row, col].legend(fontsize = 20)
     
-fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_time", bbox_inches = 'tight')
 
 #%% IF YOU ARE DOING FREQUENCY ANALYSIS transform the timestamp array into a linear array
 # timediff = np.mean(np.diff(fullTimestamps[0,0]))
@@ -241,4 +242,40 @@ axs.grid(which='major', linewidth=1.5)
 axs.grid(which='minor', linewidth=.5)
 axs.legend(fontsize = 20)   
 
-fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')        
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')    
+
+#%%
+fullData = fullData[:,:,:,100:]
+os.chdir(targetDataPath)
+wellNum = 0
+
+for file in os.listdir(targetDataPath):
+    if file.endswith('.h5') and file.startswith('Calibration'):
+        wellID = file[file.rfind('_')+1:-3]
+        if wellMap[wellNum] != wellID:
+            print("Error!!")
+        dataFile =  h5py.File(file, 'r+') 
+        
+        newData = (np.resize(fullData[wellNum], (9, fullData.shape[3])) / gauss2MilliTesla * memsicMSB / memsicFullScale + memsicCenterOffset).astype('uint16')
+        dataFile[dataName].resize(newData.shape)
+        dataFile[dataName][:] = newData
+        
+        newOffsets = dataFile[offsetName][:, 100:]
+        dataFile[offsetName].resize(newOffsets.shape)
+        dataFile[offsetName][:] = newOffsets
+        
+        newIndices = dataFile[indexName][100:]
+        dataFile[indexName].resize(newIndices.shape)
+        dataFile[indexName][:] = newIndices
+        
+        dataFile.close()
+        wellNum+=1    
+        
+#%%
+differences = fullData[:,0,2,-1] - fullData[:,0,2,0]
+data = {"endbeginning":differences}
+df = pd.DataFrame(data, wellMap)
+print(df)
+
+
+# df.to_csv('C:\\Users\\where\\Desktop\\New folder\\test.csv', index=False, header=True)

@@ -1,0 +1,13 @@
+[2023-03-28 15:18:30.661] [info]  Initial view has been rendered
+[2023-03-28 15:18:34.343] [info]  Error in call_axios_get_from_vuex for http://localhost:4567/system_status: Error: Network Error
+[2023-03-28 15:18:34.343] [info]  No response was received to request: {}
+[2023-03-28 15:18:39.414] [info]  Error in call_axios_get_from_vuex for http://localhost:4567/system_status: Error: Network Error
+[2023-03-28 15:18:39.415] [info]  No response was received to request: {}
+[2023-03-28 15:18:39.693] [info]  Error in call_axios_get_from_vuex for http://localhost:4567/system_status: Error: Network Error
+[2023-03-28 15:18:39.694] [info]  No response was received to request: {}
+[2023-03-28 15:18:43.456] [info]  Error in call_axios_get_from_vuex for http://localhost:4567/system_status: Error: Network Error
+[2023-03-28 15:18:43.457] [info]  No response was received to request: {}
+[2023-03-28 15:18:43.740] [info]  Error in call_axios_get_from_vuex for http://localhost:4567/system_status: Error: Network Error
+[2023-03-28 15:18:43.741] [info]  No response was received to request: {}
+[2023-03-28 15:18:44.612] [info]  Software update not found
+[2023-03-28 15:22:36.519] [info]  Barcode Set Manually

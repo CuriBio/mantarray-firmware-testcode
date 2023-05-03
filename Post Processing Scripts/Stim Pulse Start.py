@@ -33,15 +33,15 @@ root.wm_attributes('-topmost', 1)
 fileName = askopenfilename()
 root.destroy()
 stimConfig = json.load(open(fileName, 'r'))
-numSubprotocols = len(stimConfig["pulses"])
+thisProtocol = stimConfig["protocols"][0]["protocol"]
+numSubprotocols = len(thisProtocol["subprotocols"])
 
 pulseTiming = np.zeros(numSubprotocols)
-for subprotocolIndex, subprotocol in enumerate(stimConfig["pulses"]):
+for subprotocolIndex, subprotocol in enumerate(thisProtocol["subprotocols"]):
     pulseTiming[subprotocolIndex] += (subprotocol["interphase_interval"] + 
                                       subprotocol["phase_one_duration"] + 
                                       subprotocol["phase_two_duration"] + 
-                                      subprotocol["repeat_delay_interval"] + 
-                                      2)
+                                      subprotocol["postphase_interval"])
     pulseTiming[subprotocolIndex]/=1000
 
 #%%
@@ -172,9 +172,11 @@ for wellNum in range(numWells):
     # Find the prominence of each peak
     prominences = peak_prominences(thisData, peaks)[0]
     # Filter the peaks so that we are only paying attention to those that have a significant prominence
-    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/2)[0]
+    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/1.5)[0]
     
     twitchDelays.insert(wellNum, np.mean(np.diff(thisTimestamps[filteredPeaks])))
+    
+    totalPulses = 0
     
     for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
         # If we are looking at a null subprotocol, ignore it
@@ -196,25 +198,42 @@ for wellNum in range(numWells):
             # Find the index in the interpolated pulse array that matches up to the index at the beginning of the timestamp array for this subprotocol
             firstPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtBeginning]))
             # Find the index in the interpolated pulse array that matches up to the index at the ending of the timestamp array for this subprotocol
-            lastPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtEnding]))
+            lastPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtEnding])) + 1
             # If there are more or less pulses in the pulse array then peaks in the data, then there is a good chance you aren't capturing tissue and I can't help ya bud
-            if ((lastPulseIndex) - firstPulseIndex) != thisTimestamps[filteredPeaks].shape[0]:
-                #If you are really close to the correct number, then we are just going to do a bit of filtering
-                if (filteredPeaks.shape[0] - (lastPulseIndex - firstPulseIndex)) < ((lastPulseIndex - firstPulseIndex)/3):
-                    sampleDelays = np.diff(filteredPeaks)
+            
+            # Find the index in the filtered peaks array that matches up to the index at the beginning of the timestamp array for this subprotocol
+            firstPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtBeginning]))
+            # Find the index in the filtered peaks array that matches up to the index at the ending of the timestamp array for this subprotocol
+            lastPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtEnding])) + 1
+            windowedPeaks = filteredPeaks[firstPeakIndex:lastPeakIndex]
+            
+            if ((lastPulseIndex) - firstPulseIndex) != thisTimestamps[windowedPeaks].shape[0]:
+                pulseDifference = windowedPeaks.shape[0] - (lastPulseIndex - firstPulseIndex)
+                # If you are a little under the correct number, the peak may be slightly cut off on the end
+                if pulseDifference < 0 and pulseDifference > -3:
+                    if subprotocolNumber == 0 and len(fullStimData[wellNum, 1]) > 1:
+                        firstPulseIndex -= pulseDifference
+                    else: 
+                        lastPulseIndex += pulseDifference
+                #If you are a little over the correct number, then we are just going to do a bit of filtering
+                elif pulseDifference < ((lastPulseIndex - firstPulseIndex)/4):
+                    sampleDelays = np.diff(windowedPeaks)
                     avgSampleDelay = np.mean(sampleDelays)
                     indicesToDelete = []
                     for index, delay in enumerate(sampleDelays):
                         if (delay < avgSampleDelay/2):
-                            beforePeakIndex = filteredPeaks[index]
-                            afterPeakIndex = filteredPeaks[index + 1]
+                            beforePeakIndex = windowedPeaks[index]
+                            afterPeakIndex = windowedPeaks[index + 1]
                             indicesToDelete.append(index if thisData[afterPeakIndex] > thisData[beforePeakIndex] else (index+1))
-                    filteredPeaks = np.delete(filteredPeaks, indicesToDelete)
-            if ((lastPulseIndex) - firstPulseIndex) == thisTimestamps[filteredPeaks].shape[0]:
+                    windowedPeaks = np.delete(windowedPeaks, indicesToDelete)
+            if ((lastPulseIndex) - firstPulseIndex) == thisTimestamps[windowedPeaks].shape[0]:
                 # Derive a delay array from when the pulses started compared to their corresponding peaks
-                delays = thisTimestamps[filteredPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
+                delays = thisTimestamps[windowedPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
                 # Plot the delay array
-                axs[row, col].plot(np.arange(delays.shape[0]), delays, label=f'Subprotocol Number {subprotocolNumber}')
+                axs[row, col].plot(np.arange(totalPulses, totalPulses + delays.shape[0]), delays, label=f'Subprotocol Number {subprotocolNumber}')
+                totalPulses += delays.shape[0]
+            else:
+                print (f'Skipping Well {wellMap[wellNum]}, subprotocol {subprotocolNumber}, did not capture')
     
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Pulse Number', fontsize = 30)
