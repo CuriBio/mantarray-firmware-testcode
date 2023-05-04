@@ -531,7 +531,11 @@ public class HomePageControllers implements ControlListener {
       
       if (controllerName.equals("isMantarray")){
         Packet setDeviceTypePacket = new Packet();
+<<<<<<< HEAD
         byte[] setDeviceTypePacketConverted = setDeviceTypePacket.SetDeviceType(1);
+=======
+        byte[] setDeviceTypePacketConverted = setDeviceTypePacket.SetDeviceType(0);
+>>>>>>> e25f26d7fbd2f7efdcda7d06d9ad9758ae332ba5
         serialPort.write(setDeviceTypePacketConverted);
         logDisplay.append("Device Type Set as Mantarray\n");
         logLog.println("Device Type Set as Mantarray");

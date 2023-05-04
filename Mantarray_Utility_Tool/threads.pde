@@ -10,7 +10,7 @@ void readPackets(){
       try{
         aggregate = performReading(aggregate);
       } catch (Exception e) {
-        print(e); //<>// //<>//
+        print(e); //<>// //<>// //<>//
       }
     }
     
@@ -114,8 +114,8 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
         logLog.print(toDisplay);
       }
       break;
-    case 60:
-      String[] stringsToDisplay = new String[5];
+    case 60: case 61:
+      String[] stringsToDisplay = new String[6];
       //Skip the boot flags
       int dataScanner = 1;
       //Retrieve nickname
@@ -123,7 +123,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       for (int i = 0; i < 13; i++){
         nickname[i] = newPacket.data.get(dataScanner + i);
       }
-      dataScanner+=13; //<>//
+      dataScanner+=13; //<>// //<>//
       String nicknameString = new String(nickname, "UTF-8");
       stringsToDisplay[0] = "Nickname: " + nicknameString + "\n";
       //Retrieve serial number
@@ -147,7 +147,11 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
                                                                            newPacket.data.get(dataScanner + 1), 
                                                                            newPacket.data.get(dataScanner + 2), 
                                                                            byte2uint(newPacket.data.get(dataScanner + 3)) + (newPacket.data.get(dataScanner + 4)<<8));
-      for (int i = 0; i < 5; i++){
+      dataScanner+=5;
+      String[] deviceTypes = {"Mantarray", "Stingray"};
+      stringsToDisplay[5] = String.format("Device type is " + deviceTypes[newPacket.data.get(dataScanner)] + "\n");                                                                     
+      
+      for (int i = 0; i < 6; i++){
         print(stringsToDisplay[i]);
         thisHomePageControllers.logDisplay.append(stringsToDisplay[i]);
         logLog.print(stringsToDisplay[i]);
@@ -246,7 +250,7 @@ List <Byte> performReading(List <Byte> aggregate){
 }
 
 void LoadChannelFirmware(File firmwareFile) {
-  try {
+  try { //<>//
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
@@ -259,7 +263,7 @@ void LoadChannelFirmware(File firmwareFile) {
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
-    
+     //<>//
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
@@ -298,10 +302,10 @@ void LoadChannelFirmware(File firmwareFile) {
 }
 
 void LoadMainFirmware(File firmwareFile) {
-  try {
+  try { //<>//
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
-    
+     //<>//
     long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
@@ -311,10 +315,10 @@ void LoadMainFirmware(File firmwareFile) {
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
-    
+     //<>//
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
-    firmwareBytes.add(buffer);
+    firmwareBytes.add(buffer); //<>//
      //<>// //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
