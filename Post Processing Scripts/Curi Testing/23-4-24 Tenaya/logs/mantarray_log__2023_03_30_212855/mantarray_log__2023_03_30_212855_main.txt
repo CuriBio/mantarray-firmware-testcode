@@ -1,0 +1,27 @@
+[2023-03-30 21:28:55.370] [info]  Electron store at: 'C:\Users\****\AppData\Roaming\MantarrayController\mantarray_controller_config.yaml'
+[2023-03-30 21:28:55.376] [error] [Main-process]: Resources path is undefined
+[2023-03-30 21:28:55.377] [info]  About to generate command line arguments to use when booting up server
+[2023-03-30 21:28:55.377] [info]  node env: production
+[2023-03-30 21:28:55.383] [info]  sending command line args: --log-file-dir=C:\Users\****\AppData\Roaming\MantarrayController\logs_flask\mantarray_log__2023_03_30_212855,--expected-software-version=1.0.9,--initial-base64-settings=eyJsb2dfZmlsZV9pZCI6Im1hbnRhcnJheV9sb2dfXzIwMjNfMDNfMzBfMjEyODU1IiwicmVjb3JkaW5nX2RpcmVjdG9yeSI6IkM6XFxVc2Vyc1xcVGVuYXlhXFxBcHBEYXRhXFxSb2FtaW5nXFxNYW50YXJyYXlDb250cm9sbGVyXFxyZWNvcmRpbmdzIiwibWFnX2FuYWx5c2lzX291dHB1dF9kaXIiOiJDOlxcVXNlcnNcXFRlbmF5YVxcQXBwRGF0YVxcUm9hbWluZ1xcTWFudGFycmF5Q29udHJvbGxlclxcdGltZV9mb3JjZV9kYXRhIn0,--beta-2-mode
+[2023-03-30 21:28:55.383] [info]  Current dirname: C:\Users\****\AppData\Local\Programs\MantarrayController\resources\app.asar\dist\main
+[2023-03-30 21:28:55.384] [info]  To determine if running in bundle, checking the path C:\Users\****\AppData\Local\Programs\MantarrayController\dist-python\mantarray-flask
+[2023-03-30 21:28:55.385] [info]  Current dirname: C:\Users\****\AppData\Local\Programs\MantarrayController\resources\app.asar\dist\main
+[2023-03-30 21:28:55.385] [info]  To determine if running in bundle, checking the path C:\Users\****\AppData\Local\Programs\MantarrayController\dist-python\mantarray-flask
+[2023-03-30 21:28:55.386] [info]  Launching compiled Python EXE at path: C:\Users\****\AppData\Local\Programs\MantarrayController\dist-python\mantarray-flask\mantarray-flask
+[2023-03-30 21:28:55.902] [info]  Screen size scale factor: 1.25
+[2023-03-30 21:28:55.903] [info]  Sceen work area width 1536 height 920
+[2023-03-30 21:28:55.991] [info]  actual window position: 0,0
+[2023-03-30 21:28:55.993] [info]  winHandler.onCreated event fired
+[2023-03-30 21:28:56.034] [info]  ready in winhandler after _create
+[2023-03-30 21:28:56.419] [info]  update-not-available 1.0.9
+[2023-03-30 21:28:57.604] [info]  Found pulse3d versions: 0.25.2,0.27.1,0.28.0,0.28.2,0.28.3,0.29.2,0.30.4,0.31.0,0.32.0,0.32.2
+[2023-03-30 21:29:11.534] [info]  /latest_software_version response: 200 OK
+[2023-03-30 21:29:16.807] [info]  Enabling automatic installation of SW updates after shutdown
+[2023-03-30 21:31:55.884] [info]  user confirmed window closure
+[2023-03-30 21:31:55.916] [info]  will-quit event being handled
+[2023-03-30 21:31:59.144] [info]  Flask shutdown response: 200 OK
+[2023-03-30 21:31:59.145] [info]  Automatic installation of SW updates after shutdown is enabled
+[2023-03-30 21:32:02.787] [info]  Prevented second instance from opening
+[2023-03-30 21:32:05.541] [info]  Prevented second instance from opening
+[2023-03-30 21:32:07.155] [info]  Backend not closed after timeout
+[2023-03-30 21:32:07.157] [info]  App exiting

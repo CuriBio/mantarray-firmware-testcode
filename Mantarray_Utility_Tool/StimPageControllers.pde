@@ -435,7 +435,7 @@ public class StimPageControllers implements ControlListener {
           pulseYLim = (int)numValue;
         }
         else if (controllerName.equals("pulseFreq")){
-          if (200 < numValue) {
+          if (10000 < numValue) {
             thisHomePageControllers.logDisplay.append("That's way too high, are you crazy???\n");
             pulseFreq.setText(String.format ("%.1f", pulseFreqText));
           } else

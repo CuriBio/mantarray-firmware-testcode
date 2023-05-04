@@ -146,6 +146,23 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] TrueStimulatorConfiguration(List<Byte> dataArray){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 20;
+    this.packetLength = 193;
+    this.CRC = 123123123;
+    this.data = dataArray;
+    return this.toByte();
+  }
+  
+  byte[] TrueStimulatorBegin(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 21;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
   byte[] FetchMetadata(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 60;
@@ -177,6 +194,16 @@ class Packet{
     byte[] thisByteArray = thisString.getBytes(StandardCharsets.US_ASCII);
     List<Byte> thisByteArrayList = Bytes.asList(thisByteArray);
     this.data.addAll(thisByteArrayList);
+    return this.toByte();
+  }
+  
+  byte[] SetDeviceType(int b_isStingray){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 64;
+    this.packetLength = 14;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>(1);
+    this.data.add(0, uint2byte(b_isStingray));
     return this.toByte();
   }
   

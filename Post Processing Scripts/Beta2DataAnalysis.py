@@ -45,7 +45,7 @@ root.destroy()
 filePath = Path(fileName)
 dateName = Path(fileName).stem[:-5]
 
-config = np.loadtxt(fileName, max_rows = 1, delimiter = ', ').reshape((numWells,numSensors,numAxes))
+config = np.genfromtxt(fileName, max_rows = 1, delimiter = ', ').reshape((numWells,numSensors,numAxes))
 
 activeSensors = np.any(config, axis = 2)
 spacerCounter = 1
@@ -62,8 +62,8 @@ for (wellNum, sensorNum), status in np.ndenumerate(activeSensors):
         timestampSpacer.append(timestampSpacer[spacerCounter - 1] + numActiveAxes + 1)
         spacerCounter+=1
         
-timestamps = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(timestampSpacer[:-1])) / 1000000
-data = (np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(dataSpacer)) - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
+timestamps = np.genfromtxt(fileName, skip_header = 1, delimiter = ', ', usecols = tuple(timestampSpacer[:-1])) / 1000000
+data = (np.genfromtxt(fileName, skip_header = 1, delimiter = ', ', usecols = tuple(dataSpacer)) - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
 # temperature = np.loadtxt(fileName, skiprows = 1, delimiter = ', ', usecols = tuple(temperatureSpacer)) * temperatureFullScale / temperatureMSB - temperatureOffset
 numSamples = timestamps.shape[0] - 2
 fullData = np.zeros((numWells, numSensors, numAxes, numSamples))

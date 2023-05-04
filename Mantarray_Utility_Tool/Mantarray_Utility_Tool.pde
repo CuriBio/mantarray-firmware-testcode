@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.zip.Checksum;
 import java.util.zip.CRC32;
+import java.util.Scanner;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import com.google.common.primitives.Bytes;
