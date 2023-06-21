@@ -101,11 +101,9 @@ for line in adc_lines:
     well_indices = adc_info['well_indices'] # which wells were stimulated
     stimulator_circuit_statuses = adc_info['stimulator_circuit_statuses'] # results (media, error, open)
     adc_readings = adc_info['adc_readings'] # actual ADC readings (counts)
-    if adc_info['stim_barcode_is_from_scanner']: stim_barcode = adc_info['stim_barcode'] # stim lid barcode
-    else:                                         stim_barcode = "MANUAL"
-    if adc_info['plate_barcode_is_from_scanner']: plate_barcode = adc_info['plate_barcode'] # lattice barcode
-    else:                                         plate_barcode = "MANUAL"
-
+    stim_barcode = adc_info['stim_barcode'] # stim lid barcode
+    plate_barcode = adc_info['plate_barcode'] # lattice barcode
+    
 
     columns = ['well','adc8','adc9','V_adc8','V_adc9','W-','W+','current','status'] # infomration to tabulate
     final_values = zeros((9,1)) # dummy

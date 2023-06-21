@@ -1,4 +1,4 @@
-public class HomePageControllers implements ControlListener {
+ public class HomePageControllers implements ControlListener {
   private ControlP5 cp5;  /*!< The library filled with the variety of controllers used thorughout the tool*/
   private PApplet p;  /*!< The Processing applet that the controllers should be running on*/
   ControlGroup homePage;
@@ -30,6 +30,8 @@ public class HomePageControllers implements ControlListener {
   Button setDeviceNickname;
   Button isMantarray;
   Button isStingray;
+  
+  Button testButton;
   
   Textfield magnetometerScheduleDelay;
   Textfield magnetometerScheduleHold;
@@ -317,6 +319,12 @@ public class HomePageControllers implements ControlListener {
       .setSize(150, 25)
       .moveTo(homePage);
     isStingray.getCaptionLabel().setText("Set as Stingray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    testButton = cp5.addButton("testButton")
+      .setPosition(800, 110)
+      .setSize(50, 50)
+      .moveTo(homePage);
+    testButton.getCaptionLabel().setText("TEST").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
       
     logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(400, 420)
@@ -460,7 +468,8 @@ public class HomePageControllers implements ControlListener {
       }
       if (controllerName.equals("StimLoopTest")){
         //selectInput("Select a file to load as channel microcontroller firmware:", "PerformStimTest");
-        int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
+        //int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
+        int[] this_config = {1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 196, 9, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 60, 246, 117, 6, 5, 0, 0, 0, 180, 0, 0, 0, 0, 1, 0};
         List<Byte> this_config_Byte = new ArrayList<Byte>();
         for (int i = 0; i < this_config.length; i++){
           this_config_Byte.add(uint2byte(this_config[i]));
@@ -543,6 +552,12 @@ public class HomePageControllers implements ControlListener {
         serialPort.write(setDeviceTypePacketConverted);
         logDisplay.append("Device Type Set as Stingray\n");
         logLog.println("Device Type Set as Stingray");
+      }
+      
+      if (controllerName.equals("testButton")){
+        Packet testPacket = new Packet();
+        byte[] testPacketConverted = testPacket.Test();
+        serialPort.write(testPacketConverted);
       }
     }
   }

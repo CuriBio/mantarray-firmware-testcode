@@ -1,12 +1,12 @@
 {
   "Initial_Remnance": "1200",
   "defaultPulseCurrent": {
-    "pulseMidDelay": 500,
+    "pulseMidDelay": 0,
     "pulseLowAmp": -50,
-    "pulseFreq": 0.20000000298023224,
-    "pulseHighDelay": 1000,
+    "pulseFreq": 10,
+    "pulseHighDelay": 10,
     "pulseHighAmp": 50,
-    "pulseLowDelay": 1000
+    "pulseLowDelay": 10
   },
   "Initial_Y": "2",
   "Initial_Z": "-5",

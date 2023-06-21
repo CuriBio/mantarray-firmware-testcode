@@ -149,7 +149,7 @@ class Packet{
   byte[] TrueStimulatorConfiguration(List<Byte> dataArray){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 20;
-    this.packetLength = 193;
+    this.packetLength = 13 + dataArray.size();
     this.CRC = 123123123;
     this.data = dataArray;
     return this.toByte();
@@ -218,6 +218,14 @@ class Packet{
     this.data.add(2, uint2byte(settingsJSON.getInt("Initial_Z")));
     this.data.add(3, uint2byte(settingsJSON.getInt("Initial_Remnance")));
     this.data.add(4, uint2byte(settingsJSON.getInt("Initial_Remnance")>>8));
+    return this.toByte();
+  }
+  
+  byte[] Test(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 254;
+    this.packetLength = 13;
+    this.CRC = 123123123;
     return this.toByte();
   }
   

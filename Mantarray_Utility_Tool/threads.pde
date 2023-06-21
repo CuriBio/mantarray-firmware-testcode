@@ -123,7 +123,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       for (int i = 0; i < 13; i++){
         nickname[i] = newPacket.data.get(dataScanner + i);
       }
-      dataScanner+=13; //<>// //<>//
+      dataScanner+=13; //<>//
       String nicknameString = new String(nickname, "UTF-8");
       stringsToDisplay[0] = "Nickname: " + nicknameString + "\n";
       //Retrieve serial number
