@@ -1,20 +1,19 @@
 {
-  "Initial_Remnance": "1200",
   "defaultPulseCurrent": {
     "pulseMidDelay": 0,
-    "pulseLowAmp": -50,
-    "pulseFreq": 10,
-    "pulseHighDelay": 10,
+    "pulseLowAmp": 50,
+    "pulseFreq": 2,
+    "pulseHighDelay": 2.5,
     "pulseHighAmp": 50,
-    "pulseLowDelay": 10
+    "pulseLowDelay": 2.5
   },
   "Initial_Y": "2",
   "Initial_Z": "-5",
-  "defaultConstantVoltage": false,
+  "Main_Major": 1,
   "Initial_X": "0",
+  "Main_Revision": 10,
   "Internal_Control_2": "00000000",
   "Internal_Control_3": "00000000",
-  "defaultConstantCurrent": true,
   "defaultPulseVoltage": {
     "pulseMidDelay": 43,
     "pulseLowAmp": 6,
@@ -24,5 +23,14 @@
     "pulseLowDelay": 10
   },
   "Internal_Control_0": "00000001",
-  "Internal_Control_1": "00000010"
+  "Internal_Control_1": "00000010",
+  "Channel_Major": "1",
+  "Channel_Minor": "1",
+  "Channel_Revision": "8",
+  "Initial_Remnance": "1200",
+  "defaultConstantVoltage": false,
+  "Main_Minor": 1,
+  "Serial_Number": "MA23XXXINXXX",
+  "defaultConstantCurrent": true,
+  "Nickname": "MantarrayOwO!"
 }

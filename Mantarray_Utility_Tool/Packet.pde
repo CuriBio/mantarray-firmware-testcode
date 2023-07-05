@@ -135,6 +135,14 @@ class Packet{
     this.data = new ArrayList<Byte>();
     return this.toByte();
   }
+  
+  byte[] ScanBarcode(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 92;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
    //<>//
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
@@ -158,6 +166,22 @@ class Packet{
   byte[] TrueStimulatorBegin(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 21;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] StartHeadless(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 40;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] StopHeadless(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 41;
     this.packetLength = 13;
     this.CRC = 123123123;
     return this.toByte();
@@ -221,7 +245,15 @@ class Packet{
     return this.toByte();
   }
   
-  byte[] Test(){
+  byte[] ErrorStats(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 253;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] ErrorAck(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 254;
     this.packetLength = 13;

@@ -219,7 +219,6 @@ public class MagPageControllers implements ControlListener {
         serialPort.write(magConfigConverted);
         thisHomePageControllers.logDisplay.append("Board Configuration Set\n");
         logLog.println("Board configuration set");
-        boardConfigSet = true;
       }
     } else if (theEvent.isAssignableFrom(Toggle.class)) {
       if (controllerName.equals("useSetReset")){

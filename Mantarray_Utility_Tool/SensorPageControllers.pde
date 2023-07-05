@@ -88,7 +88,6 @@ public class SensorPageControllers implements ControlListener {
       thisHomePageControllers.homePage.show();
       thisHomePageControllers.logDisplay.append("Sensor Configuration Set\n");
       logLog.println("Sensor configuration set");
-      sensorConfigSet = true;
     }
     if (controllerName.equals("sensorConfigurationBack")){
       initialPositionsConfigurator.hide();

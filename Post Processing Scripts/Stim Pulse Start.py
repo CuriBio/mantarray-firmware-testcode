@@ -109,7 +109,7 @@ for file in os.listdir(targetDataPath):
     fullStimData[wellNum, 0] /= 1e6
 
     for sensorNum in range(numSensors):
-        fullTimestamps[wellNum, sensorNum] = (rawTimeIndices + rawTimeOffsets[sensorNum]) / 1e6
+        fullTimestamps[wellNum, sensorNum] = (rawTimeIndices - rawTimeOffsets[sensorNum]) / 1e6
         for axisNum in range(numAxes):
             fullData[wellNum, sensorNum, axisNum] = (rawData[sensorNum * numSensors + axisNum].astype('float64') - memsicCenterOffset) * memsicFullScale / memsicMSB * gauss2MilliTesla
 
@@ -147,7 +147,7 @@ for wellNum in range(numWells):
         if subprotocolIndex != 255:
             beginning = fullStimData[wellNum, 0, subprotocolNumber]
             #If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
-            if beginning < 0:
+            if beginning < np.min(fullTimestamps):
                 beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
             ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
             pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
@@ -160,95 +160,98 @@ twitchDelays = []
 # Select only sensor 1 axis Z
 peakedData = fullData[:,0,2,:]
 peakedTimestamps = fullTimestamps[:,0,:]
+wellNums = [18,20]
+# fig, axs = plt.subplots(len(wellNums), figsize=(80, 40))
 fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey = True)
 for wellNum in range(numWells):
-    thisData = peakedData[wellNum]
-    thisTimestamps = peakedTimestamps[wellNum]
-# for wellNum in range(1):
-    row = int(wellNum / 6)
-    col = int(wellNum % 6)
-    # Find the peaks on sensor 1 axis Z
-    peaks = find_peaks(thisData)[0]
-    # Find the prominence of each peak
-    prominences = peak_prominences(thisData, peaks)[0]
-    # Filter the peaks so that we are only paying attention to those that have a significant prominence
-    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/1.5)[0]
-    
-    twitchDelays.insert(wellNum, np.mean(np.diff(thisTimestamps[filteredPeaks])))
-    
-    totalPulses = 0
-    
-    for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
-        # If we are looking at a null subprotocol, ignore it
-        if subprotocolIndex != 255:
-            # Find the beginning timestamp of the subprotocol
-            beginning = fullStimData[wellNum, 0, subprotocolNumber]
-            # If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
-            if beginning < 0:
-                beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
-            # Find the index in the timestamp array that this beginning starts at
-            timestampIndexAtBeginning = np.argmin(np.abs(thisTimestamps - beginning))
-            # Find the ending timestamp of the subprotocol
-            ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
-            # Find the index in the timestamp array that this ending ends at
-            timestampIndexAtEnding = np.argmin(np.abs(thisTimestamps - ending))
-            # Interpolate a time index series from the beginning to the end of the subprotocol stimulation to overlay on the magnetometer data
-            pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
-            
-            # Find the index in the interpolated pulse array that matches up to the index at the beginning of the timestamp array for this subprotocol
-            firstPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtBeginning]))
-            # Find the index in the interpolated pulse array that matches up to the index at the ending of the timestamp array for this subprotocol
-            lastPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtEnding])) + 1
-            # If there are more or less pulses in the pulse array then peaks in the data, then there is a good chance you aren't capturing tissue and I can't help ya bud
-            
-            # Find the index in the filtered peaks array that matches up to the index at the beginning of the timestamp array for this subprotocol
-            firstPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtBeginning]))
-            # Find the index in the filtered peaks array that matches up to the index at the ending of the timestamp array for this subprotocol
-            lastPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtEnding])) + 1
-            windowedPeaks = filteredPeaks[firstPeakIndex:lastPeakIndex]
-            
-            if ((lastPulseIndex) - firstPulseIndex) != thisTimestamps[windowedPeaks].shape[0]:
-                pulseDifference = windowedPeaks.shape[0] - (lastPulseIndex - firstPulseIndex)
-                # If you are a little under the correct number, the peak may be slightly cut off on the end
-                if pulseDifference < 0 and pulseDifference > -3:
-                    if subprotocolNumber == 0 and len(fullStimData[wellNum, 1]) > 1:
-                        firstPulseIndex -= pulseDifference
-                    else: 
-                        lastPulseIndex += pulseDifference
-                #If you are a little over the correct number, then we are just going to do a bit of filtering
-                elif pulseDifference < ((lastPulseIndex - firstPulseIndex)/4):
-                    sampleDelays = np.diff(windowedPeaks)
-                    avgSampleDelay = np.mean(sampleDelays)
-                    indicesToDelete = []
-                    for index, delay in enumerate(sampleDelays):
-                        if (delay < avgSampleDelay/2):
-                            beforePeakIndex = windowedPeaks[index]
-                            afterPeakIndex = windowedPeaks[index + 1]
-                            indicesToDelete.append(index if thisData[afterPeakIndex] > thisData[beforePeakIndex] else (index+1))
-                    windowedPeaks = np.delete(windowedPeaks, indicesToDelete)
-            if ((lastPulseIndex) - firstPulseIndex) == thisTimestamps[windowedPeaks].shape[0]:
-                # Derive a delay array from when the pulses started compared to their corresponding peaks
-                delays = thisTimestamps[windowedPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
-                # Plot the delay array
-                axs[row, col].plot(np.arange(totalPulses, totalPulses + delays.shape[0]), delays, label=f'Subprotocol Number {subprotocolNumber}')
-                totalPulses += delays.shape[0]
-            else:
-                print (f'Skipping Well {wellMap[wellNum]}, subprotocol {subprotocolNumber}, did not capture')
-    
-    axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
-    axs[row, col].set_xlabel('Pulse Number', fontsize = 30)
-    axs[row, col].set_ylabel('Twitch Delay (sec)', fontsize = 20)
-    axs[row, col].tick_params(which = 'major', labelsize = 20)
-    axs[row, col].minorticks_on()
-    axs[row, col].grid(which='major', linewidth=1.5)
-    axs[row, col].grid(which='minor', linewidth=.5)
-    axs[row, col].legend(fontsize = 20)
+    if wellNum != 22:
+        thisData = peakedData[wellNum]
+        thisTimestamps = peakedTimestamps[wellNum]
+    # for wellNum in range(1):
+        row = int(wellNum / 6)
+        col = int(wellNum % 6)
+        # Find the peaks on sensor 1 axis Z
+        peaks = find_peaks(thisData)[0]
+        # Find the prominence of each peak
+        prominences = peak_prominences(thisData, peaks)[0]
+        # Filter the peaks so that we are only paying attention to those that have a significant prominence
+        filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/1.25)[0]
+        
+        twitchDelays.insert(wellNum, np.mean(np.diff(thisTimestamps[filteredPeaks])))
+        
+        totalPulses = 0
+        
+        for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
+            # If we are looking at a null subprotocol, ignore it
+            if subprotocolIndex != 255:
+                # Find the beginning timestamp of the subprotocol
+                beginning = fullStimData[wellNum, 0, subprotocolNumber]
+                # If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
+                if beginning < 0:
+                    beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
+                # Find the index in the timestamp array that this beginning starts at
+                timestampIndexAtBeginning = np.argmin(np.abs(thisTimestamps - beginning))
+                # Find the ending timestamp of the subprotocol
+                ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
+                # Find the index in the timestamp array that this ending ends at
+                timestampIndexAtEnding = np.argmin(np.abs(thisTimestamps - ending))
+                # Interpolate a time index series from the beginning to the end of the subprotocol stimulation to overlay on the magnetometer data
+                pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
+                
+                # Find the index in the interpolated pulse array that matches up to the index at the beginning of the timestamp array for this subprotocol
+                firstPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtBeginning]))
+                # Find the index in the interpolated pulse array that matches up to the index at the ending of the timestamp array for this subprotocol
+                lastPulseIndex = np.argmin(np.abs(pulseStarts - thisTimestamps[timestampIndexAtEnding])) + 1
+                # If there are more or less pulses in the pulse array then peaks in the data, then there is a good chance you aren't capturing tissue and I can't help ya bud
+                
+                # Find the index in the filtered peaks array that matches up to the index at the beginning of the timestamp array for this subprotocol
+                firstPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtBeginning]))
+                # Find the index in the filtered peaks array that matches up to the index at the ending of the timestamp array for this subprotocol
+                lastPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtEnding])) + 1
+                windowedPeaks = filteredPeaks[firstPeakIndex:lastPeakIndex]
+                
+                if ((lastPulseIndex) - firstPulseIndex) != thisTimestamps[windowedPeaks].shape[0]:
+                    pulseDifference = windowedPeaks.shape[0] - (lastPulseIndex - firstPulseIndex)
+                    # If you are a little under the correct number, the peak may be slightly cut off on the end
+                    if pulseDifference < 0 and pulseDifference > -3:
+                        if subprotocolNumber == 0 and len(fullStimData[wellNum, 1]) > 1:
+                            firstPulseIndex -= pulseDifference
+                        else: 
+                            lastPulseIndex += pulseDifference
+                    #If you are a little over the correct number, then we are just going to do a bit of filtering
+                    elif pulseDifference < ((lastPulseIndex - firstPulseIndex)/4):
+                        sampleDelays = np.diff(windowedPeaks)
+                        avgSampleDelay = np.mean(sampleDelays)
+                        indicesToDelete = []
+                        for index, delay in enumerate(sampleDelays):
+                            if (delay < avgSampleDelay/2):
+                                beforePeakIndex = windowedPeaks[index]
+                                afterPeakIndex = windowedPeaks[index + 1]
+                                indicesToDelete.append(index if thisData[afterPeakIndex] > thisData[beforePeakIndex] else (index+1))
+                        windowedPeaks = np.delete(windowedPeaks, indicesToDelete)
+                if ((lastPulseIndex) - firstPulseIndex) == thisTimestamps[windowedPeaks].shape[0]:
+                    # Derive a delay array from when the pulses started compared to their corresponding peaks
+                    delays = thisTimestamps[windowedPeaks] - pulseStarts[firstPulseIndex:lastPulseIndex]
+                    # Plot the delay array
+                    axs[row, col].plot(np.arange(totalPulses, totalPulses + delays.shape[0]), delays, label=f'Subprotocol Number {subprotocolNumber}')
+                    totalPulses += delays.shape[0]
+                else:
+                    print (f'Skipping Well {wellMap[wellNum]}, subprotocol {subprotocolNumber}, did not capture')
+        
+        axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
+        axs[row, col].set_xlabel('Pulse Number', fontsize = 30)
+        axs[row, col].set_ylabel('Twitch Delay (sec)', fontsize = 20)
+        axs[row, col].tick_params(which = 'major', labelsize = 20)
+        axs[row, col].minorticks_on()
+        axs[row, col].grid(which='major', linewidth=1.5)
+        axs[row, col].grid(which='minor', linewidth=.5)
+        axs[row, col].legend(fontsize = 20)
     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_subprotocolDelays", bbox_inches = 'tight')
 
 #%%
 fig, axs = plt.subplots(figsize=(50, 50))
-wellNum = 22
+wellNum = 18
 for sensorNum in range(numSensors):
     for axisNum in range(numAxes):
         axs.plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
@@ -290,7 +293,7 @@ nyq = 0.5 * fs
 normal_cutoff = cutoff / nyq
 b, a = butter(order, normal_cutoff, btype='low', analog=False)
 
-wellNums = [0,6]
+wellNums = [8,18]
 sensingAxisData = fullData[:,0,2,:]
 sensingAxisTimestamps = fullTimestamps[:,0,:]
 fig, axs = plt.subplots(len(wellNums), figsize=(80, 40))
@@ -316,7 +319,7 @@ for idx, wellNum in enumerate(wellNums):
         if subprotocolIndex != 255:
             beginning = fullStimData[wellNum, 0, subprotocolNumber]
             #If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
-            if beginning < 0:
+            if beginning < np.min(fullTimestamps):
                 beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
             ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
             pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])

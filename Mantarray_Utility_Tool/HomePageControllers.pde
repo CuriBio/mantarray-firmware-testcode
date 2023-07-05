@@ -2,6 +2,8 @@
   private ControlP5 cp5;  /*!< The library filled with the variety of controllers used thorughout the tool*/
   private PApplet p;  /*!< The Processing applet that the controllers should be running on*/
   ControlGroup homePage;
+  
+  //Left Column
   Button loadMainFirmwareButton;
   Textfield mainMajorVersion;
   Textfield mainMinorVersion;
@@ -10,19 +12,18 @@
   Textfield channelMajorVersion;
   Textfield channelMinorVersion;
   Textfield channelRevisionVersion;
+  Button setStimConfigButton;
   Button startButtonMags;
   Button stopButtonMags;
   Button startButtonStims;
   Button stopButtonStims;
-  Button setStimConfigButton;
-  Textfield setSensorRateField;
-  Button setSensorRateButton;
-  Button setInitialPositions;
-  Button saveAndQuitButton;
-  Textarea logDisplay;
+  Button startButtonHeadless;
+  Button stopButtonHeadless;
+  Button errorStatsButton;
+  Button clearErrorButton;
   Button runStimCheck;
-  Button StartBarcodeTune;
-  Button StimLoopTest;
+  Button scanBarcodeButton;
+  Button saveAndQuitButton;
   
   Textfield setDeviceSerialNumberField;
   Button setDeviceSerialNumber;
@@ -30,14 +31,19 @@
   Button setDeviceNickname;
   Button isMantarray;
   Button isStingray;
-  
-  Button testButton;
-  
+  Button setInitialPositions;
+  Button StartBarcodeTune;
   Textfield magnetometerScheduleDelay;
   Textfield magnetometerScheduleHold;
   Textfield magnetometerScheduleDuration;
   Button startMagnetometerSchedule;
   Button stopMagnetometerSchedule;
+ 
+  Textarea logDisplay;
+  Button testButton;
+  
+  Textfield setSensorRateField;
+  
   final Timer magnetometerTimer;
   
   //*************************************************************BOARD CONFIGURATION DEFINES*******************************************************************************  
@@ -65,6 +71,7 @@
       .setBackgroundColor(color(255))
       .hideBar();
         
+    //*************************** LEFT SIDE *****************************
     loadChannelFirmwareButton = cp5.addButton("loadChannelFirmwareButton")
       .setPosition(75, 70)
       .setSize(125, 30)
@@ -79,7 +86,7 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(1))
+      .setText(String.format("%d", settingsJSON.getInt("Channel_Major")))
       .moveTo(homePage);
     channelMajorVersion.getCaptionLabel().setText("v").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-12);
     
@@ -91,7 +98,7 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(0))
+      .setText(String.format("%d", settingsJSON.getInt("Channel_Minor")))
       .moveTo(homePage);
     channelMinorVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
@@ -103,7 +110,7 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(0))
+      .setText(String.format("%d", settingsJSON.getInt("Channel_Revision")))
       .moveTo(homePage);
     channelRevisionVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
@@ -121,7 +128,7 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(1))
+      .setText(String.format("%d", settingsJSON.getInt("Main_Major")))
       .moveTo(homePage);
     mainMajorVersion.getCaptionLabel().setText("v").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-12);
     
@@ -133,7 +140,7 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(0))
+      .setText(String.format("%d", settingsJSON.getInt("Main_Minor")))
       .moveTo(homePage);
     mainMinorVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
@@ -145,90 +152,144 @@
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText(String.valueOf(0))
+      .setText(String.format("%d", settingsJSON.getInt("Main_Revision")))
       .moveTo(homePage);
     mainRevisionVersion.getCaptionLabel().setText(".").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(-8);
     
+    setStimConfigButton = cp5.addButton("setStimConfigButton")
+      .setPosition(75, 150)
+      .setSize(250, 30)
+      .moveTo(homePage);
+    setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+   
     startButtonMags = cp5.addButton("startButtonMags")
-      .setPosition(75, 330)
+      .setPosition(75, 190)
       .setSize(120, 30)
       .moveTo(homePage);
     startButtonMags.getCaptionLabel().setText("Start Mags").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     stopButtonMags = cp5.addButton("stopButtonMags")
-      .setPosition(205, 330)
+      .setPosition(205, 190)
       .setSize(120, 30)
       .moveTo(homePage);
     stopButtonMags.getCaptionLabel().setText("Stop Mags").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     startButtonStims = cp5.addButton("startButtonStims")
-      .setPosition(75, 370)
+      .setPosition(75, 230)
       .setSize(120, 30)
       .moveTo(homePage);
     startButtonStims.getCaptionLabel().setText("Start Stims").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     stopButtonStims = cp5.addButton("stopButtonStims")
-      .setPosition(205, 370)
+      .setPosition(205, 230)
       .setSize(120, 30)
       .moveTo(homePage);
     stopButtonStims.getCaptionLabel().setText("Stop Stims").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    setStimConfigButton = cp5.addButton("setStimConfigButton")
-      .setPosition(75, 150)
-      .setSize(250, 50)
-      .moveTo(homePage);
-    setStimConfigButton.getCaptionLabel().setText("Set Stimulator Configuration").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    setInitialPositions = cp5.addButton("setInitialPositions")
+    startButtonHeadless = cp5.addButton("startButtonHeadless")
       .setPosition(75, 270)
+      .setSize(120, 30)
+      .moveTo(homePage);
+    startButtonHeadless.getCaptionLabel().setText("Start Headless").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    stopButtonHeadless = cp5.addButton("stopButtonHeadless")
+      .setPosition(205, 270)
+      .setSize(120, 30)
+      .moveTo(homePage);
+    stopButtonHeadless.getCaptionLabel().setText("Stop Headless").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    errorStatsButton = cp5.addButton("errorStatsButton")
+      .setPosition(75, 310)
+      .setSize(250, 30)
+      .moveTo(homePage);
+    errorStatsButton.getCaptionLabel().setText("Send Error Stats").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    clearErrorButton = cp5.addButton("clearErrorButton")
+      .setPosition(75, 350)
+      .setSize(250, 30)
+      .moveTo(homePage);
+    clearErrorButton.getCaptionLabel().setText("Clear Error Codes").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    runStimCheck = cp5.addButton("runStimCheck")
+      .setPosition(75, 390)
+      .setSize(250, 30)
+      .moveTo(homePage);
+    runStimCheck.getCaptionLabel().setText("Run Stim Check").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    scanBarcodeButton = cp5.addButton("scanBarcodeButton")
+      .setPosition(75, 430)
+      .setSize(250, 30)
+      .moveTo(homePage);
+    scanBarcodeButton.getCaptionLabel().setText("Scan Barcode").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+ 
+    saveAndQuitButton = cp5.addButton("saveAndQuitButton")
+      .setPosition(75, 470)
       .setSize(250, 50)
       .moveTo(homePage);
-    setInitialPositions.getCaptionLabel().setText("Set Pulse3D Initial Positions").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    setSensorRateField = cp5.addTextfield("setSensorRateField")
-      .setPosition(75, 222)
-      .setSize(25, 25)
+    //*************************** RIGHT SIDE *****************************
+    setDeviceSerialNumberField = cp5.addTextfield("setDeviceSerialNumberField")
+      .setPosition(370, 70)
+      .setSize(150, 30)
       .setFont(createFont("arial", 20))
       .setColor(0)
       .setColorBackground(color(255))
       .setColorForeground(color(0))
       .setAutoClear(false)
-      .setText("10")
+      .setText(settingsJSON.getString("Serial_Number"))
       .moveTo(homePage);
     
-    setSensorRateButton = cp5.addButton("setSensorRateButton")
-      .setPosition(110, 210)
-      .setSize(220, 50)
+    setDeviceSerialNumber = cp5.addButton("setDeviceSerialNumber")
+      .setPosition(550, 70)
+      .setSize(220, 30)
       .moveTo(homePage);
-    setSensorRateButton.getCaptionLabel().setText("Set Sensor Sampling Rate").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
- 
-    saveAndQuitButton = cp5.addButton("saveAndQuitButton")
-      .setPosition(75, 410)
-      .setSize(250, 50)
-      .moveTo(homePage);
-    saveAndQuitButton.getCaptionLabel().setText("Save and Quit").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    setDeviceSerialNumber.getCaptionLabel().setText("Set Serial Number").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    runStimCheck = cp5.addButton("runStimCheck")
-      .setPosition(370, 80)
-      .setSize(400, 25)
+    setDeviceNicknameField = cp5.addTextfield("setDeviceNicknameField")
+      .setPosition(370, 110)
+      .setSize(150, 30)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(settingsJSON.getString("Nickname"))
       .moveTo(homePage);
-    runStimCheck.getCaptionLabel().setText("Run Stim Check").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    setDeviceNickname = cp5.addButton("setDeviceNickname")
+      .setPosition(550, 110)
+      .setSize(220, 30)
+      .moveTo(homePage);
+    setDeviceNickname.getCaptionLabel().setText("Set Device Nickname").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    setInitialPositions = cp5.addButton("setInitialPositions")
+      .setPosition(370, 150)
+      .setSize(400, 30)
+      .moveTo(homePage);
+    setInitialPositions.getCaptionLabel().setText("Set Pulse3D Initial Positions").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    isMantarray = cp5.addButton("isMantarray")
+      .setPosition(370, 190)
+      .setSize(175, 30)
+      .moveTo(homePage);
+    isMantarray.getCaptionLabel().setText("Set as Mantarray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    isStingray = cp5.addButton("isStingray")
+      .setPosition(595, 190)
+      .setSize(175, 30)
+      .moveTo(homePage);
+    isStingray.getCaptionLabel().setText("Set as Stingray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     StartBarcodeTune = cp5.addButton("StartBarcodeTune")
-      .setPosition(370, 120)
-      .setSize(400, 25)
+      .setPosition(370, 230)
+      .setSize(400, 30)
       .moveTo(homePage);
     StartBarcodeTune.getCaptionLabel().setText("Start Barcode Tuning Sequence").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
-    StimLoopTest = cp5.addButton("StimLoopTest")
-      .setPosition(370, 160)
-      .setSize(400, 25)
-      .moveTo(homePage);
-    StimLoopTest.getCaptionLabel().setText("Perform Stim Loop Test").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
     magnetometerScheduleDelay = cp5.addTextfield("magnetometerScheduleDelay")
-      .setPosition(370, 200)
-      .setSize(50, 25)
+      .setPosition(370, 270)
+      .setSize(50, 30)
       .setFont(createFont("arial", 20))
       .setColor(0)
       .setColorBackground(color(255))
@@ -239,8 +300,8 @@
     magnetometerScheduleDelay.getCaptionLabel().setText("Magnetometer Schedule Duration Between Readings (mins)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
     magnetometerScheduleHold = cp5.addTextfield("magnetometerScheduleHold")
-      .setPosition(370, 235)
-      .setSize(50, 25)
+      .setPosition(370, 310)
+      .setSize(50, 30)
       .setFont(createFont("arial", 20))
       .setColor(0)
       .setColorBackground(color(255))
@@ -251,8 +312,8 @@
     magnetometerScheduleHold.getCaptionLabel().setText("Magnetometer Schedule Capture Duration (secs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
     magnetometerScheduleDuration = cp5.addTextfield("magnetometerScheduleDuration")
-      .setPosition(370, 270)
-      .setSize(50, 25)
+      .setPosition(370, 350)
+      .setSize(50, 30)
       .setFont(createFont("arial", 20))
       .setColor(0)
       .setColorBackground(color(255))
@@ -263,69 +324,18 @@
     magnetometerScheduleDuration.getCaptionLabel().setText("Magnetometer Schedule Total Duration (hrs)").setColor(0).setFont(createFont("arial", 18)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(60);
     
     startMagnetometerSchedule = cp5.addButton("startMagnetometerSchedule")
-      .setPosition(400, 305)
+      .setPosition(400, 390)
       .setSize(200, 30)
       .moveTo(homePage);
     startMagnetometerSchedule.getCaptionLabel().setText("Begin Schedule").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
     
     stopMagnetometerSchedule = cp5.addButton("stopMagnetometerSchedule")
-      .setPosition(620, 305)
+      .setPosition(620, 390)
       .setSize(200, 30)
       .moveTo(homePage);
     stopMagnetometerSchedule.getCaptionLabel().setText("Stop Schedule").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
         
-    setDeviceSerialNumberField = cp5.addTextfield("setDeviceSerialNumberField")
-      .setPosition(370, 350)
-      .setSize(150, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText("MA2201300001")
-      .moveTo(homePage);
-    
-    setDeviceSerialNumber = cp5.addButton("setDeviceSerialNumber")
-      .setPosition(550, 350)
-      .setSize(200, 25)
-      .moveTo(homePage);
-    setDeviceSerialNumber.getCaptionLabel().setText("Set Serial Number").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    setDeviceNicknameField = cp5.addTextfield("setDeviceNicknameField")
-      .setPosition(370, 380)
-      .setSize(150, 25)
-      .setFont(createFont("arial", 20))
-      .setColor(0)
-      .setColorBackground(color(255))
-      .setColorForeground(color(0))
-      .setAutoClear(false)
-      .setText("Mantarray2.2 ")
-      .moveTo(homePage);
-    
-    setDeviceNickname = cp5.addButton("setDeviceNickname")
-      .setPosition(550, 380)
-      .setSize(200, 25)
-      .moveTo(homePage);
-    setDeviceNickname.getCaptionLabel().setText("Set Device Nickname").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    isMantarray = cp5.addButton("isMantarray")
-      .setPosition(770, 350)
-      .setSize(150, 25)
-      .moveTo(homePage);
-    isMantarray.getCaptionLabel().setText("Set as Mantarray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    isStingray = cp5.addButton("isStingray")
-      .setPosition(770, 380)
-      .setSize(150, 25)
-      .moveTo(homePage);
-    isStingray.getCaptionLabel().setText("Set as Stingray").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-    
-    testButton = cp5.addButton("testButton")
-      .setPosition(800, 110)
-      .setSize(50, 50)
-      .moveTo(homePage);
-    testButton.getCaptionLabel().setText("TEST").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-      
+
     logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(400, 420)
       .setColorBackground(color(255))
@@ -335,7 +345,13 @@
       .setColor(color(0))
       .setText("Starting utility tool\n")
       .moveTo(homePage);
-          
+    
+    testButton = cp5.addButton("testButton")
+      .setPosition(800, 110)
+      .setSize(100, 100)
+      .moveTo(homePage);
+    testButton.getCaptionLabel().setText("TEST").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+     
     cp5.addListener(this);
   }
   
@@ -344,12 +360,20 @@
     if (theEvent.isAssignableFrom(Button.class)){
       if (controllerName.equals("loadChannelFirmwareButton")){
         selectInput("Select a file to load as channel microcontroller firmware:", "LoadChannelFirmware");
+        settingsJSON.setString("Channel_Major", channelMajorVersion.getText());
+        settingsJSON.setString("Channel_Minor", channelMinorVersion.getText());
+        settingsJSON.setString("Channel_Revision", channelRevisionVersion.getText());
+        saveJSONObject(settingsJSON, topSketchPath+"/config/config.json");
       }
       else if (controllerName.equals("loadMainFirmwareButton")){
         selectInput("Select a file to load as main microcontroller firmware:", "LoadMainFirmware");
+        settingsJSON.setString("Main_Major", mainMajorVersion.getText());
+        settingsJSON.setString("Main_Minor", mainMinorVersion.getText());
+        settingsJSON.setString("Main_Revision", mainRevisionVersion.getText());
+        saveJSONObject(settingsJSON, topSketchPath+"/config/config.json");
       }
       if (controllerName.equals("startButtonMags")){
-        if (boardConfigSet && !magCaptureInProgress){
+        if (!magCaptureInProgress){
           c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
           dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
           dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
@@ -360,12 +384,9 @@
           logDisplay.append("Starting Data Capture\n");
           logLog.println("Starting data capture");
         }
-        else if (magCaptureInProgress){
+        else {
           logDisplay.append("There is already a magnetometer data capture running\n");
           logLog.println("There is already a magnetometer data capture running");
-        } else {
-          logDisplay.append("Please set a board configuration before beginning a data capture\n");
-          logLog.println("Please set a board configuration before beginning a data capture");
         }
       }
       if (controllerName.equals("stopButtonMags")){
@@ -414,13 +435,19 @@
           logLog.println("No stimulation process currently running to stop");
         }
       }
-      if (controllerName.equals("setSensorRateButton")){
-        Packet magConfig = new Packet();
-        byte[] magConfigConverted = magConfig.MagnetometerConfiguration();
-        serialPort.write(magConfigConverted);
-        thisHomePageControllers.logDisplay.append("Board Configuration Set\n");
-        logLog.println("Board configuration set");
-        boardConfigSet = true;
+      if (controllerName.equals("startButtonHeadless")){
+        Packet startHeadlessPacket = new Packet();
+        byte[] startHeadlessPacketConverted = startHeadlessPacket.StartHeadless();
+        serialPort.write(startHeadlessPacketConverted);
+        logDisplay.append("Initiating Headless Mode\n");
+        logLog.println("Initiating Headless Mode");
+      }
+      if (controllerName.equals("stopButtonHeadless")){
+        Packet stopHeadlessPacket = new Packet();
+        byte[] stopHeadlessPacketConverted = stopHeadlessPacket.StopHeadless();
+        serialPort.write(stopHeadlessPacketConverted);
+        logDisplay.append("Terminating Headless Mode\n");
+        logLog.println("Terminating Headless Mode");
       }
       /*if (controllerName.equals("setBoardConfigButton")){
         thisMagPageControllers.magnetometerSelector.show();
@@ -466,10 +493,10 @@
         logDisplay.append("Barcode tuning sequence begun\n");
         logLog.println("Barcode tuning sequence begun");
       }
-      if (controllerName.equals("StimLoopTest")){
+      if (controllerName.equals("testButton")){
         //selectInput("Select a file to load as channel microcontroller firmware:", "PerformStimTest");
-        //int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
-        int[] this_config = {1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 196, 9, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 60, 246, 117, 6, 5, 0, 0, 0, 180, 0, 0, 0, 0, 1, 0};
+        int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
+        //int[] this_config = {1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 196, 9, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 60, 246, 117, 6, 5, 0, 0, 0, 180, 0, 0, 0, 0, 1, 0};
         List<Byte> this_config_Byte = new ArrayList<Byte>();
         for (int i = 0; i < this_config.length; i++){
           this_config_Byte.add(uint2byte(this_config[i]));
@@ -536,6 +563,8 @@
         serialPort.write(newDeviceNicknamePacketConverted);
         logDisplay.append("New device nickname sent\n");
         logLog.println("New device nickname sent");
+        settingsJSON.setString("Nickname", setDeviceNicknameField.getText());
+        saveJSONObject(settingsJSON, topSketchPath+"/config/config.json");
       }
       
       if (controllerName.equals("isMantarray")){
@@ -554,10 +583,26 @@
         logLog.println("Device Type Set as Stingray");
       }
       
-      if (controllerName.equals("testButton")){
-        Packet testPacket = new Packet();
-        byte[] testPacketConverted = testPacket.Test();
-        serialPort.write(testPacketConverted);
+      if (controllerName.equals("errorStatsButton")){
+        Packet errorStatsPacket = new Packet();
+        byte[] errorStatsPacketConverted = errorStatsPacket.ErrorStats();
+        serialPort.write(errorStatsPacketConverted);
+        logDisplay.append("Requesting Error Statistics\n");
+        logLog.println("Requesting Error Statistics");
+      }
+      
+      if (controllerName.equals("clearErrorButton")){
+        Packet clearErrorPacket = new Packet();
+        byte[] clearErrorPacketConverted = clearErrorPacket.ErrorAck();
+        serialPort.write(clearErrorPacketConverted);
+        logDisplay.append("Clearing error from system\n");
+        logLog.println("Clearing error from system");
+      }
+      
+      if (controllerName.equals("scanBarcodeButton")){
+        Packet scanBarcodePacket = new Packet();
+        byte[] scanBarcodePacketConverted = scanBarcodePacket.ScanBarcode();
+        serialPort.write(scanBarcodePacketConverted);
       }
     }
   }

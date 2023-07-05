@@ -82,6 +82,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
   if (newPacket.packetType==1){
     PrintDataToFile(newPacket.data);
   } else {
+    String PC_States[] = {"Disconnected", "Connected", "Headless"};
     logLog.print(String.format("%d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.packetType));
     print(String.format("%d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.packetType));
     logLog.print(newPacket.data);
@@ -93,6 +94,12 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       //logDisplay.append("Beacon Recieved\n");
       logLog.println("Beacon Recieved");
       beaconRecieved = true;
+      break;
+    case 3:
+      String PCStateString = String.format("The current PC stats is: %d\n", PC_States[newPacket.data.get(0)]);
+      print(PCStateString);
+      thisHomePageControllers.logDisplay.append(PCStateString);
+      logLog.print(PCStateString);
       break;
     case 4:
       //logDisplay.append("Command Response Recieved\n");
@@ -114,7 +121,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
         logLog.print(toDisplay);
       }
       break;
-    case 60: case 61:
+    case 60: case 61: case 62: case 63: case 64:
       String[] stringsToDisplay = new String[6];
       //Skip the boot flags
       int dataScanner = 1;
@@ -123,7 +130,7 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       for (int i = 0; i < 13; i++){
         nickname[i] = newPacket.data.get(dataScanner + i);
       }
-      dataScanner+=13; //<>//
+      dataScanner+=13;
       String nicknameString = new String(nickname, "UTF-8");
       stringsToDisplay[0] = "Nickname: " + nicknameString + "\n";
       //Retrieve serial number
@@ -184,7 +191,51 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
         logLog.println("Tuning Failed");
         thisHomePageControllers.logDisplay.append("Tuning Failed\n");
       }
+      break;
+    case 253:
+      int errorStatsDataScanner = 0;
+      int numErrorStats = 10;
+      List<String> errorStatsToDisplay = new ArrayList<String>(numErrorStats);
+      int errorStatsNum = 0;
+      String errorStatStrings[] = {"Time of last main status change",
+                                   "Time of last channel status change",
+                                   "Time of last mag start",
+                                   "Time of last stim start",
+                                   "Time of last handshake",
+                                   "Time of last disconnect",
+                                   "Mags running",
+                                   "Stims running",
+                                   "PC State",
+                                   "Last barcode scanned"};                
+      String Bool2Text[] = {"False", "True"};
       
+      //Get the stat timestamps
+      int numErrorTimestamps = 6;
+      for (int timestampNum = 0; timestampNum < numErrorTimestamps; timestampNum++){
+        long thisTimestamp = 0;
+        for (int byteNum = 0; byteNum < TIMESTAMP_LENGTH; byteNum++){
+           thisTimestamp += (long)Math.pow(256,byteNum)*byte2long(newPacket.data.get(errorStatsDataScanner++));
+        }
+        errorStatsToDisplay.add(String.format("%s: %d\n", errorStatStrings[errorStatsNum++], thisTimestamp));
+      }
+      //Get stimulator and magnetometer states
+      errorStatsToDisplay.add(String.format("%s: %s\n", errorStatStrings[errorStatsNum++], Bool2Text[newPacket.data.get(errorStatsDataScanner++)]));
+      errorStatsToDisplay.add(String.format("%s: %s\n", errorStatStrings[errorStatsNum++], Bool2Text[newPacket.data.get(errorStatsDataScanner++)]));
+      //Get the PC state
+      errorStatsToDisplay.add(String.format("%s: %s\n", errorStatStrings[errorStatsNum++], PC_States[newPacket.data.get(errorStatsDataScanner++)]));
+      //Get last barcode scanned
+      byte[] barcodeArr = new byte[12];
+      for (int i = 0; i < 12; i++){
+        barcodeArr[i] = newPacket.data.get(errorStatsDataScanner++);
+      }
+      String barcodeString = new String(barcodeArr, "UTF-8");
+      errorStatsToDisplay.add(String.format("%s: %s\n", errorStatStrings[errorStatsNum++], barcodeString));
+      //Print all of the stats
+      for (int thisErrorStat = 0; thisErrorStat < numErrorStats; thisErrorStat++){
+        print(errorStatsToDisplay.get(thisErrorStat));
+        thisHomePageControllers.logDisplay.append(errorStatsToDisplay.get(thisErrorStat));
+        logLog.print(errorStatsToDisplay.get(thisErrorStat));
+      }
       break;
     }
   }
