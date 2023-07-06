@@ -92,6 +92,13 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
     switch (newPacket.packetType){
     case 0:
       //logDisplay.append("Beacon Recieved\n");
+      for (int i = 0; i < 26; i++){
+        if (newPacket.data.get(i) != 0) {
+          String test = newPacket.data.toString();
+          thisHomePageControllers.logDisplay.append(String.format("Error: %s\n", newPacket.data.toString()));
+          break;
+        }
+      }
       logLog.println("Beacon Recieved");
       beaconRecieved = true;
       break;

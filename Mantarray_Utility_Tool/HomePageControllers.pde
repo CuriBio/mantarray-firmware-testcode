@@ -337,9 +337,9 @@
         
 
     logDisplay = cp5.addTextarea("logDisplay")
-      .setPosition(400, 420)
+      .setPosition(350, 420)
       .setColorBackground(color(255))
-      .setSize(500, 150)
+      .setSize(550, 150)
       .setFont(createFont("arial", 16))
       .setLineHeight(20)
       .setColor(color(0))
