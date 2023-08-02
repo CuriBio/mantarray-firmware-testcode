@@ -27,7 +27,11 @@ uint8_t pin_remap(uint8_t pin_input){
 }
 
 int main() {
+
     stdio_init_all();
+
+    // reduce clockspeed to prolong battery life.
+    set_sys_clock_khz(25000, true);
 
     gpio_init(STATUS_LED_GREEN);
     gpio_set_dir(STATUS_LED_GREEN, GPIO_OUT);
@@ -188,7 +192,7 @@ int main() {
             
 
         }else{
-            sleep_ms(120); // idk.
+            sleep_ms(230); // idk.
             if( cable_good ){
                 gpio_put(STATUS_LED_RED, false);
                 gpio_put(STATUS_LED_GREEN, !gpio_get(STATUS_LED_GREEN));

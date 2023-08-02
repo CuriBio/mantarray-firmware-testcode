@@ -1,7 +1,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#define I2C_SPEED 50E3
+#define I2C_SPEED 100E3
 #define I2C_SDA_PIN 0
 #define I2C_SCL_PIN 1
 
