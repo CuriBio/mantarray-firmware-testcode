@@ -29,6 +29,7 @@ memsicCenterOffset = 2**15
 memsicMSB = 2**16
 memsicFullScale = 16
 gauss2MilliTesla = .1
+UUID_PROTOCOL_INFO = 'ede638ce-544e-427a-b1d9-c40784d7c82d'
 
 #%%
 root = Tk()
@@ -52,7 +53,7 @@ os.chdir(targetDataPath)
 wellNum = 0
 fullTimestamps = None
 fullData = None
-
+protocolList = {}
 for file in os.listdir(targetDataPath):
     if not file.endswith('.h5') or file.startswith('Calibration'):
         continue
@@ -60,7 +61,8 @@ for file in os.listdir(targetDataPath):
     if wellMap[wellNum] != wellID:
         print("Error!!")
     
-    dataFile =  h5py.File(file, 'r')      
+    dataFile =  h5py.File(file, 'r')
+    protocolList[wellID] = dataFile.attrs[UUID_PROTOCOL_INFO] 
     rawTimeOffsets = np.array(dataFile[offsetName])
     rawTimeIndices = np.array(dataFile[indexName])
     rawData = np.array(dataFile[dataName])
@@ -146,7 +148,7 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for sensorNum in range(numSensors):
         for axisNum in range(numAxes):
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, 7000:8400], fullData[wellNum, sensorNum, axisNum, 7000:8400] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     # axs[row, col].plot(fullTimestamps[wellNum, 0, :-1], fullData[wellNum, 0, 2, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
@@ -157,7 +159,7 @@ for wellNum in range(numWells):
     axs[row, col].grid(which='minor', linewidth=.5)
     axs[row, col].legend(fontsize = 20)
     
-fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_time", bbox_inches = 'tight')
+fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_time_calibration", bbox_inches = 'tight')
 
 #%% IF YOU ARE DOING FREQUENCY ANALYSIS transform the timestamp array into a linear array
 # timediff = np.mean(np.diff(fullTimestamps[0,0]))
