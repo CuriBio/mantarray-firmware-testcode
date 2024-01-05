@@ -148,7 +148,7 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for sensorNum in range(numSensors):
         for axisNum in range(numAxes):
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, 7000:8400], fullData[wellNum, sensorNum, axisNum, 7000:8400] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     # axs[row, col].plot(fullTimestamps[wellNum, 0, :-1], fullData[wellNum, 0, 2, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)

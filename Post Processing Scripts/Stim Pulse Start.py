@@ -26,23 +26,24 @@ memsicCenterOffset = 2**15
 memsicMSB = 2**16
 memsicFullScale = 16
 gauss2MilliTesla = .1
+UUID_PROTOCOL_INFO = 'ede638ce-544e-427a-b1d9-c40784d7c82d'
 
 #%%
-root = Tk()
-root.wm_attributes('-topmost', 1)
-fileName = askopenfilename()
-root.destroy()
-stimConfig = json.load(open(fileName, 'r'))
-thisProtocol = stimConfig["protocols"][0]["protocol"]
-numSubprotocols = len(thisProtocol["subprotocols"])
+# root = Tk()
+# root.wm_attributes('-topmost', 1)
+# fileName = askopenfilename()
+# root.destroy()
+# stimConfig = json.load(open(fileName, 'r'))
+# thisProtocol = stimConfig["protocols"][0]["protocol"]
+# numSubprotocols = len(thisProtocol["subprotocols"])
 
-pulseTiming = np.zeros(numSubprotocols)
-for subprotocolIndex, subprotocol in enumerate(thisProtocol["subprotocols"]):
-    pulseTiming[subprotocolIndex] += (subprotocol["interphase_interval"] + 
-                                      subprotocol["phase_one_duration"] + 
-                                      subprotocol["phase_two_duration"] + 
-                                      subprotocol["postphase_interval"])
-    pulseTiming[subprotocolIndex]/=1000
+# pulseTiming = np.zeros(numSubprotocols)
+# for subprotocolIndex, subprotocol in enumerate(thisProtocol["subprotocols"]):
+#     pulseTiming[subprotocolIndex] += (subprotocol["interphase_interval"] + 
+#                                       subprotocol["phase_one_duration"] + 
+#                                       subprotocol["phase_two_duration"] + 
+#                                       subprotocol["postphase_interval"])
+#     pulseTiming[subprotocolIndex]/=1000
 
 #%%
 root = Tk()
@@ -68,6 +69,8 @@ fullTimestamps = None
 fullData = None
 fullStimData = None
 largestStimData = None
+protocolList = {}
+pulseTimingDict = {}
 
 for file in os.listdir(targetDataPath):
     if not file.endswith('.h5') or file.startswith('Calibration'):
@@ -76,7 +79,20 @@ for file in os.listdir(targetDataPath):
     if wellMap[wellNum] != wellID:
         print("Error!!")
     
-    dataFile =  h5py.File(file, 'r')      
+    dataFile =  h5py.File(file, 'r')    
+    
+    protocolList[wellID] = dataFile.attrs[UUID_PROTOCOL_INFO] 
+    thisProtocol = json.loads(protocolList[wellID])
+    numSubprotocols = len(thisProtocol["subprotocols"])
+    pulseTimingTemp = np.zeros(numSubprotocols)
+    for subprotocolIndex, subprotocol in enumerate(thisProtocol["subprotocols"]):
+        pulseTimingTemp[subprotocolIndex] += (subprotocol["interphase_interval"] + 
+                                          subprotocol["phase_one_duration"] + 
+                                          subprotocol["phase_two_duration"] + 
+                                          subprotocol["postphase_interval"])
+        pulseTimingTemp[subprotocolIndex]/=1e6
+    pulseTimingDict[wellID] = pulseTimingTemp
+    
     rawTimeOffsets = np.array(dataFile[offsetName])
     rawTimeIndices = np.array(dataFile[indexName])
     rawData = np.array(dataFile[dataName])
@@ -116,6 +132,7 @@ for file in os.listdir(targetDataPath):
     wellNum+=1
     
 #%%
+finalIndex = 7000
 fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey=True)
 for wellNum in range(numWells):
 # for wellNum in range(1):
@@ -123,7 +140,7 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for sensorNum in range(numSensors):
         for axisNum in range(numAxes):
-            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :-1], fullData[wellNum, sensorNum, axisNum, :-1] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
+            axs[row, col].plot(fullTimestamps[wellNum, sensorNum, :finalIndex], fullData[wellNum, sensorNum, axisNum, :finalIndex] * 1000, label=f'Sensor {sensorNum + 1} Axis {axisMap[axisNum]}')
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)
@@ -143,14 +160,15 @@ for wellNum in range(numWells):
     col = int(wellNum % 6)
     for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
         # axs[row, col].vlines(fullStimData[wellNum], axs[row, col].get_ylim()[0], axs[row, col].get_ylim()[1], linewidths = .5)
-
+    
         if subprotocolIndex != 255:
+            thisSubprotocolPulseTiming = pulseTimingDict[wellMap[wellNum]][int(subprotocolIndex)]
             beginning = fullStimData[wellNum, 0, subprotocolNumber]
             #If the stimulation began before the recording started, we want to shift where the beginning is to be within the recording range
             if beginning < np.min(fullTimestamps):
-                beginning = graphLeft + ((beginning - graphLeft) % pulseTiming[int(subprotocolIndex)])
+                beginning = graphLeft + ((beginning - graphLeft) % thisSubprotocolPulseTiming)
             ending = fullStimData[wellNum, 0, subprotocolNumber + 1] if subprotocolNumber < fullStimData.shape[2] - 1 else graphRight
-            pulseStarts = np.arange(beginning, ending, pulseTiming[int(subprotocolIndex)])
+            pulseStarts = np.arange(beginning, ending, thisSubprotocolPulseTiming)
             axs[row, col].vlines(pulseStarts, graphBottom, graphTop, linewidths = .5, colors = "red")
     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_transient", bbox_inches = 'tight')
