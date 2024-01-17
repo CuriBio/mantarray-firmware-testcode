@@ -42,9 +42,14 @@
   Textarea logDisplay;
   Button testButton;
   
+  Textfield sextantRuntime;
+  Textfield sextantDelay;
+  Button runSextant;
+  
   Textfield setSensorRateField;
   
   final Timer magnetometerTimer;
+  final Timer statsTimer;
   
   //*************************************************************BOARD CONFIGURATION DEFINES*******************************************************************************  
   ControlGroup magnetometerSelector;
@@ -64,6 +69,7 @@
     }
     
     magnetometerTimer = new Timer("magnetometerTimer", true);
+    statsTimer = new Timer("statsTimer", true);
     
     homePage = cp5.addGroup("homePage")
       .setPosition(0, 0)
@@ -347,10 +353,40 @@
       .moveTo(homePage);
     
     testButton = cp5.addButton("testButton")
-      .setPosition(800, 110)
+      .setPosition(800, 70)
       .setSize(100, 100)
       .moveTo(homePage);
     testButton.getCaptionLabel().setText("TEST").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
+    
+    sextantRuntime = cp5.addTextfield("sextantRuntime")
+      .setPosition(800, 180)
+      .setSize(70, 30)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(10000))
+      .moveTo(homePage);
+    sextantRuntime.getCaptionLabel().setText("Sextant Runtime (ms)").setColor(0).setFont(createFont("arial", 12)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(75);
+    
+    sextantDelay = cp5.addTextfield("sextantDelay")
+      .setPosition(800, 210)
+      .setSize(70, 30)
+      .setFont(createFont("arial", 20))
+      .setColor(0)
+      .setColorBackground(color(255))
+      .setColorForeground(color(0))
+      .setAutoClear(false)
+      .setText(String.valueOf(10000))
+      .moveTo(homePage);
+    sextantDelay.getCaptionLabel().setText("Sextant Delay (ms)").setColor(0).setFont(createFont("arial", 12)).toUpperCase(false).align(LEFT, CENTER).getStyle().setMarginLeft(75);
+    
+    runSextant = cp5.addButton("runSextant")
+      .setPosition(800, 240)
+      .setSize(180, 30)
+      .moveTo(homePage);
+    runSextant.getCaptionLabel().setText("Run Sextant Stimulation").setColor(255).setFont(createFont("arial", 16)).align(CENTER, CENTER).toUpperCase(false);
      
     cp5.addListener(this);
   }
@@ -374,8 +410,8 @@
       }
       if (controllerName.equals("startButtonMags")){
         if (!magCaptureInProgress){
-          c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-          dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+          inst_time = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+          dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", inst_time.get(Calendar.YEAR), inst_time.get(Calendar.MONTH)+1, inst_time.get(Calendar.DAY_OF_MONTH), inst_time.get(Calendar.HOUR_OF_DAY), inst_time.get(Calendar.MINUTE), inst_time.get(Calendar.SECOND))); 
           dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
           magCaptureInProgress = true;
           Packet magStart = new Packet();
@@ -423,17 +459,21 @@
         
       }
       if (controllerName.equals("stopButtonStims")){
+        //Packet stimEnd = new Packet();
+        //byte[] stimEndConverted = stimEnd.TrueStimulatorEnd();
+        //serialPort.write(stimEndConverted);
         if (stimulationInProgress) {
           stimulationInProgress = false;
           Packet stopStimulatorPacket = new Packet();
           byte[] stopStimulatorPacketConverted = stopStimulatorPacket.StimulatorEnd();
           serialPort.write(stopStimulatorPacketConverted);
-          logDisplay.append("Stopping Data Capture\n");
-          logLog.println("Stopping data capture");
+          logDisplay.append("Stopping Stimulator\n");
+          logLog.println("Stopping Stimulator");
         } else {
           logDisplay.append("No stimulation process currently running to stop\n");
           logLog.println("No stimulation process currently running to stop");
         }
+        
       }
       if (controllerName.equals("startButtonHeadless")){
         Packet startHeadlessPacket = new Packet();
@@ -476,6 +516,8 @@
         }
         logLog.flush();
         logLog.close();
+        memLog.flush();
+        memLog.close();
         exit();
       }
       
@@ -495,7 +537,30 @@
       }
       if (controllerName.equals("testButton")){
         //selectInput("Select a file to load as channel microcontroller firmware:", "PerformStimTest");
-        int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 2, 0, 23};
+        //500:    {244, 1}
+        //1000:   {232, 3}
+        //1500:   {220, 5}
+        //2000:   {208, 7}
+        //-2000:  {48, 248}
+        //2500:   {196, 9}
+        //4000:   {160, 15}
+        //-4000:  {96, 240}
+        //6000:   {112, 23}
+        //-6000:  {144, 232}
+        //8000:   {64, 31}
+        //-8000:  {192, 224}
+        //10000:  {16, 39}
+        //-10000: {240, 216}
+        //int[] this_config_40mA = {1, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 0, 1, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 2, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 20, 20, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 96, 240, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 0, 5, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        //int[] this_config_60mA = {1, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 0, 1, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 2, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 20, 20, 0, 0, 112, 23, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 144, 232, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 0, 5, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        //int[] this_config_80mA = {1, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 0, 1, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 2, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 20, 20, 0, 0, 64, 31, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 192, 224, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 0, 5, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        /*int[] this_config_20mA = {1, 0, 1, 0, 1, 2, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 224, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 1, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 20, 20, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 48, 248, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        int[] this_config_40mA = {1, 0, 1, 0, 1, 2, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 1, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 20, 20, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 96, 240, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        int[] this_config_60mA = {1, 0, 1, 0, 1, 2, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 1, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 20, 20, 0, 0, 112, 23, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 144, 232, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        int[] this_config_80mA = {1, 0, 1, 0, 1, 2, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 1, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 20, 20, 0, 0, 64, 31, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 192, 224, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        int[] this_config_100mA = {1, 0, 1, 0, 1, 2, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 1, 208, 7, 0, 0, 244, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 20, 20, 0, 0, 16, 39, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 240, 216, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+        */
+        /*int[] this_config = {1, 0, 1, 0, 1, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 232, 3, 0, 0, 1, 1, 2, 3, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 1, 232, 3, 0, 0, 16, 39, 208, 7, 0, 0, 0, 0, 184, 11, 0, 0, 240, 216, 160, 15, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 1, 0, 3, 64, 156, 0, 0, 228, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 64, 13, 3, 0, 0, 0, 10, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 184, 11, 0, 0, 1, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
         //int[] this_config = {1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 196, 9, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 60, 246, 117, 6, 5, 0, 0, 0, 180, 0, 0, 0, 0, 1, 0};
         List<Byte> this_config_Byte = new ArrayList<Byte>();
         for (int i = 0; i < this_config.length; i++){
@@ -508,7 +573,17 @@
         logLog.println("Sending stimulation schedule");
         Packet stimBegin = new Packet();
         byte[] stimBeginConverted = stimBegin.TrueStimulatorBegin();
-        serialPort.write(stimBeginConverted);
+        serialPort.write(stimBeginConverted);*/
+        //Packet stimCal = new Packet();
+        //byte[] stimCalConverted = stimCal.StimulatorCalibration();
+        //serialPort.write(stimCalConverted);
+        /*if (statsScheduleIsRunning == false){
+          Packet memStats = new Packet();
+          byte[] memStatsConverted = memStats.SendMemoryStats();
+          serialPort.write(memStatsConverted);
+          statsScheduleIsRunning = true;
+          MemoryStatsScheduler(100, 2000);
+        }*/
       }
       if (controllerName.equals("startMagnetometerSchedule")){
         if (magnetometerScheduleComplete == false){
@@ -604,6 +679,14 @@
         byte[] scanBarcodePacketConverted = scanBarcodePacket.ScanBarcode();
         serialPort.write(scanBarcodePacketConverted);
       }
+      
+      if (controllerName.equals("runSextant")){
+        Packet StartSextantStimulationPacket = new Packet();
+        byte[] StartSextantStimulationPacketConverted = StartSextantStimulationPacket.StartSextantStimulation();
+        serialPort.write(StartSextantStimulationPacketConverted);
+        logDisplay.append("Starting sextant-based stimulation\n");
+        logLog.println("Starting sextant-based stimulation");
+      }
     }
   }
   
@@ -618,8 +701,8 @@
           logLog.println("Magnetometer data capture schedule complete");
         } else {
           if (!magCaptureInProgress){
-            c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-            dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+            inst_time = Calendar.getInstance(TimeZone.getTimeZone("PST"));
+            dataLog = createWriter(String.format("./data/%04d-%02d-%02d_%02d-%02d-%02d_data.txt", inst_time.get(Calendar.YEAR), inst_time.get(Calendar.MONTH)+1, inst_time.get(Calendar.DAY_OF_MONTH), inst_time.get(Calendar.HOUR_OF_DAY), inst_time.get(Calendar.MINUTE), inst_time.get(Calendar.SECOND)));
             dataLog.println(Arrays.toString(magnetometerConfigurationArray.toArray()).replace("[", "").replace("]", ""));
             magCaptureInProgress = true;
             Packet magStart = new Packet();
@@ -653,5 +736,56 @@
     };
   
     magnetometerTimer.schedule(periodicCapture, 0, delayInBetween);
+  }
+  
+  void MemoryStatsScheduler(final int totalIterations, long delayInBetween){
+    TimerTask periodicPacketBurst = new TimerTask() {
+      int numCaptures = 0;
+      public void run() {
+        if (numCaptures >= totalIterations) {
+          statsTimer.cancel();
+          statsScheduleIsRunning = false;
+          logDisplay.append("Memory stats schedule complete\n");
+          logLog.println("Memory stats schedule complete");
+        } else {
+          logDisplay.append("Beginning next command burst for memory stats\n");
+          logLog.println("Beginning next command burst for memory stats");
+          //Start a stim schedule and magnetometers
+          //Packet BeginStimCheckPacket = new Packet();
+          //byte[] BeginStimCheckPacketConverted = BeginStimCheckPacket.BeginStimCheck();
+          //serialPort.write(BeginStimCheckPacketConverted);
+          int[] config = {1, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 0, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 0, 1, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 112, 58, 15, 0, 0, 0, 60, 0, 0, 0, 0, 1, 3, 60, 0, 0, 0, 0, 2, 208, 7, 0, 0, 208, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 109, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 20, 20, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 20, 20, 0, 0, 96, 240, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 181, 3, 0, 0, 1, 0, 5, 208, 7, 0, 0, 160, 15, 0, 0, 0, 0, 0, 0, 208, 7, 0, 0, 96, 240, 160, 50, 15, 0, 0, 0, 60, 0, 0, 0, 0, 24, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
+          List<Byte> this_config_Byte = new ArrayList<Byte>();
+          for (int i = 0; i < config.length; i++){
+            this_config_Byte.add(uint2byte(config[i]));
+          }
+          Packet stimConfig = new Packet();
+          byte[] stimConfigConverted = stimConfig.TrueStimulatorConfiguration(this_config_Byte);
+          serialPort.write(stimConfigConverted);
+          Packet stimBegin = new Packet();
+          byte[] stimBeginConverted = stimBegin.TrueStimulatorBegin();
+          serialPort.write(stimBeginConverted);
+          Packet magStart = new Packet();
+          byte[] magStartConverted = magStart.MagnetometerDataCaptureBegin();
+          serialPort.write(magStartConverted);
+          
+          delay(1000);
+          //Stop the stim schedule and magnetometers, return and log memory stats
+          Packet magStop = new Packet();
+          byte[] magStopConverted = magStop.MagnetometerDataCaptureEnd();
+          serialPort.write(magStopConverted);
+          Packet stimEnd = new Packet();
+          byte[] stimEndConverted = stimEnd.TrueStimulatorEnd();
+          serialPort.write(stimEndConverted);
+          Packet memStats = new Packet();
+          byte[] memStatsConverted = memStats.SendMemoryStats();
+          serialPort.write(memStatsConverted);
+          
+          numCaptures++;
+        }
+      }
+    };
+  
+    statsTimer.schedule(periodicPacketBurst, 0, delayInBetween);
   }
 }

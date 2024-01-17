@@ -212,7 +212,7 @@ public class MagPageControllers implements ControlListener {
       }
       if (controllerName.equals("boardConfigurationSubmit")){
         magConfigurationByteArray = configDataGenerator();
-        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>// //<>//
+        thisMagPageControllers.magnetometerSelector.hide(); //<>// //<>// //<>// //<>//
         thisHomePageControllers.homePage.show();
         Packet magConfig = new Packet();
         byte[] magConfigConverted = magConfig.MagnetometerConfiguration();

@@ -171,6 +171,37 @@ class Packet{
     return this.toByte();
   }
   
+  byte[] TrueStimulatorEnd(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 22;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] StimulatorCalibration(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 28;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] StartSextantStimulation(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 29;
+    this.packetLength = 17;
+    this.CRC = 123123123;
+    this.data = new ArrayList<Byte>(4);
+    int sextantRuntimeValue = (Integer.valueOf(thisHomePageControllers.sextantRuntime.getText()));
+    int sextantDelayValue = (Integer.valueOf(thisHomePageControllers.sextantDelay.getText()));
+    this.data.add(0, uint2byte(sextantRuntimeValue & 0x000000ff));
+    this.data.add(1, uint2byte((sextantRuntimeValue>>8) & 0x000000ff));
+    this.data.add(2, uint2byte(sextantDelayValue & 0x000000ff));
+    this.data.add(3, uint2byte((sextantDelayValue>>8) & 0x000000ff));
+    return this.toByte();
+  }
+  
   byte[] StartHeadless(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 40;
@@ -256,6 +287,14 @@ class Packet{
   byte[] ErrorAck(){
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;
     this.packetType = 254;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
+  
+  byte[] SendMemoryStats(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 102;
     this.packetLength = 13;
     this.CRC = 123123123;
     return this.toByte();

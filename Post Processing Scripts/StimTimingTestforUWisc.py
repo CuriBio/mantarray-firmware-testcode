@@ -27,6 +27,7 @@ memsicMSB = 2**16
 memsicFullScale = 16
 gauss2MilliTesla = .1
 UUID_PROTOCOL_INFO = 'ede638ce-544e-427a-b1d9-c40784d7c82d'
+colors = ['blue', 'orange', 'green', 'red', 'purple']
 
 #%%
 root = Tk()
@@ -114,10 +115,10 @@ for file in os.listdir(targetDataPath):
 
     wellNum+=1
 
-#%% Splitting every subprotocol into its own graph
+#%% Iterate over every subprotocol and plot the delays and the individual pulse graph
 peakedData = fullData[:,0,2,:]
 peakedTimestamps = fullTimestamps[:,0,:]
-fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey=True)
+fig, axs = plt.subplots(4, 6, figsize=(100, 100), sharey = True)
 numNotCaptured = 0
 for wellNum in range(numWells):
     row = int(wellNum / 6)
@@ -128,7 +129,7 @@ for wellNum in range(numWells):
     # Find the prominence of each peak
     prominences = peak_prominences(thisData, peaks)[0]
     # Filter the peaks so that we are only paying attention to those that have a significant prominence
-    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/1.2)[0]
+    filteredPeaks = find_peaks(thisData, prominence = np.amax(prominences)/3)[0]
     totalPulses = 0
     SubprotocolLabel = 1
     for subprotocolNumber, subprotocolIndex in enumerate(fullStimData[wellNum, 1]):
@@ -140,64 +141,71 @@ for wellNum in range(numWells):
             thisSubprotocolPulseTiming = pulseTimingDict[wellMap[wellNum]][int(subprotocolIndex)]
             pulseStarts = np.arange(startTime, endTime, thisSubprotocolPulseTiming)
             
-            timestampIndexAtBeginning = np.argmin(np.abs(thisTimestamps - startTime))
-            timestampIndexAtEnding = np.argmin(np.abs(thisTimestamps - endTime))
+            timestampIndexAtBeginning = np.argmin(np.abs(thisTimestamps - pulseStarts[0]))
+            timestampIndexAtEnding = np.argmin(np.abs(thisTimestamps - pulseStarts[-1]))
             
             # Find the index in the filtered peaks array that matches up to the index at the beginning of the timestamp array for this subprotocol
-            firstPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtBeginning]))
+            firstPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - pulseStarts[0]))
+            if thisTimestamps[filteredPeaks[firstPeakIndex]] - pulseStarts[0] > (thisSubprotocolPulseTiming / 2):
+                pulseStarts = pulseStarts[1:]
             # Find the index in the filtered peaks array that matches up to the index at the ending of the timestamp array for this subprotocol
-            lastPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - thisTimestamps[timestampIndexAtEnding])) + 1
+            lastPeakIndex = np.argmin(np.abs(thisTimestamps[filteredPeaks] - pulseStarts[-1])) + 1
+            # if thisTimestamps[lastPeakIndex] - pulseStarts[:-1]:
+                
             windowedPeaks = filteredPeaks[firstPeakIndex:lastPeakIndex]
-            peakDelays = np.diff(thisTimestamps[windowedPeaks])
+            peakDelays = np.diff(thisTimestamps[windowedPeaks])                
             avgPeakDelay = np.mean(peakDelays)
-            if np.min(peakDelays) < avgPeakDelay/2:
+            if np.min(peakDelays) < avgPeakDelay / 2:
                 indicesToDelete = []
                 for index, delay in enumerate(peakDelays):
-                    if (delay < avgPeakDelay/2):
+                    if (delay < avgPeakDelay / 2):
                         beforePeakIndex = windowedPeaks[index]
                         afterPeakIndex = windowedPeaks[index + 1]
                         indicesToDelete.append(index if thisData[afterPeakIndex] > thisData[beforePeakIndex] else (index+1))
                 windowedPeaks = np.delete(windowedPeaks, indicesToDelete)
                 
-            
             if pulseStarts.shape[0] != windowedPeaks.shape[0]:
                 pulseDifference = windowedPeaks.shape[0] - pulseStarts.shape[0]
-                # If you are a little under the correct number, the peak may be slightly cut off on the end
-                # if pulseDifference < 0 and pulseDifference > -3:
+                # Too many pulses, not enough peaks
+                if pulseDifference in range(-2, 0):
+                    pulseStarts = pulseStarts[:-1]
                 #     if subprotocolNumber == 0 and len(fullStimData[wellNum, 1]) > 1:
                 #         firstPulseIndex -= pulseDifference
                 #     else: 
                 #         lastPulseIndex += pulseDifference
+            #     # Too many peaks, not enough pulses
+            #     if pulseDifference is in range(1, 3):
             if pulseStarts.shape[0] == thisTimestamps[windowedPeaks].shape[0]:
                 # Derive a delay array from when the pulses started compared to their corresponding peaks
                 delays = thisTimestamps[windowedPeaks] - pulseStarts
                 # Plot the delay array
-                axs[row, col].plot(np.arange(totalPulses, totalPulses + delays.shape[0]), delays, label=f'Subprotocol Number {SubprotocolLabel}')
-                totalPulses += delays.shape[0]
+                axs[row, col].plot(np.arange(totalPulses, totalPulses + pulseStarts.shape[0]), delays, color = colors[SubprotocolLabel - 1], label=f'Subprotocol Number {SubprotocolLabel}')
             else:
                 print (f'Skipping Well {wellMap[wellNum]}, subprotocol {subprotocolNumber}, did not capture')
                 numNotCaptured += 1
+            totalPulses += pulseStarts.shape[0]
             
-            # figSub, axsSub = plt.subplots(figsize=(20, 20))
-            # axsSub.plot(thisTimestamps[timestampIndexAtBeginning:timestampIndexAtEnding], thisData[timestampIndexAtBeginning:timestampIndexAtEnding] * 1000, label='Sensor 1 Axis Z')
-            # graphTop = axs.get_ylim()[1]
-            # graphBottom = axs.get_ylim()[0]
-            # axsSub.vlines(pulseStarts, graphBottom, graphTop, linewidths = .5, colors = "red")
+            # Splitting every subprotocol into its own graph
+            figSub, axsSub = plt.subplots(figsize=(20, 20))
+            axsSub.plot(thisTimestamps[timestampIndexAtBeginning:timestampIndexAtEnding], thisData[timestampIndexAtBeginning:timestampIndexAtEnding] * 1000, label='Sensor 1 Axis Z')
+            graphTop = axs.get_ylim()[1]
+            graphBottom = axs.get_ylim()[0]
+            axsSub.vlines(pulseStarts, graphBottom, graphTop, linewidths = .5, colors = "red")
             
-            # axsSub.set_title(f'Well {wellMap[wellNum]} Subprotocol #{SubprotocolLabel} of Frequency {1/thisSubprotocolPulseTiming:.2f} Hz', fontsize = 40)
-            # axsSub.set_xlabel('Time (sec)', fontsize = 30)
-            # axsSub.set_ylabel('Magnitude (uT)', fontsize = 30)
-            # axsSub.tick_params(which = 'major', labelsize = 20)
-            # axsSub.minorticks_on()
-            # axsSub.grid(which='major', linewidth=1.5)
-            # axsSub.grid(which='minor', linewidth=.5)
-            # axsSub.legend(fontsize = 20)
+            axsSub.set_title(f'Well {wellMap[wellNum]} Subprotocol #{SubprotocolLabel} of Frequency {1/thisSubprotocolPulseTiming:.2f} Hz', fontsize = 40)
+            axsSub.set_xlabel('Time (sec)', fontsize = 30)
+            axsSub.set_ylabel('Magnitude (uT)', fontsize = 30)
+            axsSub.tick_params(which = 'major', labelsize = 20)
+            axsSub.minorticks_on()
+            axsSub.grid(which='major', linewidth=1.5)
+            axsSub.grid(which='minor', linewidth=.5)
+            axsSub.legend(fontsize = 20)
             
-            # if (os.path.exists(f"{targetPlotsFolderName}\{targetDataFolderName}_plots") == False): 
-            #     os.mkdir(f"{targetPlotsFolderName}\{targetDataFolderName}_plots")
-            # if (os.path.exists(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}") == False): 
-            #     os.mkdir(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}")
-            # figSub.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}\Subprotocol{SubprotocolLabel}", bbox_inches = 'tight')
+            if (os.path.exists(f"{targetPlotsFolderName}\{targetDataFolderName}_plots") == False): 
+                os.mkdir(f"{targetPlotsFolderName}\{targetDataFolderName}_plots")
+            if (os.path.exists(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}") == False): 
+                os.mkdir(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}")
+            figSub.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_plots\Well{wellMap[wellNum]}\Subprotocol{SubprotocolLabel}", bbox_inches = 'tight')
         SubprotocolLabel+=1
         
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)

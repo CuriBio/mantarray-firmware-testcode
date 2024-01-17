@@ -20,9 +20,12 @@ import java.nio.charset.StandardCharsets;
 
 Serial serialPort;
 boolean noBeacon = false;
-Calendar c;
+Calendar inst_time;
+Calendar start_time;
+long start_timestamp;
 PrintWriter dataLog;
 PrintWriter logLog;
+PrintWriter memLog;
 
 int MAG_TIMESTAMP_LENGTH;
 int MAGIC_WORD_LENGTH = 8;
@@ -42,10 +45,28 @@ int NUM_AXES = 3;
 String[] wellNames = {"A1", "A2", "A3", "A4", "A5", "A6", 
   "B1", "B2", "B3", "B4", "B5", "B6", 
   "C1", "C2", "C3", "C4", "C5", "C6", 
-  "D1", "D2", "D3", "D4", "D5", "D6"};
+  "D1", "D2", "D3", "D4", "D5", "D6",
+  "Ref1", "Ref2"};
 String[] sensorNames = {"S1", "S2", "S3"};
 String[] axesNames = {"X", "Y", "Z"};
 String[] statusConversions = {"Good", "Open", "Error"};
+
+String[] thread_watermark_dialogues = {"System thread watermark           - ",
+                                       "Communicator thread watermark     - ",
+                                       "DMARx thread watermark            - ",
+                                       "DMATx thread watermark            - ",
+                                       "Magnetometer thread watermark     - ",
+                                       "Beacon thread watermark           - ",
+                                       "Error thread watermark            - ",
+                                       "Stimulator thread watermark       - ",
+                                       "Barcode scanner thread watermark  - "};
+String[] RTOS_heap_dialogues = {"AvailableHeapSpaceInBytes          - ",
+                                "Size of largest free block         - ",
+                                "Size of smallest free block        - ",
+                                "Number of free blocks              - ",
+                                "Minimum ever free bytes remaining  - ",
+                                "Number of successful allocations   - ",
+                                "Number of successful frees         - "};
 
 int MIN_PACKET_LENGTH = 16;
 byte[] MAGIC_WORD = new byte[]{67, 85, 82, 73, 32, 66, 73, 79};
@@ -60,6 +81,7 @@ boolean runReadThread = false;
 boolean beaconRecieved = false;
 boolean magnetometerScheduleIsRunning = false;
 boolean magnetometerScheduleComplete = false;
+boolean statsScheduleIsRunning = false;
 Checksum crc32 = new CRC32();
 
 Packet IAmHerePacket = new Packet();
@@ -96,8 +118,9 @@ public void setup() {
   
   thisStimPageControllers = new StimPageControllers(this);
   
-  c = Calendar.getInstance(TimeZone.getTimeZone("PST"));
-  logLog = createWriter(String.format("./log/%04d-%02d-%02d_%02d-%02d-%02d_log.txt", c.get(Calendar.YEAR), c.get(Calendar.MONTH)+1, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND))); 
+  start_time = Calendar.getInstance(TimeZone.getDefault());
+  logLog = createWriter(String.format("./log/%04d-%02d-%02d_%02d-%02d-%02d_log.txt", start_time.get(Calendar.YEAR), start_time.get(Calendar.MONTH)+1, start_time.get(Calendar.DAY_OF_MONTH), start_time.get(Calendar.HOUR_OF_DAY), start_time.get(Calendar.MINUTE), start_time.get(Calendar.SECOND))); 
+  memLog = createWriter(String.format("./log/%04d-%02d-%02d_%02d-%02d-%02d_memlog.txt", start_time.get(Calendar.YEAR), start_time.get(Calendar.MONTH)+1, start_time.get(Calendar.DAY_OF_MONTH), start_time.get(Calendar.HOUR_OF_DAY), start_time.get(Calendar.MINUTE), start_time.get(Calendar.SECOND))); 
   
   nanoStart = System.nanoTime();
   start = millis();

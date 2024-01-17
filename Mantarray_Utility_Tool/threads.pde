@@ -10,7 +10,7 @@ void readPackets(){
       try{
         aggregate = performReading(aggregate);
       } catch (Exception e) {
-        print(e); //<>// //<>// //<>//
+        print(e); //<>// //<>// //<>// //<>//
       }
     }
     
@@ -80,7 +80,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
   packetList.add(newPacket);
 
   if (newPacket.packetType==1){
-    PrintDataToFile(newPacket.data);
+    if (statsScheduleIsRunning == false){
+      PrintDataToFile(newPacket.data);
+    }
   } else {
     String PC_States[] = {"Disconnected", "Connected", "Headless"};
     logLog.print(String.format("%d %d %d ", newPacket.packetLength, newPacket.timeStamp, newPacket.packetType));
@@ -100,6 +102,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
         }
       }
       logLog.println("Beacon Recieved");
+      if (beaconRecieved == false){
+        start_timestamp = newPacket.timeStamp;
+      }
       beaconRecieved = true;
       break;
     case 3:
@@ -199,6 +204,9 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
         thisHomePageControllers.logDisplay.append("Tuning Failed\n");
       }
       break;
+    case 102:
+        PrintMemStatsToFile(newPacket.data, newPacket.timeStamp);
+      break;
     case 253:
       int errorStatsDataScanner = 0;
       int numErrorStats = 10;
@@ -247,6 +255,30 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
     }
   }
   thisAggregate.subList(0,thisScanner).clear();
+}
+
+void PrintMemStatsToFile(List<Byte> thisPacketData, long timestamp){
+  Calendar currentTime = (Calendar)start_time.clone();
+  currentTime.add(Calendar.SECOND, (int)((timestamp - start_timestamp)/1000000));
+  String currentTimeString = String.format("%d:%d:%d", currentTime.get(Calendar.HOUR_OF_DAY), currentTime.get(Calendar.MINUTE), currentTime.get(Calendar.SECOND));
+  int[] packetValues = new int[thread_watermark_dialogues.length + RTOS_heap_dialogues.length];
+  int dataScanner = 0;
+  for (int i = 0; i < packetValues.length;i++){
+    for (int j = 0; j < 4; j++){
+      packetValues[i]+=(long)Math.pow(256,j)*byte2long(thisPacketData.get(dataScanner + j));
+    }
+    dataScanner += 4;
+  }
+  memLog.print(String.format("Current time is: %s\n", currentTimeString));
+  memLog.print("Thread watermarks: \n");
+  for (int i = 0; i < thread_watermark_dialogues.length;i++){
+    memLog.print(String.format("%s%d\n", thread_watermark_dialogues[i], packetValues[i]));
+  }
+  memLog.print("\nRTOS heap statistics: \n");
+  for (int i = 0; i < RTOS_heap_dialogues.length;i++){
+    memLog.print(String.format("%s%d\n", RTOS_heap_dialogues[i], packetValues[i + thread_watermark_dialogues.length]));
+  }
+  memLog.print("\n\n");
 }
 
 void PrintDataToFile(List<Byte> thisPacketData){
@@ -308,11 +340,11 @@ List <Byte> performReading(List <Byte> aggregate){
 }
 
 void LoadChannelFirmware(File firmwareFile) {
-  try { //<>//
+  try { //<>// //<>//
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
     
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     
@@ -321,11 +353,11 @@ void LoadChannelFirmware(File firmwareFile) {
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
-     //<>//
+     //<>// //<>//
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
     firmwareBytes.add(buffer);
-     //<>// //<>//
+     //<>// //<>// //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Channel firmware file opened successfully\n");
     logLog.println("Channel firmware file opened successfully");
@@ -360,27 +392,27 @@ void LoadChannelFirmware(File firmwareFile) {
 }
 
 void LoadMainFirmware(File firmwareFile) {
-  try { //<>//
+  try { //<>// //<>//
     InputStream fileReader = new FileInputStream(firmwareFile);
     List<byte[]> firmwareBytes = new ArrayList<byte[]>();
-     //<>//
-    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>//
+     //<>// //<>//
+    long fileSize = firmwareFile.length(); //<>// //<>// //<>// //<>// //<>//
     int numFullPackets = (int)fileSize / MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
     int remainderBytes = (int)fileSize % MAX_FIRMWARE_DATA_IN_SINGLE_PACKET;
-     //<>// //<>//
+     //<>// //<>// //<>//
     for (int i = 0; i < numFullPackets; i++){
       byte[] buffer = new byte[MAX_FIRMWARE_DATA_IN_SINGLE_PACKET];
       fileReader.read(buffer);
       firmwareBytes.add(buffer);
     }
-     //<>//
+     //<>// //<>//
     byte[] buffer = new byte[remainderBytes];
     fileReader.read(buffer);
-    firmwareBytes.add(buffer); //<>//
-     //<>// //<>//
+    firmwareBytes.add(buffer); //<>// //<>//
+     //<>// //<>// //<>//
     fileReader.close();
     thisHomePageControllers.logDisplay.append("Main firmware file opened successfully\n");
-    logLog.println("Main firmware file opened successfully"); //<>// //<>//
+    logLog.println("Main firmware file opened successfully"); //<>// //<>// //<>//
   
     Packet packetBegin = new Packet();
     packetBegin.FirmwareUpdateBegin((int)fileSize, 0);
