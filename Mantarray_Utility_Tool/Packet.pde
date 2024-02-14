@@ -143,6 +143,14 @@ class Packet{
     this.CRC = 123123123;
     return this.toByte();
   }
+  
+  byte[] SetBarcodeComm(){
+    this.timeStamp = (System.nanoTime() - nanoStart)/1000;
+    this.packetType = 93;
+    this.packetLength = 13;
+    this.CRC = 123123123;
+    return this.toByte();
+  }
    //<>//
   byte[] StimulatorConfiguration(List<Byte> timeAmplitudePairs, byte stimulationMode){ //<>//
     this.timeStamp = (System.nanoTime() - nanoStart)/1000;

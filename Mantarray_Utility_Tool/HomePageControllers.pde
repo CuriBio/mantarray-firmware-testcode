@@ -38,6 +38,7 @@
   Textfield magnetometerScheduleDuration;
   Button startMagnetometerSchedule;
   Button stopMagnetometerSchedule;
+  Button setBarcodeComm;
  
   Textarea logDisplay;
   Button testButton;
@@ -340,7 +341,12 @@
       .setSize(200, 30)
       .moveTo(homePage);
     stopMagnetometerSchedule.getCaptionLabel().setText("Stop Schedule").setColor(255).setFont(createFont("arial", 18)).align(CENTER, CENTER).toUpperCase(false);
-        
+    
+    setBarcodeComm = cp5.addButton("setBarcodeComm")
+      .setPosition(840, 310)
+      .setSize(130, 30)
+      .moveTo(homePage);
+    setBarcodeComm.getCaptionLabel().setText("Change Scanner Comm").setColor(255).setFont(createFont("arial", 11)).align(CENTER, CENTER).toUpperCase(false);        
 
     logDisplay = cp5.addTextarea("logDisplay")
       .setPosition(350, 420)
@@ -534,6 +540,13 @@
         serialPort.write(StartBarcodeTunePacketConverted);
         logDisplay.append("Barcode tuning sequence begun\n");
         logLog.println("Barcode tuning sequence begun");
+      }
+      if (controllerName.equals("setBarcodeComm")){
+        Packet SetBarcodeCommPacket = new Packet();
+        byte[] SetBarcodeCommPacketConverted = SetBarcodeCommPacket.SetBarcodeComm();
+        serialPort.write(SetBarcodeCommPacketConverted);
+        logDisplay.append("Reverting barcode scanner to USB communication.  ***WARNING*** PLEASE SHUT DOWN YOUR MANTARRAY AND UNPLUG THE BARCODE SCANNER, IT IS NO LONGER FUNCTIONAL WITH THE MANTARRAY\n");
+        logLog.println("Reverting barcode scanner to USB communication.  ***WARNING*** PLEASE SHUT DOWN YOUR MANTARRAY AND UNPLUG THE BARCODE SCANNER, IT IS NO LONGER FUNCTIONAL WITH THE MANTARRAY");
       }
       if (controllerName.equals("testButton")){
         //selectInput("Select a file to load as channel microcontroller firmware:", "PerformStimTest");
