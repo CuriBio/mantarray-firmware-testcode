@@ -172,12 +172,12 @@ for wellNum in range(numWells):
                     
 #%% Plot the subsequent transient after the broken and abberant sample compensations
 fig, axs = plt.subplots(4, 6, figsize=(100, 100))
-referenceAxis = axs[0, 0].twinx()
+# referenceAxis = axs[0, 0].twinx()
 for wellNum in range(numWells):
     row = int(wellNum / 6)
     col = int(wellNum % 6)
-    rightAxis = axs[row, col].twinx() if wellNum != 0 else referenceAxis
-    rightAxis.get_shared_y_axes().join(rightAxis, referenceAxis)
+    # rightAxis = axs[row, col].twinx() if wellNum != 0 else referenceAxis
+    # rightAxis.get_shared_y_axes().join(rightAxis, referenceAxis)
     
     for sensorNum, axesStatuses in enumerate(config[wellNum]):
         if np.any(axesStatuses):
@@ -189,7 +189,7 @@ for wellNum in range(numWells):
     axs[row, col].set_title(f'Well {wellMap[wellNum]}', fontsize = 60)
     axs[row, col].set_xlabel('Time (sec)', fontsize = 30)
     axs[row, col].set_ylabel('Magnitude (uT)', fontsize = 20)
-    rightAxis.set_ylabel('Temperature (°C)', fontsize = 20)
+    # rightAxis.set_ylabel('Temperature (°C)', fontsize = 20)
     axs[row, col].tick_params(which = 'major', labelsize = 20)
     axs[row, col].minorticks_on()
     axs[row, col].grid(which='major', linewidth=1.5)

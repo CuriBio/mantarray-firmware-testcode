@@ -220,3 +220,7 @@ for wellNum in range(numWells):
 print(f"Number of protocols not captured: {numNotCaptured}")     
 fig.savefig(f"{targetPlotsFolderName}\{targetDataFolderName}_subprotocolDelays", bbox_inches = 'tight')
     
+#%%
+foo = {}
+for key in dataFile.attrs.keys():
+    foo[key] = dataFile.attrs[key]

@@ -118,15 +118,17 @@ void Parse (List <Byte> thisAggregate, int thisScanner) throws IOException
       logLog.println("Command Response Recieved");
       break;
     case 27:
-      for (int wellCounter = 0; wellCounter < NUM_WELLS; wellCounter++){
-        int ADC8 = byte2uint(newPacket.data.get(wellCounter*5)) + (byte2uint(newPacket.data.get(wellCounter*5 + 1))<<8);
-        int ADC9 = byte2uint(newPacket.data.get(wellCounter*5 + 2)) + (byte2uint(newPacket.data.get(wellCounter*5 + 3))<<8);
-        int status = byte2uint(newPacket.data.get(wellCounter*5 + 4));
+      String[] polaritySelector = {"+", "-"};
+      int statLength = 5;
+      for (int statCounter = 0; statCounter < (NUM_WELLS*2); statCounter++){
+        int ADC8 = byte2uint(newPacket.data.get(statCounter*statLength)) + (byte2uint(newPacket.data.get(statCounter*statLength + 1))<<8);
+        int ADC9 = byte2uint(newPacket.data.get(statCounter*statLength + 2)) + (byte2uint(newPacket.data.get(statCounter*statLength + 3))<<8);
+        int status = byte2uint(newPacket.data.get(statCounter*statLength + 4));
         String toDisplay = "";
         if (status < 3){
-          toDisplay = String.format("Channel %d: ADC8 - %d   ADC9 - %d   status - " + statusConversions[status] + "\n", wellCounter+1, ADC8, ADC9);
+          toDisplay = String.format("Channel %d%s: ADC8 - %d   ADC9 - %d   status - " + statusConversions[status] + "\n", (statCounter/2)+1, polaritySelector[statCounter%2], ADC8, ADC9);
         } else {
-          toDisplay = String.format("Channel %d: ADC8 - %d   ADC9 - %d   status - %d\n", wellCounter+1, ADC8, ADC9, status);
+          toDisplay = String.format("Channel %d%s: ADC8 - %d   ADC9 - %d   status - %d\n", (statCounter/2)+1, polaritySelector[statCounter%2], ADC8, ADC9, status);
         }
         print(toDisplay);
         thisHomePageControllers.logDisplay.append(toDisplay);
